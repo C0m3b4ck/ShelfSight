@@ -1,4 +1,4 @@
-#include "shelfsight_gui.cxx"
+#include "shelfsight_gui.h"
 
 int main()
 {

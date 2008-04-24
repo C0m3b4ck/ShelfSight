@@ -6,4 +6,6 @@ debugging:
 * fixed a few widget and CB names due to other reasons
 * removed Fl_Image
 * fixed BTN_CB function
+* added main.cpp
+* fixed include in main.cpp
 NOTE: compiling with build script still gives a bunch of weird errors

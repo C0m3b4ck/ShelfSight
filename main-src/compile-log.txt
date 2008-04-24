@@ -1,0 +1,59 @@
+/usr/bin/ld: /usr/local/lib/libfltk.a(fl_font.o): in function `utf8extents(Fl_Font_Descriptor*, char const*, int, _XGlyphInfo*)':
+fl_font.cxx:(.text._ZL11utf8extentsP18Fl_Font_DescriptorPKciP11_XGlyphInfo+0x42): undefined reference to `XftTextExtents32'
+/usr/bin/ld: /usr/local/lib/libfltk.a(fl_font.o): in function `Fl_Font_Descriptor::Fl_Font_Descriptor(char const*, int, int)':
+fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x67): undefined reference to `FcPatternCreate'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x12e): undefined reference to `FcPatternAddString'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x184): undefined reference to `FcPatternAddString'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x19c): undefined reference to `FcPatternAddInteger'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x1af): undefined reference to `FcPatternAddInteger'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x1cc): undefined reference to `FcPatternAddDouble'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x1e3): undefined reference to `FcPatternAddString'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x246): undefined reference to `FcMatrixRotate'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x259): undefined reference to `FcPatternAddMatrix'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x272): undefined reference to `XftFontMatch'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x2b1): undefined reference to `XftFontOpen'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x2be): undefined reference to `FcPatternDestroy'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x2ea): undefined reference to `XftFontOpenPattern'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x2fb): undefined reference to `FcPatternDestroy'
+/usr/bin/ld: fl_font.cxx:(.text._ZN18Fl_Font_DescriptorC2EPKcii+0x312): undefined reference to `XftFontOpenXlfd'
+/usr/bin/ld: /usr/local/lib/libfltk.a(fl_font.o): in function `Fl_Xlib_Graphics_Driver::width(unsigned int)':
+fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver5widthEj+0x37): undefined reference to `XftTextExtents32'
+/usr/bin/ld: /usr/local/lib/libfltk.a(fl_font.o): in function `fl_destroy_xft_draw(unsigned long)':
+fl_font.cxx:(.text._Z19fl_destroy_xft_drawm+0x1f): undefined reference to `XftDrawChange'
+/usr/bin/ld: /usr/local/lib/libfltk.a(fl_font.o): in function `Fl_Xlib_Graphics_Driver::draw(char const*, int, int, int)':
+fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver4drawEPKciii+0x6a): undefined reference to `XftDrawCreate'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver4drawEPKciii+0x7f): undefined reference to `XftDrawChange'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver4drawEPKciii+0xb2): undefined reference to `XftDrawSetClip'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver4drawEPKciii+0x142): undefined reference to `XftDrawString32'
+/usr/bin/ld: /usr/local/lib/libfltk.a(fl_font.o): in function `Fl_Xlib_Graphics_Driver::rtl_draw(char const*, int, int, int)':
+fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0x3d): undefined reference to `FcUtf8Len'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0xa7): undefined reference to `FcUtf8ToUcs4'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0xea): undefined reference to `XftTextExtents32'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0x131): undefined reference to `XftDrawCreate'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0x146): undefined reference to `XftDrawChange'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0x179): undefined reference to `XftDrawSetClip'
+/usr/bin/ld: fl_font.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver8rtl_drawEPKciii+0x1fc): undefined reference to `XftDrawString32'
+/usr/bin/ld: /usr/local/lib/libfltk.a(Fl_Double_Window.o): in function `Fl_Xlib_Graphics_Driver::copy_offscreen_with_alpha(int, int, int, int, unsigned long, int, int)':
+Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0x5a): undefined reference to `XRenderFindStandardFormat'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0x9c): undefined reference to `XRenderFindVisualFormat'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0xc8): undefined reference to `XRenderCreatePicture'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0xec): undefined reference to `XRenderCreatePicture'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0x139): undefined reference to `XRenderSetPictureClipRegion'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0x16d): undefined reference to `XRenderComposite'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0x180): undefined reference to `XRenderFreePicture'
+/usr/bin/ld: Fl_Double_Window.cxx:(.text._ZN23Fl_Xlib_Graphics_Driver25copy_offscreen_with_alphaEiiiimii+0x18f): undefined reference to `XRenderFreePicture'
+/usr/bin/ld: /usr/local/lib/libfltk.a(Fl_x.o): in function `fl_open_display(_XDisplay*)':
+Fl_x.cxx:(.text._Z15fl_open_displayP9_XDisplay+0x49f): undefined reference to `XFixesQueryExtension'
+/usr/bin/ld: /usr/local/lib/libfltk.a(Fl_x.o): in function `Fl_X::xrender_supported()':
+Fl_x.cxx:(.text._ZN4Fl_X17xrender_supportedEv+0x26): undefined reference to `XRenderQueryExtension'
+/usr/bin/ld: /usr/local/lib/libfltk.a(Fl_x.o): in function `Fl_X::set_cursor(Fl_RGB_Image const*, int, int)':
+Fl_x.cxx:(.text._ZN4Fl_X10set_cursorEPK12Fl_RGB_Imageii+0x36): undefined reference to `XcursorImageCreate'
+/usr/bin/ld: Fl_x.cxx:(.text._ZN4Fl_X10set_cursorEPK12Fl_RGB_Imageii+0x11d): undefined reference to `XcursorImageLoadCursor'
+/usr/bin/ld: Fl_x.cxx:(.text._ZN4Fl_X10set_cursorEPK12Fl_RGB_Imageii+0x14a): undefined reference to `XcursorImageDestroy'
+/usr/bin/ld: /usr/local/lib/libfltk.a(Fl_x.o): in function `Fl_X::make_xid(Fl_Window*, XVisualInfo*, unsigned long)':
+Fl_x.cxx:(.text._ZN4Fl_X8make_xidEP9Fl_WindowP11XVisualInfom+0x868): undefined reference to `XFixesSelectSelectionInput'
+/usr/bin/ld: Fl_x.cxx:(.text._ZN4Fl_X8make_xidEP9Fl_WindowP11XVisualInfom+0x884): undefined reference to `XFixesSelectSelectionInput'
+/usr/bin/ld: /usr/local/lib/libfltk.a(screen_xywh.o): in function `screen_init()':
+screen_xywh.cxx:(.text._ZL11screen_initv+0xec): undefined reference to `XineramaIsActive'
+/usr/bin/ld: screen_xywh.cxx:(.text._ZL11screen_initv+0x113): undefined reference to `XineramaQueryScreens'
+collect2: error: ld returned 1 exit status
