@@ -40,6 +40,7 @@ static void verifyloandb_selectdb(Fl_Widget*, void*);
 static void login_show(Fl_Widget*, void*);
 static void register_show(Fl_Widget*, void*);
 static void clear_workspace(Fl_Widget*, void*);
+static void inp_usr-reg(Fl_Widget*, void*);
 
 Fl_Double_Window *window_assistant=(Fl_Double_Window *)0;
 

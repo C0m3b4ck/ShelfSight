@@ -1,4 +1,6 @@
 === UI ===
+--> remove the hyphen ("-") from function names in fluid
+--> finish function declarations at top
 * Add tooltips when hovering over widgets
 * Add groups for database functions
 * After logging in, user should be redirected to group_selectdb
