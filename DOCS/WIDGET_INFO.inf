@@ -8,6 +8,7 @@ mnu - menu item
 mnubtn - menu button
 brw - browser
 clk - clock
+flbrw - file browser
 
 [][][] Naming Convention [][][]
 -=-\-\=/=/ Widgets \=\=/-/-/=-
@@ -229,3 +230,19 @@ btn_marklost-marklns - mark lost button, CB: BTN_CB, usr_data: marklost_marklns
 
 === group_backdrop ===
 clk_time-backdrop - system time clock
+
+=== group_selectdb ===
+flbrw_bookdb-selectdb - book DB file browser, CB: BTN_CB, usr_data: bookdb_selectdb
+flbrw_readerdb-selectdb - reader DB file browser, CB: BTN_CB, usr_data: readerdb_selectdb
+flbrw_loandb-selectdb - loan DB file browser, CB: BTN_CB, usr_data: loandb_selectdb
+mnubtn_saveconfig-selectdb - save config menu button, CB: BTN_CB, usr_data: saveconfig_selectdb
+mnu_saveasdefault-selectdb - save as default button, CB: BTN_CB, usr_data: saveasdefault_selectdb
+mnu_saveascustom-selectdb - save as custom button, CB: BTN_CB, usr_data: saveascustom_selectdb
+mnubtn_loadconfig-selectdb - load config menu button, CB: BTN_CB, usr_data: loadconfig_selectdb
+mnu_loadasdefault-selectdb - load as default button, CB: BTN_CB, usr_data: loadasdefault_selectdb
+btn_back-selectdb - back button, CB: BTN_CB, usr_data: BACK_selectdb
+btn_setselected-selectdb - set selected button, CB: BTN_CB, usr_data: BACK_selectdb
+mnubtn_verifydb-selectdb - verify DB menu button, CB: BTN_CB, usr_data: verifydb_selectdb
+mnu_verifybookdb-selectdb - verify book DB, CB: BTN_CB, usr_data: verifybookdb_selectdb
+mnu_verifyreaderdb-selectdb - verify reader DB, CB: BTN_CB, usr_data: verifyreaderdb_selectdb
+mnu_verifyloandb-selectdb - verify loan DB, CB: BTN_CB, usr_data: verifyloandb_selectdb

@@ -133,6 +133,10 @@ Function {make_window()} {open
         label {Load Default DBs}
         xywh {0 0 100 20}
       }
+      MenuItem mnu_selectcurrentdbs {
+        label {Select current DBs}
+        xywh {10 10 100 20}
+      }
       Submenu sbmnu_backup {
         label Backup
         xywh {0 0 100 20}
@@ -177,14 +181,6 @@ Function {make_window()} {open
         }
         MenuItem mnu_editdb {
           label {Edit Database}
-          xywh {0 0 100 20}
-        }
-        MenuItem mnu_selectcurrentdbs {
-          label {Select current DBs}
-          xywh {0 0 100 20}
-        }
-        MenuItem mnu_selectdefaultdbs {
-          label {Select default (persistent)}
           xywh {0 0 100 20}
         }
       }
@@ -1166,12 +1162,105 @@ Function {make_window()} {open
         xywh {15 305 10 35} labelsize 35 align 296
       }
     }
-    Fl_Group group_selectdb {open selected
+    Fl_Group group_selectdb {open
       xywh {0 25 540 330}
     } {
       Fl_Text_Display {} {
         label {Select Databases}
         xywh {95 25 10 35} labelsize 44 align 296
+      }
+      Fl_File_Browser {flbrw_bookdb-selectdb} {
+        label {Select book DB:}
+        user_data bookdb_selectdb
+        callback BTN_CB
+        xywh {5 85 165 145} labelsize 21 align 33
+      }
+      Fl_File_Browser {flbrw_readerdb-selectdb} {
+        label {Select reader DB:}
+        user_data readerdb_selectdb
+        callback BTN_CB
+        xywh {190 85 165 145} labelsize 21 align 33
+      }
+      Fl_File_Browser {flbrw_loandb-selectdb} {
+        label {Select loan DB:}
+        user_data loandb_selectdb
+        callback BTN_CB
+        xywh {370 85 165 145} labelsize 21 align 33
+      }
+      Fl_Menu_Button {mnubtn_saveconfig-selectdb} {
+        label {Save config}
+        user_data saveconfig_selectdb
+        callback BTN_CB
+        xywh {190 235 165 45} labelsize 25
+      } {
+        MenuItem {mnu_saveasdefault-selectdb} {
+          label {Save as Default}
+          user_data saveasdefault_selectdb
+          callback BTN_CB
+          xywh {0 0 100 20} labelsize 15
+        }
+        MenuItem {mnu_saveascustom-selectdb} {
+          label {Save as Custom}
+          user_data saveascustom_selectdb
+          callback BTN_CB
+          xywh {0 0 100 20} labelsize 15
+        }
+      }
+      Fl_Menu_Button {mnubtn_loadconfig-selectdb} {
+        label {Load config}
+        user_data loadconfig_selectdb
+        callback BTN_CB open
+        xywh {5 235 165 45} labelsize 25
+      } {
+        MenuItem {mnu_loadasdefault-selectdb} {
+          label {Load as Default}
+          user_data loadasdefault_selectdb
+          callback BTN_CB
+          xywh {10 10 100 20} labelsize 15
+        }
+        MenuItem {mnu_loadascustom-selectdb} {
+          label {Load as Custom}
+          user_data loadascustom_selectdb
+          callback BTN_CB
+          xywh {10 10 100 20} labelsize 15
+        }
+      }
+      Fl_Button {btn_back-selectdb} {
+        label Back
+        user_data BACK_selectdb
+        callback BTN_CB
+        xywh {10 285 260 65} labelsize 48
+      }
+      Fl_Button {btn_setselected-selectdb} {
+        label {Set selected}
+        user_data setselected_selectdb
+        callback BTN_CB
+        xywh {275 285 260 65} labelsize 43
+      }
+      Fl_Menu_Button {mnubtn_verifydb-selectdb} {
+        label {Verify DB}
+        user_data verifydb_selectdb
+        callback BTN_CB open
+        xywh {370 235 165 45} labelsize 25
+      } {
+        MenuItem {mnu_verifybookdb-selectdb} {
+          label {Verify Book DB}
+          user_data verifybookdb_selectdb
+          callback BTN_CB
+          xywh {10 10 100 20} labelsize 15
+        }
+        MenuItem {mnu_verifyreaderdb-selectdb} {
+          label {Verify Reader DB}
+          user_data verifyreaderdb_selectdb
+          callback BTN_CB
+          xywh {20 20 100 20} labelsize 15
+        }
+        MenuItem {mnu_verifyloandb-selectdb} {
+          label {Verify Loan DB}
+          user_data verifyloandb_selectdb
+          callback BTN_CB selected
+          xywh {30 30 100 20} labelsize 15
+        }
       }
     }
   }

@@ -1,5 +1,4 @@
 === UI ===
--> finish widgets on group_selectdb
 * Add tooltips when hovering over widgets
 * Add groups for database functions
 * After logging in, user should be redirected to group_selectdb

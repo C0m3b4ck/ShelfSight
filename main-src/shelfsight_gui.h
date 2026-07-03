@@ -38,6 +38,7 @@ extern Fl_Group *group_markloans;
 extern Fl_Group *group_backdrop;
 #include <FL/Fl_Clock.H>
 extern Fl_Group *group_selectdb;
+#include <FL/Fl_File_Browser.H>
 Fl_Double_Window* make_window();
 extern Fl_Menu_Item menu_mnubtn_books[];
 #define mnu_addbooks (menu_mnubtn_books+0)
@@ -56,23 +57,25 @@ extern Fl_Menu_Item menu_mnubtn_loans[];
 #define mnu_expiredloans (menu_mnubtn_loans+3)
 extern Fl_Menu_Item menu_mnubtn_databases[];
 #define mnu_loaddefaultdbs (menu_mnubtn_databases+0)
-#define sbmnu_backup (menu_mnubtn_databases+1)
-#define mnu_offlinebackup (menu_mnubtn_databases+2)
-#define sbmnu_online (menu_mnubtn_databases+3)
-#define mnu_directconnection (menu_mnubtn_databases+4)
-#define mnu_localp2p (menu_mnubtn_databases+5)
-#define mnu_onlinep2p (menu_mnubtn_databases+6)
-#define sbmnu_managedbs (menu_mnubtn_databases+9)
-#define mnu_adddb (menu_mnubtn_databases+10)
-#define mnu_editdb (menu_mnubtn_databases+11)
-#define mnu_selectcurrentdbs (menu_mnubtn_databases+12)
-#define mnu_selectdefaultdbs (menu_mnubtn_databases+13)
+#define mnu_selectcurrentdbs (menu_mnubtn_databases+1)
+#define sbmnu_backup (menu_mnubtn_databases+2)
+#define mnu_offlinebackup (menu_mnubtn_databases+3)
+#define sbmnu_online (menu_mnubtn_databases+4)
+#define mnu_directconnection (menu_mnubtn_databases+5)
+#define mnu_localp2p (menu_mnubtn_databases+6)
+#define mnu_onlinep2p (menu_mnubtn_databases+7)
+#define sbmnu_managedbs (menu_mnubtn_databases+10)
+#define mnu_adddb (menu_mnubtn_databases+11)
+#define mnu_editdb (menu_mnubtn_databases+12)
 extern Fl_Menu_Item menu_mnubtn_settings[];
 #define mnu_account (menu_mnubtn_settings+0)
 #define mnu_theme (menu_mnubtn_settings+1)
 #define mnu_performance (menu_mnubtn_settings+2)
 #define mnu_networking (menu_mnubtn_settings+3)
 #define mnu_other (menu_mnubtn_settings+4)
+extern Fl_Menu_Item menu_mnubtn_saveconfig[];
+extern Fl_Menu_Item menu_mnubtn_loadconfig[];
+extern Fl_Menu_Item menu_mnubtn_verifydb[];
 void MENU_BTN_CB(Fl_Widget* w, void* data);
 void BTN_CB(Fl_Widget* w, void* data);
 void hide_all_groups();

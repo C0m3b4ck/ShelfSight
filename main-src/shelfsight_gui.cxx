@@ -40,6 +40,7 @@ Fl_Menu_Button *mnubtn_databases=(Fl_Menu_Button *)0;
 
 Fl_Menu_Item menu_mnubtn_databases[] = {
  {"Load Default DBs", 0,  0, 0, 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
+ {"Select current DBs", 0,  0, 0, 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
  {"Backup", 0,  0, 0, 64, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
  {"Offline", 0,  (Fl_Callback*)MENU_BTN_CB, (void*)(backup_offline), 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
  {"Online", 0,  0, 0, 64, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
@@ -51,8 +52,6 @@ Fl_Menu_Item menu_mnubtn_databases[] = {
  {"Manage", 0,  0, 0, 64, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
  {"Add Database", 0,  0, 0, 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
  {"Edit Database", 0,  0, 0, 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
- {"Select current DBs", 0,  0, 0, 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
- {"Select default (persistent)", 0,  0, 0, 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -101,6 +100,25 @@ Fl_Group *group_markloans=(Fl_Group *)0;
 Fl_Group *group_backdrop=(Fl_Group *)0;
 
 Fl_Group *group_selectdb=(Fl_Group *)0;
+
+Fl_Menu_Item menu_mnubtn_saveconfig[] = {
+ {"Save as Default", 0,  (Fl_Callback*)BTN_CB, (void*)(saveasdefault_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {"Save as Custom", 0,  (Fl_Callback*)BTN_CB, (void*)(saveascustom_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {0,0,0,0,0,0,0,0,0}
+};
+
+Fl_Menu_Item menu_mnubtn_loadconfig[] = {
+ {"Load as Default", 0,  (Fl_Callback*)BTN_CB, (void*)(loadasdefault_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {"Load as Custom", 0,  (Fl_Callback*)BTN_CB, (void*)(loadascustom_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {0,0,0,0,0,0,0,0,0}
+};
+
+Fl_Menu_Item menu_mnubtn_verifydb[] = {
+ {"Verify Book DB", 0,  (Fl_Callback*)BTN_CB, (void*)(verifybookdb_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {"Verify Reader DB", 0,  (Fl_Callback*)BTN_CB, (void*)(verifyreaderdb_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {"Verify Loan DB", 0,  (Fl_Callback*)BTN_CB, (void*)(verifyloandb_selectdb), 0, (uchar)FL_NORMAL_LABEL, 0, 15, 0},
+ {0,0,0,0,0,0,0,0,0}
+};
 
 Fl_Double_Window* make_window() {
   { window_assistant = new Fl_Double_Window(421, 166, "Merlin the Mole - your assistant");
@@ -873,6 +891,44 @@ Fl_Double_Window* make_window() {
         o->labelsize(44);
         o->align(Fl_Align(296));
       } // Fl_Text_Display* o
+      { flbrw_bookdb-selectdb = new Fl_File_Browser(5, 85, 165, 145, "Select book DB:");
+        flbrw_bookdb-selectdb->labelsize(21);
+        flbrw_bookdb-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(bookdb_selectdb));
+        flbrw_bookdb-selectdb->align(Fl_Align(33));
+      } // Fl_File_Browser* flbrw_bookdb-selectdb
+      { flbrw_readerdb-selectdb = new Fl_File_Browser(190, 85, 165, 145, "Select reader DB:");
+        flbrw_readerdb-selectdb->labelsize(21);
+        flbrw_readerdb-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(readerdb_selectdb));
+        flbrw_readerdb-selectdb->align(Fl_Align(33));
+      } // Fl_File_Browser* flbrw_readerdb-selectdb
+      { flbrw_loandb-selectdb = new Fl_File_Browser(370, 85, 165, 145, "Select loan DB:");
+        flbrw_loandb-selectdb->labelsize(21);
+        flbrw_loandb-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(loandb_selectdb));
+        flbrw_loandb-selectdb->align(Fl_Align(33));
+      } // Fl_File_Browser* flbrw_loandb-selectdb
+      { mnubtn_saveconfig-selectdb = new Fl_Menu_Button(190, 235, 165, 45, "Save config");
+        mnubtn_saveconfig-selectdb->labelsize(25);
+        mnubtn_saveconfig-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(saveconfig_selectdb));
+        mnubtn_saveconfig-selectdb->menu(menu_mnubtn_saveconfig);
+      } // Fl_Menu_Button* mnubtn_saveconfig-selectdb
+      { mnubtn_loadconfig-selectdb = new Fl_Menu_Button(5, 235, 165, 45, "Load config");
+        mnubtn_loadconfig-selectdb->labelsize(25);
+        mnubtn_loadconfig-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(loadconfig_selectdb));
+        mnubtn_loadconfig-selectdb->menu(menu_mnubtn_loadconfig);
+      } // Fl_Menu_Button* mnubtn_loadconfig-selectdb
+      { btn_back-selectdb = new Fl_Button(10, 285, 260, 65, "Back");
+        btn_back-selectdb->labelsize(48);
+        btn_back-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(BACK_selectdb));
+      } // Fl_Button* btn_back-selectdb
+      { btn_setselected-selectdb = new Fl_Button(275, 285, 260, 65, "Set selected");
+        btn_setselected-selectdb->labelsize(43);
+        btn_setselected-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(setselected_selectdb));
+      } // Fl_Button* btn_setselected-selectdb
+      { mnubtn_verifydb-selectdb = new Fl_Menu_Button(370, 235, 165, 45, "Verify DB");
+        mnubtn_verifydb-selectdb->labelsize(25);
+        mnubtn_verifydb-selectdb->callback((Fl_Callback*)BTN_CB, (void*)(verifydb_selectdb));
+        mnubtn_verifydb-selectdb->menu(menu_mnubtn_verifydb);
+      } // Fl_Menu_Button* mnubtn_verifydb-selectdb
       group_selectdb->end();
     } // Fl_Group* group_selectdb
     o->end();
