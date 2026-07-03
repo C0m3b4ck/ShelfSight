@@ -1,27 +1,33 @@
-#include <cryptopp/blake2.h>
+// Required Crypto++ headers
+#include <cryptopp/blake2.h>   // BLAKE2s implementation
+#include <cryptopp/filters.h>  // HashFilter, HexEncoder
+#include <cryptopp/hex.h>      // HexEncoder (also declared in filters.hpp)
+//#include <cryptopp/streams.h>  // StringSource, StringSink
+
+#include <string>
 
 std::string blake2s_hash(const std::string& input)
 {
     try {
         std::string hash, hex;
 
-        BLAKE2s blake;
+        CryptoPP::BLAKE2s blake;
 
-        StringSource ss(
+        CryptoPP::StringSource ss(
             input,
             true,
-            new HashFilter(
+            new CryptoPP::HashFilter(
                 blake,
-                new StringSink(hash)
+                new CryptoPP::StringSink(hash)
             )
         );
 
-        StringSource ss2(
+        CryptoPP::StringSource ss2(
             hash,
             true,
-            new HexEncoder(
-                new StringSink(hex),
-                false
+            new CryptoPP::HexEncoder(
+                new CryptoPP::StringSink(hex),
+                false               // no line breaks
             )
         );
 
@@ -31,3 +37,4 @@ std::string blake2s_hash(const std::string& input)
         return "";
     }
 }
+

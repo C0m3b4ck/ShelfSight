@@ -1,2 +1,4 @@
 * updated BTN_CB code for UI
 * added pointer array for input fields
+* fixed Linux x86_x64 compile script
+* debugged cred_man.cpp, blake2.cpp, debugging shelfsight_gui.cxx

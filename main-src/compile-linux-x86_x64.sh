@@ -1,1 +1,1 @@
-g++ *.cpp *.h *.cxx -o gui-linux64 -I/fltk-linux64/include -L/fltk-linux64/lib -lfltk -lfltk_images -lfltk_forms
+g++ -std=c++17 -O2 *.cpp *.cxx -o gui-linux64 -I/fltk-linux64/include -I"$CRYPTO_PREFIX/include" -L/fltk-linux64/lib -L"$CRYPTO_PREFIX/lib" -L"$CRYPTO_PREFIX/lib/x86_64-linux-gnu" -lfltk -lfltk_images -lfltk_forms -lcryptopp -lX11 -lXext -lpthread -ldl -lrt 

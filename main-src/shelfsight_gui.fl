@@ -1258,7 +1258,7 @@ Function {make_window()} {open
         MenuItem {mnu_verifyloandb-selectdb} {
           label {Verify Loan DB}
           user_data verifyloandb_selectdb
-          callback BTN_CB selected
+          callback BTN_CB
           xywh {30 30 100 20} labelsize 15
         }
       }
@@ -1271,24 +1271,78 @@ Function {MENU_BTN_CB(Fl_Widget* w, void* data)} {
 } {}
 
 Function {BTN_CB(Fl_Widget* w, void* data)} {
-  comment {For non-menu buttons (the ones in groups)}
+  comment {For non-menu buttons (the ones in groups)} open
 } {
-  code {// Cast the user data to the appropriate type (in this case, int)
-    std::string function_data = *(std::string*)data;
+  code {// Assume you have a global or accessible AppUI pointer named app_ui
+// and it contains: Fl_Input* inp_usr_log; Fl_Input* inp_pwd_log; (etc.)
 
-    // debug
-    std::cout << "BTN_CB called with " << function_data << " as data. \\n";
-    if (function_data == "login_btn")
-    {
-        std::cout << "Login button clicked! \\n";
-        //std::string usr = username_input->value(); // -> here, username_inp>
-        //std::string pwd = password_input->value();
+struct AppUI
+{
+                Fl_Input* inp_usr-reg;
+                Fl_Input* inp_pwd1-reg;
+                Fl_Input* inp_pwd2-reg;
+                Fl_Input* inp_title-addbk;
+                Fl_Input* inp_id-addbk;
+                Fl_Input* inp_author-addbk;
+                Fl_Input* inp_name-addrdr;
+                Fl_Input* inp_surname-addrdr;
+                Fl_Input* inp_grade-addrdr;
+                Fl_Input* inp_class-addrdr;
+                Fl_Input* inp_readerid-addrdr;
+                Fl_Input* inp_search-addrdr;
+                Fl_Input* inp_bookid-addlns;
+                Fl_Input* inp_search-addlns;
+                Fl_Input* inp_readerid-addlns;
+                Fl_Input* inp_loanid-addlns;
+                Fl_Input* inp_expirydate-addlns;
+                Fl_Input* inp_searchterm-editbk;
+                Fl_Input* inp_title-editbk;
+                Fl_Input* inp_author-editbk;
+                Fl_Input* inp_bookid-editbk;
+                Fl_Input* inp_search-delbks;
+                Fl_Input* inp_bookid-delbks;
+                Fl_Input* inp_readername-editrdr;
+                Fl_Input* inp_readersurname-editrdr;
+                Fl_Input* inp_grade-editrdr;
+                Fl_Input* inp_class-editrdr;
+                Fl_Input* inp_readerid-editrdr;
+                Fl_Input* inp_search-editrdr;
+                Fl_Input* inp_search-delrdr;
+                Fl_Input* inp_readerid-delrdr;
+                Fl_Input* inp_bookid-editlns;
+                Fl_Input* inp_search-editlns;
+                Fl_Input* inp_readerid-editlns;
+                Fl_Input* inp_loanid-editlns;
+                Fl_Input* inp_expirydate-editlns;
+                Fl_Input* inp_search-marklns;
+                Fl_Input* inp_prolongby-marklns;
+                // add input fields from any DB menus
+}
 
+void BTN_CB(Fl_Widget* w, void* data) {
+  std::string function_data = *(std::string*)data;
 
-    }
-    else { //incorrect function id
-            std::cerr << "Unknown function data: " << function_data << " - this is a programmer error \\n";
-    }} {}
+  std::cout << "BTN_CB called with " << function_data << " as data. \\n";
+
+  if (function_data == "login_btn")
+  {
+    // ADDED: read login inputs from your AppUI
+    std::string usr = (app_ui->inp_usr_log ? app_ui->inp_usr_log->value() : "");
+    std::string pwd = (app_ui->inp_pwd_log ? app_ui->inp_pwd_log->value() : "");
+
+    std::cout << "Login button clicked!\\n";
+    std::cout << "usr=" << usr << "\\n";
+    std::cout << "pwd=" << pwd << "\\n";
+
+    // Pass usr/pwd to your function here
+    // login_function(usr, pwd);
+  } 
+  else 
+  {
+    std::cerr << "Unknown function data: " << function_data << " - this is a programmer error! \\n";
+  }
+}} {selected
+  }
 }
 
 Function {hide_all_groups()} {
