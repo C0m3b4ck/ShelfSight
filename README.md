@@ -91,7 +91,10 @@ Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 * All Xbox OSes
 * Windows CE 1.0 (requires DOS-like C compilation)
 <h2>Apple MacOS THEORETICALLY </b> supported, though users would need to compile themselves, as the author <b> DOES NOT PROVIDE </b> any binaries for that system</h2>
-
+# Build
+<br><h2>1. Open the 'src' folder in a Linux environment (something like MSYS on MS Windows)</h2>
+<br><h2>2. Run: './BUILD_ALL.sh' - this will show a small command-line menu, options will be selected by numerical input</h2>
+<br><h2>All should be built! NOTE: Legacy Windows build is not yet completed and thus will not work!!!</h2>
 # Docs
 Docs are available in <i>/DOCS/</i> subfolder. I will make user manuals after 1.0 release.
 <br><b>For now, check out development videos: </b> https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
