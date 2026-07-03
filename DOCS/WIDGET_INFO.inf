@@ -7,6 +7,7 @@ sbmnu - submenu
 mnu - menu item
 mnubtn - menu button
 brw - browser
+clk - clock
 
 [][][] Naming Convention [][][]
 -=-\-\=/=/ Widgets \=\=/-/-/=-
@@ -167,3 +168,64 @@ btn_undolastdelete-delbks - undo last delete button, CB: BTN_CB, usr_data: undol
 brw_searchdeleted-delbks - deleted books browser, CB: BTN_CB, usr_data: browserdeleted_delbks
 btn_restoreselected-delbks - restore selected button, CB: BTN_CB, usr_data: restoreselected_delbks
 btn_searchdeleted-delbks - search deleted button, CB: BTN_CB, usr_data: searchdeleted_delbks
+
+=== group_editreaders ===
+inp_readername-editrdr - input reader name
+btn_checkname-editrdr - check name, CB: BTN_CB, usr_data: checkname_editrdr
+inp_readersurname-editrdr - input surname
+inp_grade-editrdr - input grade
+btn_checksurname-editrdr - check surname button, CB: BTN_CB, usr_data: checksurname_editrdr
+inp_class-editrdr - input reader class
+inp_readerid-editrdr - input reader ID
+chk_nonnumeric-editrdr - non-numeric ID button, CB: BTN_CB, usr_data:  nonnumeric_editrdr
+chk_automaticallycheckid-editrdr - automatically check ID button, CB: BTN_CB, usr_data:  automaticallycheckid_editrdr
+btn_checkid-editrdr - check ID button, CB: BTN_CB, usr_data:  checkid_editrdr
+btn_editreader-editrdr - edit reader button, CB: BTN_CB, usr_data: EDITREADER
+btn_undolastadd-editrdr - undo last add button, CB: BTN_CB, usr_data: undolastadd_editrdr
+cic_searchby-editrdr - search by, CB: BTN_CB, usr_data: searchby_editrdr
+btn_search-editrdr - search button, CB: BTN_CB, usr_data: search_editrdr
+brw_search-editrdr - search browser, CB: BTN_CB, usr_data: browser_editrdr
+inp_search-editrdr - search term input 
+btn_help-editrdr - help button, CB: BTN_CB, usr_data: HELP_editrdr
+
+=== group_deletereaders ===
+inp_search-delrdr - search input
+cic_searchby-delrdr - search by, CB: BTN_CB, usr_data: searchby_delrdr
+btn_search-delrdr - search button, CB: BTN_CB, usr_data: search_delrdr
+brw_search-delrdr - search browser, CB: BTN_CB, usr_data: browser_delrdr
+btn_help - help button, CB: BTN_CB, usr_data: HELP_delrdr
+inp_readerid-delrdr - reader ID input
+btn_deletereader-delrdr - delete reader button, CB: BTN_CB, usr_data: DELETEREADER
+btn_undolastdelete-delrdr - undo last delete button, CB: BTN_CB, usr_data: undolastdelete_delrdr
+brw_deleted-rdr - deleted browser, CB: BTN_CB, usr_data: browser_deleted
+btn_restoreselected-delrdr - restore selected button, CB: BTN_CB, usr_data: restoreselected_delrdr
+
+=== group_editloans ===
+inp_bookid-editlns - book ID input
+cic_searchby-editlns - search by, CB: BTN_CB, usr_data: searchby_editlns
+btn_search-editlns - search button, CB: BTN_CB, usr_data: search_editlns
+brw_search-editlns - search browser, CB: BTN_CB, usr_data: browser_editlns
+inp_search-editlns - search input
+cic_searchwhat-editlns - search what choice, CB: BTN_CB, usr_data: searchwhat_editlns
+inp_readerid-editlns - reader ID input
+inp_loanid-editlns - loan ID input
+chk_autogenerate-editlns - check autogenerate, CB: BTN_CB, usr_data: autogenerate_editlns
+inp_expirydate-editlns - expiry date input
+btn_editloan-editlns - edit loan button, CB: BTN_CB, usr_data: EDITLOAN
+btn_undolastedit-editlns - undo last edit button, CB: BTN_CB, usr_data: undolastedit_editlns
+btn_help-editlns - help button, CB: BTN_CB, usr_data: HELP_editlns
+
+=== group_markloans ===
+cic_searchby-marklns - search by, CB: BTN_CB, usr_data: searchby_marklns
+btn_search-marklns - search button, CB: BTN_CB, usr_data: search_marklns
+brw_select-marklns - select browser, CB: BTN_CB, usr_data: browser_marklns
+inp_search-marklns - search term input
+cic_searchwhat-marklns - search what, CB: BTN_CB, usr_data: searchwhat_marklns
+btn_help-marklns - help button, CB: BTN_CB, usr_data: HELP_marklns
+inp_prolongby-marklns - prolong by input
+btn_prolong-marklns - prolong button, CB: BTN_CB, usr_data: prolong_marklns
+btn_markreturned-marklns - mark as returned button, CB: BTN_CB, usr_data: markreturned_marklns
+btn_marklost-marklns - mark lost button, CB: BTN_CB, usr_data: marklost_marklns
+
+=== group_backdrop ===
+clk_time-backdrop - system time clock

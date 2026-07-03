@@ -1,6 +1,6 @@
-* Add actual data when buttons call BTN_CB or MENU_BTN_CB [in progress]
+=== UI ===
+-> finish widgets on group_selectdb
 * Add tooltips when hovering over widgets
-* Create backgroup group (group_backdrop)
 * Add groups for database functions
 * After logging in, user should be redirected to group_selectdb
 * DBs should have type in line 0 for automatic selection capabilities

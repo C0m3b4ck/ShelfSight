@@ -1,4 +1,0 @@
-* added sbmnu_managedbs to Databases menu
-* added mnu_loaddefaultdbs button to Databases menu
-* finished data for widgets in group_addreaders, group_addloans, group_editbooks and group_deletebooks
-* WIDGET_INFO.inf up-to-date with current changes

@@ -92,9 +92,15 @@ Fl_Group *group_editreaders=(Fl_Group *)0;
 
 Fl_Group *group_deletereaders=(Fl_Group *)0;
 
+Fl_Button *btn_help=(Fl_Button *)0;
+
 Fl_Group *group_editloans=(Fl_Group *)0;
 
 Fl_Group *group_markloans=(Fl_Group *)0;
+
+Fl_Group *group_backdrop=(Fl_Group *)0;
+
+Fl_Group *group_selectdb=(Fl_Group *)0;
 
 Fl_Double_Window* make_window() {
   { window_assistant = new Fl_Double_Window(421, 166, "Merlin the Mole - your assistant");
@@ -127,7 +133,7 @@ Fl_Double_Window* make_window() {
     } // Fl_Button* o
     window_assistant->end();
   } // Fl_Double_Window* window_assistant
-  { Fl_Double_Window* o = new Fl_Double_Window(542, 373, "ShelfSight");
+  { Fl_Double_Window* o = new Fl_Double_Window(542, 358, "ShelfSight");
     w = o; if (w) {/* empty */}
     { mnubtn_books = new Fl_Menu_Button(0, 0, 55, 25, "Books");
       mnubtn_books->menu(menu_mnubtn_books);
@@ -545,6 +551,7 @@ Fl_Double_Window* make_window() {
     } // Fl_Group* group_editbooks
     { // delete books
       group_deletebooks = new Fl_Group(0, 25, 540, 335);
+      group_deletebooks->hide();
       { Fl_Text_Display* o = new Fl_Text_Display(205, 60, 10, 30, "Search");
         o->labelsize(31);
         o->align(Fl_Align(520));
@@ -611,62 +618,73 @@ Fl_Double_Window* make_window() {
         o->labelsize(41);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
-      { Fl_Input* o = new Fl_Input(60, 60, 380, 30, "Name");
-        o->labelsize(21);
-      } // Fl_Input* o
-      { new Fl_Button(440, 60, 100, 30, "Check Name");
-      } // Fl_Button* o
-      { Fl_Input* o = new Fl_Input(70, 90, 370, 30, "Surname");
-        o->labelsize(16);
-      } // Fl_Input* o
-      { Fl_Input* o = new Fl_Input(45, 120, 20, 30, "Grade");
-        o->labelsize(15);
-      } // Fl_Input* o
-      { Fl_Button* o = new Fl_Button(440, 90, 100, 30, "Check Surname");
-        o->labelsize(12);
-      } // Fl_Button* o
-      { Fl_Input* o = new Fl_Input(110, 120, 20, 30, "Class");
-        o->labelsize(15);
-      } // Fl_Input* o
-      { Fl_Input* o = new Fl_Input(200, 120, 105, 30, "Reader ID");
-        o->labelsize(15);
-      } // Fl_Input* o
-      { Fl_Check_Button* o = new Fl_Check_Button(305, 140, 90, 30, "Non-numeric");
-        o->down_box(FL_DOWN_BOX);
-        o->labelsize(12);
-      } // Fl_Check_Button* o
-      { Fl_Check_Button* o = new Fl_Check_Button(305, 120, 170, 30, "Automatically check ID");
-        o->down_box(FL_DOWN_BOX);
-        o->labelsize(13);
-      } // Fl_Check_Button* o
-      { new Fl_Button(460, 120, 80, 30, "Check ID");
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(250, 165, 290, 40, "EDIT READER");
-        o->labelsize(31);
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(0, 165, 245, 40, "Undo last add");
-        o->labelsize(25);
-      } // Fl_Button* o
+      { inp_readername-editrdr = new Fl_Input(60, 60, 380, 30, "Name");
+        inp_readername-editrdr->labelsize(21);
+      } // Fl_Input* inp_readername-editrdr
+      { btn_checkname-editrdr = new Fl_Button(440, 60, 100, 30, "Check Name");
+        btn_checkname-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(checkname_editrdr));
+      } // Fl_Button* btn_checkname-editrdr
+      { inp_readersurname-editrdr = new Fl_Input(70, 90, 370, 30, "Surname");
+        inp_readersurname-editrdr->labelsize(16);
+      } // Fl_Input* inp_readersurname-editrdr
+      { inp_grade-editrdr = new Fl_Input(45, 120, 20, 30, "Grade");
+        inp_grade-editrdr->labelsize(15);
+      } // Fl_Input* inp_grade-editrdr
+      { btn_checksurname-editrdr = new Fl_Button(440, 90, 100, 30, "Check Surname");
+        btn_checksurname-editrdr->labelsize(12);
+        btn_checksurname-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(checksurname_editrdr));
+      } // Fl_Button* btn_checksurname-editrdr
+      { inp_class-editrdr = new Fl_Input(110, 120, 20, 30, "Class");
+        inp_class-editrdr->labelsize(15);
+      } // Fl_Input* inp_class-editrdr
+      { inp_readerid-editrdr = new Fl_Input(200, 120, 105, 30, "Reader ID");
+        inp_readerid-editrdr->labelsize(15);
+      } // Fl_Input* inp_readerid-editrdr
+      { chk_nonnumeric-editrd = new Fl_Check_Button(305, 140, 90, 30, "Non-numeric");
+        chk_nonnumeric-editrd->down_box(FL_DOWN_BOX);
+        chk_nonnumeric-editrd->labelsize(12);
+        chk_nonnumeric-editrd->callback((Fl_Callback*)BTN_CB, (void*)(nonnumeric_editrdr));
+      } // Fl_Check_Button* chk_nonnumeric-editrd
+      { chk_automaticallycheckid-editrdr = new Fl_Check_Button(305, 120, 170, 30, "Automatically check ID");
+        chk_automaticallycheckid-editrdr->down_box(FL_DOWN_BOX);
+        chk_automaticallycheckid-editrdr->labelsize(13);
+        chk_automaticallycheckid-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(automaticallycheckid-editrdr));
+      } // Fl_Check_Button* chk_automaticallycheckid-editrdr
+      { btn_checkid-editrdr = new Fl_Button(460, 120, 80, 30, "Check ID");
+        btn_checkid-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(checkid_editrdr));
+      } // Fl_Button* btn_checkid-editrdr
+      { btn_editreader-editrdr = new Fl_Button(250, 165, 290, 40, "EDIT READER");
+        btn_editreader-editrdr->labelsize(31);
+        btn_editreader-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(EDITREADER));
+      } // Fl_Button* btn_editreader-editrdr
+      { btn_undolastadd-editrdr = new Fl_Button(0, 165, 245, 40, "Undo last add");
+        btn_undolastadd-editrdr->labelsize(25);
+        btn_undolastadd-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(undolastadd_editrdr));
+      } // Fl_Button* btn_undolastadd-editrdr
       { Fl_Text_Display* o = new Fl_Text_Display(210, 205, 10, 30, "Search");
         o->labelsize(32);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
-      { Fl_Choice* o = new Fl_Choice(330, 255, 105, 25, "Search by:");
-        o->down_box(FL_BORDER_BOX);
-        o->labelsize(17);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-      } // Fl_Choice* o
-      { Fl_Button* o = new Fl_Button(435, 235, 105, 45, "SEARCH");
-        o->labelsize(21);
-      } // Fl_Button* o
+      { cic_searchby-editrdr = new Fl_Choice(330, 255, 105, 25, "Search by:");
+        cic_searchby-editrdr->down_box(FL_BORDER_BOX);
+        cic_searchby-editrdr->labelsize(17);
+        cic_searchby-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(searchby_editrdr));
+        cic_searchby-editrdr->align(Fl_Align(FL_ALIGN_TOP));
+      } // Fl_Choice* cic_searchby-editrdr
+      { btn_search-editrdr = new Fl_Button(435, 235, 105, 45, "SEARCH");
+        btn_search-editrdr->labelsize(21);
+        btn_search-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(search_editrdr));
+      } // Fl_Button* btn_search-editrdr
       { // Search results, click to fill text fields
-        new Fl_Browser(5, 280, 535, 90);
-      } // Fl_Browser* o
-      { new Fl_Input(90, 240, 240, 40, "Search term:");
-      } // Fl_Input* o
-      { Fl_Button* o = new Fl_Button(5, 25, 75, 35, "HELP");
-        o->labelsize(21);
-      } // Fl_Button* o
+        brw_search-editrdr = new Fl_Browser(5, 280, 535, 90);
+        brw_search-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(browser_editrdr));
+      } // Fl_Browser* brw_search-editrdr
+      { inp_search-editrdr = new Fl_Input(90, 240, 240, 40, "Search term:");
+      } // Fl_Input* inp_search-editrdr
+      { btn_help-editrdr = new Fl_Button(5, 25, 75, 35, "HELP");
+        btn_help-editrdr->labelsize(21);
+        btn_help-editrdr->callback((Fl_Callback*)BTN_CB, (void*)(HELP_editrdr));
+      } // Fl_Button* btn_help-editrdr
       group_editreaders->end();
     } // Fl_Group* group_editreaders
     { // Delete readers
@@ -676,96 +694,112 @@ Fl_Double_Window* make_window() {
         o->labelsize(31);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
-      { Fl_Input* o = new Fl_Input(95, 90, 235, 30, "Search term:");
-        o->labelsize(16);
-      } // Fl_Input* o
-      { Fl_Choice* o = new Fl_Choice(330, 95, 105, 25, "Search by:");
-        o->down_box(FL_BORDER_BOX);
-        o->labelsize(17);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-      } // Fl_Choice* o
-      { Fl_Button* o = new Fl_Button(435, 75, 105, 45, "SEARCH");
-        o->labelsize(21);
-      } // Fl_Button* o
+      { inp_search-delrdr = new Fl_Input(95, 90, 235, 30, "Search term:");
+        inp_search-delrdr->labelsize(16);
+      } // Fl_Input* inp_search-delrdr
+      { cic_searchby-delrdr = new Fl_Choice(330, 95, 105, 25, "Search by:");
+        cic_searchby-delrdr->down_box(FL_BORDER_BOX);
+        cic_searchby-delrdr->labelsize(17);
+        cic_searchby-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(searchby_delrdr));
+        cic_searchby-delrdr->align(Fl_Align(FL_ALIGN_TOP));
+      } // Fl_Choice* cic_searchby-delrdr
+      { btn_search-delrdr = new Fl_Button(435, 75, 105, 45, "SEARCH");
+        btn_search-delrdr->labelsize(21);
+        btn_search-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(search_delrdr));
+      } // Fl_Button* btn_search-delrdr
       { // Search results, click to fill text fields
-        new Fl_Browser(5, 125, 535, 90);
-      } // Fl_Browser* o
-      { Fl_Button* o = new Fl_Button(0, 25, 70, 30, "HELP");
-        o->labelsize(21);
-      } // Fl_Button* o
+        brw_search-delrdr = new Fl_Browser(5, 125, 535, 90);
+        brw_search-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(browser_delrdr));
+      } // Fl_Browser* brw_search-delrdr
+      { btn_help = new Fl_Button(0, 25, 70, 30, "HELP");
+        btn_help->labelsize(21);
+        btn_help->callback((Fl_Callback*)BTN_CB, (void*)(HELP_delrdr));
+      } // Fl_Button* btn_help
       { Fl_Text_Display* o = new Fl_Text_Display(130, 25, 10, 30, "Delete Readers");
         o->labelsize(41);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
-      { Fl_Input* o = new Fl_Input(70, 215, 120, 35, "Book ID:");
-        o->labelsize(16);
-      } // Fl_Input* o
-      { Fl_Button* o = new Fl_Button(330, 215, 210, 35, "DELETE READER");
-        o->labelsize(21);
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(190, 215, 140, 35, "Undo last delete");
-        o->labelsize(16);
-      } // Fl_Button* o
+      { inp_readerid-delrdr = new Fl_Input(70, 215, 120, 35, "Reader ID:");
+        inp_readerid-delrdr->labelsize(16);
+      } // Fl_Input* inp_readerid-delrdr
+      { btn_deletereader-delrdr = new Fl_Button(330, 215, 210, 35, "DELETE READER");
+        btn_deletereader-delrdr->labelsize(21);
+        btn_deletereader-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(DELETEREADER));
+      } // Fl_Button* btn_deletereader-delrdr
+      { btn_undolastdelete-delrdr = new Fl_Button(190, 215, 140, 35, "Undo last delete");
+        btn_undolastdelete-delrdr->labelsize(16);
+        btn_undolastdelete-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(undolastdelete_delrdr));
+      } // Fl_Button* btn_undolastdelete-delrdr
       { Fl_Text_Display* o = new Fl_Text_Display(175, 250, 10, 30, "Search deleted readers");
         o->labelsize(21);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
       { // Search results, click to fill text fields
-        new Fl_Browser(5, 275, 535, 85);
-      } // Fl_Browser* o
-      { Fl_Button* o = new Fl_Button(5, 250, 170, 25, "Restore selected");
-        o->labelsize(16);
-      } // Fl_Button* o
+        brw_deleted-delrdr = new Fl_Browser(5, 275, 535, 85);
+        brw_deleted-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(browser_deleted));
+      } // Fl_Browser* brw_deleted-delrdr
+      { btn_restoreselected-delrdr = new Fl_Button(5, 250, 170, 25, "Restore selected");
+        btn_restoreselected-delrdr->labelsize(16);
+        btn_restoreselected-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(restoredeleted_delrdr));
+      } // Fl_Button* btn_restoreselected-delrdr
       group_deletereaders->end();
     } // Fl_Group* group_deletereaders
     { // Edit loans
-      group_editloans = new Fl_Group(0, 25, 540, 355);
+      group_editloans = new Fl_Group(0, 25, 540, 345);
       group_editloans->hide();
       { Fl_Text_Display* o = new Fl_Text_Display(170, 25, 10, 30, "Edit Loans");
         o->labelsize(41);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
-      { new Fl_Input(55, 60, 65, 30, "Book ID");
-      } // Fl_Input* o
-      { Fl_Choice* o = new Fl_Choice(430, 175, 105, 25, "Search by:");
-        o->down_box(FL_BORDER_BOX);
-        o->labelsize(17);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-      } // Fl_Choice* o
-      { Fl_Button* o = new Fl_Button(10, 200, 525, 30, "SEARCH");
-        o->labelsize(21);
-      } // Fl_Button* o
+      { inp_bookid-editlns = new Fl_Input(55, 60, 65, 30, "Book ID");
+      } // Fl_Input* inp_bookid-editlns
+      { cic_searchby-editlns = new Fl_Choice(430, 175, 105, 25, "Search by:");
+        cic_searchby-editlns->down_box(FL_BORDER_BOX);
+        cic_searchby-editlns->labelsize(17);
+        cic_searchby-editlns->callback((Fl_Callback*)BTN_CB, (void*)(searchby_editlns));
+        cic_searchby-editlns->align(Fl_Align(FL_ALIGN_TOP));
+      } // Fl_Choice* cic_searchby-editlns
+      { btn_search-editlns = new Fl_Button(10, 200, 525, 30, "SEARCH");
+        btn_search-editlns->labelsize(21);
+        btn_search-editlns->callback((Fl_Callback*)BTN_CB, (void*)(search_editlns));
+      } // Fl_Button* btn_search-editlns
       { // Search results, click to fill text fields
-        new Fl_Browser(5, 230, 535, 140);
-      } // Fl_Browser* o
-      { new Fl_Input(85, 160, 235, 40, "Search term:");
-      } // Fl_Input* o
-      { Fl_Choice* o = new Fl_Choice(320, 175, 105, 25, "Search:");
-        o->down_box(FL_BORDER_BOX);
-        o->labelsize(17);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-      } // Fl_Choice* o
-      { new Fl_Input(190, 60, 65, 30, "Reader ID");
-      } // Fl_Input* o
-      { new Fl_Input(310, 60, 65, 30, "Loan ID");
-      } // Fl_Input* o
-      { Fl_Check_Button* o = new Fl_Check_Button(375, 60, 110, 30, "auto-generate");
-        o->down_box(FL_DOWN_BOX);
-      } // Fl_Check_Button* o
-      { new Fl_Input(175, 90, 85, 30, "Expiry date (yyyy-mm-dd): ");
-      } // Fl_Input* o
+        brw_search-editlns = new Fl_Browser(5, 230, 535, 140);
+        brw_search-editlns->callback((Fl_Callback*)BTN_CB, (void*)(browser_editlns));
+      } // Fl_Browser* brw_search-editlns
+      { inp_search-editlns = new Fl_Input(85, 160, 235, 40, "Search term:");
+      } // Fl_Input* inp_search-editlns
+      { cic_searchwhat-editlns = new Fl_Choice(320, 175, 105, 25, "Search:");
+        cic_searchwhat-editlns->down_box(FL_BORDER_BOX);
+        cic_searchwhat-editlns->labelsize(17);
+        cic_searchwhat-editlns->callback((Fl_Callback*)BTN_CB, (void*)(searchwhat_editlns));
+        cic_searchwhat-editlns->align(Fl_Align(FL_ALIGN_TOP));
+      } // Fl_Choice* cic_searchwhat-editlns
+      { inp_readerid-editlns = new Fl_Input(190, 60, 65, 30, "Reader ID");
+      } // Fl_Input* inp_readerid-editlns
+      { inp_loanid-editlns = new Fl_Input(310, 60, 65, 30, "Loan ID");
+      } // Fl_Input* inp_loanid-editlns
+      { chk_autogenerate-editlns = new Fl_Check_Button(375, 60, 110, 30, "auto-generate");
+        chk_autogenerate-editlns->down_box(FL_DOWN_BOX);
+        chk_autogenerate-editlns->callback((Fl_Callback*)BTN_CB, (void*)(autogenerate_editlns));
+      } // Fl_Check_Button* chk_autogenerate-editlns
+      { inp_expirydate-editlns = new Fl_Input(175, 90, 85, 30, "Expiry date (yyyy-mm-dd): ");
+      } // Fl_Input* inp_expirydate-editlns
       { Fl_Text_Display* o = new Fl_Text_Display(345, 90, 185, 25, "Current date:");
         o->align(Fl_Align(FL_ALIGN_LEFT));
       } // Fl_Text_Display* o
-      { Fl_Button* o = new Fl_Button(225, 120, 310, 30, "EDIT LOAN");
-        o->labelsize(21);
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(0, 120, 220, 30, "Undo last loan edit");
-        o->labelsize(21);
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(5, 25, 75, 35, "HELP");
-        o->labelsize(21);
-      } // Fl_Button* o
+      { btn_editloans-editlns = new Fl_Button(225, 120, 310, 30, "EDIT LOAN");
+        btn_editloans-editlns->labelsize(21);
+        btn_editloans-editlns->callback((Fl_Callback*)BTN_CB, (void*)(EDITLOAN));
+      } // Fl_Button* btn_editloans-editlns
+      { btn_undolastedit-editlns = new Fl_Button(0, 120, 220, 30, "Undo last loan edit");
+        btn_undolastedit-editlns->labelsize(21);
+        btn_undolastedit-editlns->callback((Fl_Callback*)BTN_CB, (void*)(undolastedit_editlns));
+      } // Fl_Button* btn_undolastedit-editlns
+      { btn-help_editlns = new Fl_Button(5, 25, 75, 35, "HELP");
+        btn-help_editlns->labelsize(21);
+        btn-help_editlns->callback((Fl_Callback*)BTN_CB, (void*)(HELP_editlns));
+      } // Fl_Button* btn-help_editlns
       group_editloans->end();
     } // Fl_Group* group_editloans
     { // mark loans 
@@ -775,41 +809,72 @@ Fl_Double_Window* make_window() {
         o->labelsize(41);
         o->align(Fl_Align(520));
       } // Fl_Text_Display* o
-      { Fl_Choice* o = new Fl_Choice(430, 75, 105, 25, "Search by:");
-        o->down_box(FL_BORDER_BOX);
-        o->labelsize(17);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-      } // Fl_Choice* o
-      { Fl_Button* o = new Fl_Button(10, 100, 525, 30, "SEARCH");
-        o->labelsize(21);
-      } // Fl_Button* o
+      { cic_searchby-marklns = new Fl_Choice(430, 75, 105, 25, "Search by:");
+        cic_searchby-marklns->down_box(FL_BORDER_BOX);
+        cic_searchby-marklns->labelsize(17);
+        cic_searchby-marklns->callback((Fl_Callback*)BTN_CB, (void*)(searchby_marklns));
+        cic_searchby-marklns->align(Fl_Align(FL_ALIGN_TOP));
+      } // Fl_Choice* cic_searchby-marklns
+      { btn_search-marklns = new Fl_Button(10, 100, 525, 30, "SEARCH");
+        btn_search-marklns->labelsize(21);
+        btn_search-marklns->callback((Fl_Callback*)BTN_CB, (void*)(search_marklns));
+      } // Fl_Button* btn_search-marklns
       { // Search results, click to fill text fields
-        new Fl_Browser(5, 130, 535, 140);
-      } // Fl_Browser* o
-      { new Fl_Input(90, 60, 235, 40, "Search term:");
-      } // Fl_Input* o
-      { Fl_Choice* o = new Fl_Choice(325, 75, 105, 25, "Search:");
-        o->down_box(FL_BORDER_BOX);
-        o->labelsize(17);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-      } // Fl_Choice* o
-      { Fl_Button* o = new Fl_Button(5, 25, 75, 35, "HELP");
-        o->labelsize(21);
-      } // Fl_Button* o
-      { Fl_Input* o = new Fl_Input(140, 275, 100, 30, "Prolong by (days)");
-        o->labelsize(17);
-      } // Fl_Input* o
-      { Fl_Button* o = new Fl_Button(240, 275, 140, 30, "Prolong");
-        o->labelsize(18);
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(385, 275, 150, 30, "Mark as returned");
-        o->labelsize(18);
-      } // Fl_Button* o
-      { Fl_Button* o = new Fl_Button(385, 310, 150, 30, "Mark as lost");
-        o->labelsize(18);
-      } // Fl_Button* o
+        brw_select-marklns = new Fl_Browser(5, 130, 535, 140);
+        brw_select-marklns->callback((Fl_Callback*)BTN_CB, (void*)(browser_marklns));
+      } // Fl_Browser* brw_select-marklns
+      { inp_search-marklns = new Fl_Input(90, 60, 235, 40, "Search term:");
+      } // Fl_Input* inp_search-marklns
+      { cic_searchwhat-marklns = new Fl_Choice(325, 75, 105, 25, "Search:");
+        cic_searchwhat-marklns->down_box(FL_BORDER_BOX);
+        cic_searchwhat-marklns->labelsize(17);
+        cic_searchwhat-marklns->callback((Fl_Callback*)BTN_CB, (void*)(searchwhat_marklns));
+        cic_searchwhat-marklns->align(Fl_Align(FL_ALIGN_TOP));
+      } // Fl_Choice* cic_searchwhat-marklns
+      { btn_help-marklns = new Fl_Button(5, 25, 75, 35, "HELP");
+        btn_help-marklns->labelsize(21);
+        btn_help-marklns->callback((Fl_Callback*)BTN_CB, (void*)(HELP_marklns));
+      } // Fl_Button* btn_help-marklns
+      { inp_prolongby-marklns = new Fl_Input(140, 275, 100, 30, "Prolong by (days)");
+        inp_prolongby-marklns->labelsize(17);
+      } // Fl_Input* inp_prolongby-marklns
+      { btn_prolong-marklns = new Fl_Button(240, 275, 140, 30, "Prolong");
+        btn_prolong-marklns->labelsize(18);
+        btn_prolong-marklns->callback((Fl_Callback*)BTN_CB, (void*)(prolong_marklns));
+      } // Fl_Button* btn_prolong-marklns
+      { btn_markreturned-marklns = new Fl_Button(385, 275, 150, 30, "Mark as returned");
+        btn_markreturned-marklns->labelsize(18);
+        btn_markreturned-marklns->callback((Fl_Callback*)BTN_CB, (void*)(markreturned_marklns));
+      } // Fl_Button* btn_markreturned-marklns
+      { btn_marklost-marklns = new Fl_Button(385, 310, 150, 30, "Mark as lost");
+        btn_marklost-marklns->labelsize(18);
+        btn_marklost-marklns->callback((Fl_Callback*)BTN_CB, (void*)(marklost_marklns));
+      } // Fl_Button* btn_marklost-marklns
       group_markloans->end();
     } // Fl_Group* group_markloans
+    { // backdrop
+      group_backdrop = new Fl_Group(0, 25, 540, 360);
+      group_backdrop->hide();
+      { clk_time-backdrop = new Fl_Clock(175, 30, 210, 175, "System time");
+        clk_time-backdrop->labelsize(41);
+      } // Fl_Clock* clk_time-backdrop
+      { Fl_Text_Display* o = new Fl_Text_Display(5, 260, 5, 25, "https://github.com/C0m3b4ck/ShelfSight");
+        o->labelsize(27);
+        o->align(Fl_Align(296));
+      } // Fl_Text_Display* o
+      { Fl_Text_Display* o = new Fl_Text_Display(15, 305, 10, 35, "PrinterFixer on YouTube.com");
+        o->labelsize(35);
+        o->align(Fl_Align(296));
+      } // Fl_Text_Display* o
+      group_backdrop->end();
+    } // Fl_Group* group_backdrop
+    { group_selectdb = new Fl_Group(0, 25, 540, 330);
+      { Fl_Text_Display* o = new Fl_Text_Display(95, 25, 10, 35, "Select Databases");
+        o->labelsize(44);
+        o->align(Fl_Align(296));
+      } // Fl_Text_Display* o
+      group_selectdb->end();
+    } // Fl_Group* group_selectdb
     o->end();
   } // Fl_Double_Window* o
   return window_assistant;

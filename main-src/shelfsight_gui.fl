@@ -36,7 +36,7 @@ Function {make_window()} {open
   }
   Fl_Window {} {
     label ShelfSight open
-    xywh {408 168 542 373} type Double resizable visible
+    xywh {408 168 542 358} type Double resizable visible
   } {
     Fl_Menu_Button mnubtn_books {
       label Books
@@ -747,8 +747,8 @@ Function {make_window()} {open
       }
     }
     Fl_Group group_deletebooks {
-      comment {delete books} open
-      xywh {0 25 540 335}
+      comment {delete books}
+      xywh {0 25 540 335} hide
     } {
       Fl_Text_Display {} {
         label Search
@@ -817,7 +817,7 @@ Function {make_window()} {open
       Fl_Button {btn_restoreselected-delbks} {
         label {Restore selected}
         user_data restoreselected_delbks
-        callback BTN_CB selected
+        callback BTN_CB
         xywh {5 250 130 25} labelsize 16
       }
       Fl_Button {btn_searchdeleted-delbks} {
@@ -835,76 +835,98 @@ Function {make_window()} {open
         label {Edit Readers}
         xywh {150 25 10 30} labelsize 41 align 520
       }
-      Fl_Input {} {
+      Fl_Input {inp_readername-editrdr} {
         label Name
         xywh {60 60 380 30} labelsize 21
       }
-      Fl_Button {} {
+      Fl_Button {btn_checkname-editrdr} {
         label {Check Name}
+        user_data checkname_editrdr
+        callback BTN_CB
         xywh {440 60 100 30}
       }
-      Fl_Input {} {
+      Fl_Input {inp_readersurname-editrdr} {
         label Surname
         xywh {70 90 370 30} labelsize 16
       }
-      Fl_Input {} {
+      Fl_Input {inp_grade-editrdr} {
         label Grade
         xywh {45 120 20 30} labelsize 15
       }
-      Fl_Button {} {
+      Fl_Button {btn_checksurname-editrdr} {
         label {Check Surname}
+        user_data checksurname_editrdr
+        callback BTN_CB
         xywh {440 90 100 30} labelsize 12
       }
-      Fl_Input {} {
+      Fl_Input {inp_class-editrdr} {
         label Class
         xywh {110 120 20 30} labelsize 15
       }
-      Fl_Input {} {
+      Fl_Input {inp_readerid-editrdr} {
         label {Reader ID}
         xywh {200 120 105 30} labelsize 15
       }
-      Fl_Check_Button {} {
+      Fl_Check_Button {chk_nonnumeric-editrd} {
         label {Non-numeric}
+        user_data nonnumeric_editrdr
+        callback BTN_CB
         xywh {305 140 90 30} down_box DOWN_BOX labelsize 12
       }
-      Fl_Check_Button {} {
+      Fl_Check_Button {chk_automaticallycheckid-editrdr} {
         label {Automatically check ID}
+        user_data {automaticallycheckid-editrdr}
+        callback BTN_CB
         xywh {305 120 170 30} down_box DOWN_BOX labelsize 13
       }
-      Fl_Button {} {
+      Fl_Button {btn_checkid-editrdr} {
         label {Check ID}
+        user_data checkid_editrdr
+        callback BTN_CB
         xywh {460 120 80 30}
       }
-      Fl_Button {} {
+      Fl_Button {btn_editreader-editrdr} {
         label {EDIT READER}
+        user_data EDITREADER
+        callback BTN_CB
         xywh {250 165 290 40} labelsize 31
       }
-      Fl_Button {} {
+      Fl_Button {btn_undolastadd-editrdr} {
         label {Undo last add}
+        user_data undolastadd_editrdr
+        callback BTN_CB
         xywh {0 165 245 40} labelsize 25
       }
       Fl_Text_Display {} {
         label Search
         xywh {210 205 10 30} labelsize 32 align 520
       }
-      Fl_Choice {} {
-        label {Search by:} open
+      Fl_Choice {cic_searchby-editrdr} {
+        label {Search by:}
+        user_data searchby_editrdr
+        callback BTN_CB open
         xywh {330 255 105 25} down_box BORDER_BOX labelsize 17 align 1
       } {}
-      Fl_Button {} {
+      Fl_Button {btn_search-editrdr} {
         label SEARCH
+        user_data search_editrdr
+        callback BTN_CB
         xywh {435 235 105 45} labelsize 21
       }
-      Fl_Browser {} {
+      Fl_Browser {brw_search-editrdr} {
+        user_data browser_editrdr
+        callback BTN_CB
         comment {Search results, click to fill text fields}
         xywh {5 280 535 90}
       }
-      Fl_Input {} {
+      Fl_Input {inp_search-editrdr} {
         label {Search term:}
         xywh {90 240 240 40}
       }
-      Fl_Button {} {
+      Fl_Button {btn_help-editrdr} {
         label HELP
+        user_data HELP_editrdr
+        callback BTN_CB
         xywh {5 25 75 35} labelsize 21
       }
     }
@@ -916,100 +938,126 @@ Function {make_window()} {open
         label Search
         xywh {205 60 10 30} labelsize 31 align 520
       }
-      Fl_Input {} {
+      Fl_Input {inp_search-delrdr} {
         label {Search term:}
         xywh {95 90 235 30} labelsize 16
       }
-      Fl_Choice {} {
-        label {Search by:} open
+      Fl_Choice {cic_searchby-delrdr} {
+        label {Search by:}
+        user_data searchby_delrdr
+        callback BTN_CB open
         xywh {330 95 105 25} down_box BORDER_BOX labelsize 17 align 1
       } {}
-      Fl_Button {} {
+      Fl_Button {btn_search-delrdr} {
         label SEARCH
+        user_data search_delrdr
+        callback BTN_CB
         xywh {435 75 105 45} labelsize 21
       }
-      Fl_Browser {} {
+      Fl_Browser {brw_search-delrdr} {
+        user_data browser_delrdr
+        callback BTN_CB
         comment {Search results, click to fill text fields}
         xywh {5 125 535 90}
       }
-      Fl_Button {} {
+      Fl_Button btn_help {
         label HELP
+        user_data HELP_delrdr
+        callback BTN_CB
         xywh {0 25 70 30} labelsize 21
       }
       Fl_Text_Display {} {
         label {Delete Readers}
         xywh {130 25 10 30} labelsize 41 align 520
       }
-      Fl_Input {} {
-        label {Book ID:}
+      Fl_Input {inp_readerid-delrdr} {
+        label {Reader ID:}
         xywh {70 215 120 35} labelsize 16
       }
-      Fl_Button {} {
+      Fl_Button {btn_deletereader-delrdr} {
         label {DELETE READER}
+        user_data DELETEREADER
+        callback BTN_CB
         xywh {330 215 210 35} labelsize 21
       }
-      Fl_Button {} {
+      Fl_Button {btn_undolastdelete-delrdr} {
         label {Undo last delete}
+        user_data undolastdelete_delrdr
+        callback BTN_CB
         xywh {190 215 140 35} labelsize 16
       }
       Fl_Text_Display {} {
         label {Search deleted readers}
         xywh {175 250 10 30} labelsize 21 align 520
       }
-      Fl_Browser {} {
+      Fl_Browser {brw_deleted-delrdr} {
+        user_data browser_deleted
+        callback BTN_CB
         comment {Search results, click to fill text fields}
         xywh {5 275 535 85}
       }
-      Fl_Button {} {
+      Fl_Button {btn_restoreselected-delrdr} {
         label {Restore selected}
+        user_data restoredeleted_delrdr
+        callback BTN_CB
         xywh {5 250 170 25} labelsize 16
       }
     }
     Fl_Group group_editloans {
       comment {Edit loans}
-      xywh {0 25 540 355} hide
+      xywh {0 25 540 345} hide
     } {
       Fl_Text_Display {} {
         label {Edit Loans}
         xywh {170 25 10 30} labelsize 41 align 520
       }
-      Fl_Input {} {
+      Fl_Input {inp_bookid-editlns} {
         label {Book ID}
         xywh {55 60 65 30}
       }
-      Fl_Choice {} {
-        label {Search by:} open
+      Fl_Choice {cic_searchby-editlns} {
+        label {Search by:}
+        user_data searchby_editlns
+        callback BTN_CB open
         xywh {430 175 105 25} down_box BORDER_BOX labelsize 17 align 1
       } {}
-      Fl_Button {} {
+      Fl_Button {btn_search-editlns} {
         label SEARCH
+        user_data search_editlns
+        callback BTN_CB
         xywh {10 200 525 30} labelsize 21
       }
-      Fl_Browser {} {
+      Fl_Browser {brw_search-editlns} {
+        user_data browser_editlns
+        callback BTN_CB
         comment {Search results, click to fill text fields}
         xywh {5 230 535 140}
       }
-      Fl_Input {} {
+      Fl_Input {inp_search-editlns} {
         label {Search term:}
         xywh {85 160 235 40}
       }
-      Fl_Choice {} {
-        label {Search:} open
+      Fl_Choice {cic_searchwhat-editlns} {
+        label {Search:}
+        user_data searchwhat_editlns
+        callback BTN_CB open
         xywh {320 175 105 25} down_box BORDER_BOX labelsize 17 align 1
       } {}
-      Fl_Input {} {
+      Fl_Input {inp_readerid-editlns} {
         label {Reader ID}
         xywh {190 60 65 30}
       }
-      Fl_Input {} {
+      Fl_Input {inp_loanid-editlns} {
         label {Loan ID}
         xywh {310 60 65 30}
       }
-      Fl_Check_Button {} {
+      Fl_Check_Button {chk_autogenerate-editlns} {
         label {auto-generate}
+        user_data autogenerate_editlns
+        callback BTN_CB
         xywh {375 60 110 30} down_box DOWN_BOX
       }
-      Fl_Input {} {
+      Fl_Input {inp_expirydate-editlns} {
         label {Expiry date (yyyy-mm-dd): }
         xywh {175 90 85 30}
       }
@@ -1017,16 +1065,22 @@ Function {make_window()} {open
         label {Current date:}
         xywh {345 90 185 25} align 4
       }
-      Fl_Button {} {
+      Fl_Button {btn_editloans-editlns} {
         label {EDIT LOAN}
+        user_data EDITLOAN
+        callback BTN_CB
         xywh {225 120 310 30} labelsize 21
       }
-      Fl_Button {} {
+      Fl_Button {btn_undolastedit-editlns} {
         label {Undo last loan edit}
+        user_data undolastedit_editlns
+        callback BTN_CB
         xywh {0 120 220 30} labelsize 21
       }
-      Fl_Button {} {
+      Fl_Button {btn-help_editlns} {
         label HELP
+        user_data HELP_editlns
+        callback BTN_CB
         xywh {5 25 75 35} labelsize 21
       }
     }
@@ -1038,45 +1092,86 @@ Function {make_window()} {open
         label {Mark Loans}
         xywh {170 25 10 30} labelsize 41 align 520
       }
-      Fl_Choice {} {
-        label {Search by:} open
+      Fl_Choice {cic_searchby-marklns} {
+        label {Search by:}
+        user_data searchby_marklns
+        callback BTN_CB open
         xywh {430 75 105 25} down_box BORDER_BOX labelsize 17 align 1
       } {}
-      Fl_Button {} {
+      Fl_Button {btn_search-marklns} {
         label SEARCH
+        user_data search_marklns
+        callback BTN_CB
         xywh {10 100 525 30} labelsize 21
       }
-      Fl_Browser {} {
+      Fl_Browser {brw_select-marklns} {
+        user_data browser_marklns
+        callback BTN_CB
         comment {Search results, click to fill text fields}
         xywh {5 130 535 140}
       }
-      Fl_Input {} {
+      Fl_Input {inp_search-marklns} {
         label {Search term:}
         xywh {90 60 235 40}
       }
-      Fl_Choice {} {
-        label {Search:} open
+      Fl_Choice {cic_searchwhat-marklns} {
+        label {Search:}
+        user_data searchwhat_marklns
+        callback BTN_CB open
         xywh {325 75 105 25} down_box BORDER_BOX labelsize 17 align 1
       } {}
-      Fl_Button {} {
+      Fl_Button {btn_help-marklns} {
         label HELP
+        user_data HELP_marklns
+        callback BTN_CB
         xywh {5 25 75 35} labelsize 21
       }
-      Fl_Input {} {
+      Fl_Input {inp_prolongby-marklns} {
         label {Prolong by (days)}
         xywh {140 275 100 30} labelsize 17
       }
-      Fl_Button {} {
+      Fl_Button {btn_prolong-marklns} {
         label Prolong
+        user_data prolong_marklns
+        callback BTN_CB
         xywh {240 275 140 30} labelsize 18
       }
-      Fl_Button {} {
+      Fl_Button {btn_markreturned-marklns} {
         label {Mark as returned}
+        user_data markreturned_marklns
+        callback BTN_CB
         xywh {385 275 150 30} labelsize 18
       }
-      Fl_Button {} {
+      Fl_Button {btn_marklost-marklns} {
         label {Mark as lost}
+        user_data marklost_marklns
+        callback BTN_CB
         xywh {385 310 150 30} labelsize 18
+      }
+    }
+    Fl_Group group_backdrop {
+      comment backdrop
+      xywh {0 25 540 360} hide
+    } {
+      Fl_Clock {clk_time-backdrop} {
+        label {System time}
+        xywh {175 30 210 175} labelsize 41
+      }
+      Fl_Text_Display {} {
+        label {https://github.com/C0m3b4ck/ShelfSight}
+        xywh {5 260 5 25} labelsize 27 align 296
+      }
+      Fl_Text_Display {} {
+        label {PrinterFixer on YouTube.com}
+        xywh {15 305 10 35} labelsize 35 align 296
+      }
+    }
+    Fl_Group group_selectdb {open selected
+      xywh {0 25 540 330}
+    } {
+      Fl_Text_Display {} {
+        label {Select Databases}
+        xywh {95 25 10 35} labelsize 44 align 296
       }
     }
   }

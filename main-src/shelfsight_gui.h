@@ -32,8 +32,12 @@ extern Fl_Group *group_editbooks;
 extern Fl_Group *group_deletebooks;
 extern Fl_Group *group_editreaders;
 extern Fl_Group *group_deletereaders;
+extern Fl_Button *btn_help;
 extern Fl_Group *group_editloans;
 extern Fl_Group *group_markloans;
+extern Fl_Group *group_backdrop;
+#include <FL/Fl_Clock.H>
+extern Fl_Group *group_selectdb;
 Fl_Double_Window* make_window();
 extern Fl_Menu_Item menu_mnubtn_books[];
 #define mnu_addbooks (menu_mnubtn_books+0)
