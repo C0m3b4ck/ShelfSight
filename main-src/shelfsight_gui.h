@@ -144,6 +144,7 @@ extern Fl_Input *inp_search_delrdr;
 extern Fl_Choice *cic_searchby_delrdr;
 extern Fl_Button *btn_search_delrdr;
 extern Fl_Browser *brw_search_delrdr;
+extern Fl_Button *btn_help_delrdr;
 extern Fl_Input *inp_readerid_delrdr;
 extern Fl_Button *btn_deletereader_delrdr;
 extern Fl_Button *btn_undolastdelete_delrdr;

@@ -462,6 +462,8 @@ Fl_Button *btn_search_delrdr=(Fl_Button *)0;
 
 Fl_Browser *brw_search_delrdr=(Fl_Browser *)0;
 
+Fl_Button *btn_help_delrdr=(Fl_Button *)0;
+
 Fl_Input *inp_readerid_delrdr=(Fl_Input *)0;
 
 Fl_Button *btn_deletereader_delrdr=(Fl_Button *)0;
@@ -741,7 +743,7 @@ Fl_Double_Window* make_window() {
       } // Fl_Button* btn_checkauthor_addbk
       { // Checks f ID already exists
         btn_checkid_addbk = new Fl_Button(460, 120, 80, 30, "Check ID");
-        btn_checkid_addbk->callback((Fl_Callback*)BTN_CB, (void*)(checkid-addbk));
+        btn_checkid_addbk->callback((Fl_Callback*)BTN_CB, (void*)(checkid_addbk));
       } // Fl_Button* btn_checkid_addbk
       { chk_nonnumeric_addbk = new Fl_Check_Button(370, 120, 90, 30, "Non-numeric");
         chk_nonnumeric_addbk->down_box(FL_DOWN_BOX);
@@ -751,7 +753,7 @@ Fl_Double_Window* make_window() {
       { chk_automaticallycheckid_addbk = new Fl_Check_Button(240, 120, 125, 30, "Automatically check ID");
         chk_automaticallycheckid_addbk->down_box(FL_DOWN_BOX);
         chk_automaticallycheckid_addbk->labelsize(12);
-        chk_automaticallycheckid_addbk->callback((Fl_Callback*)BTN_CB, (void*)(automaticallycheckid-addbk));
+        chk_automaticallycheckid_addbk->callback((Fl_Callback*)BTN_CB, (void*)(automaticallycheckid_addbk));
       } // Fl_Check_Button* chk_automaticallycheckid_addbk
       { cic_category_addbk = new Fl_Choice(65, 150, 200, 25, "Category");
         cic_category_addbk->down_box(FL_BORDER_BOX);
@@ -1109,7 +1111,7 @@ Fl_Double_Window* make_window() {
       { chk_automaticallycheckid_editrdr = new Fl_Check_Button(305, 120, 170, 30, "Automatically check ID");
         chk_automaticallycheckid_editrdr->down_box(FL_DOWN_BOX);
         chk_automaticallycheckid_editrdr->labelsize(13);
-        chk_automaticallycheckid_editrdr->callback((Fl_Callback*)BTN_CB, (void*)(automaticallycheckid-editrdr));
+        chk_automaticallycheckid_editrdr->callback((Fl_Callback*)BTN_CB, (void*)(automaticallycheckid_editrdr));
       } // Fl_Check_Button* chk_automaticallycheckid_editrdr
       { btn_checkid_editrdr = new Fl_Button(460, 120, 80, 30, "Check ID");
         btn_checkid_editrdr->callback((Fl_Callback*)BTN_CB, (void*)(checkid_editrdr));
@@ -1172,10 +1174,10 @@ Fl_Double_Window* make_window() {
         brw_search_delrdr = new Fl_Browser(5, 125, 535, 90);
         brw_search_delrdr->callback((Fl_Callback*)BTN_CB, (void*)(browser_delrdr));
       } // Fl_Browser* brw_search_delrdr
-      { btn_help-delrdr = new Fl_Button(0, 25, 70, 30, "HELP");
-        btn_help-delrdr->labelsize(21);
-        btn_help-delrdr->callback((Fl_Callback*)BTN_CB, (void*)(HELP_delrdr));
-      } // Fl_Button* btn_help-delrdr
+      { btn_help_delrdr = new Fl_Button(0, 25, 70, 30, "HELP");
+        btn_help_delrdr->labelsize(21);
+        btn_help_delrdr->callback((Fl_Callback*)BTN_CB, (void*)(HELP_delrdr));
+      } // Fl_Button* btn_help_delrdr
       { Fl_Text_Display* o = new Fl_Text_Display(130, 25, 10, 30, "Delete Readers");
         o->labelsize(41);
         o->align(Fl_Align(520));
@@ -1383,74 +1385,11 @@ Fl_Double_Window* make_window() {
  For non-menu buttons (the ones in groups)
 */
 void BTN_CB(Fl_Widget* w, void* data) {
-  // Assume you have a global or accessible AppUI pointer named app_ui
-  // and it contains: Fl_Input* inp_usr_log; Fl_Input* inp_pwd_log; (etc.)
-  
-  struct AppUI
-  {
-                  Fl_Input* inp_usr-reg;
-                  Fl_Input* inp_pwd1-reg;
-                  Fl_Input* inp_pwd2-reg;
-                  Fl_Input* inp_title-addbk;
-                  Fl_Input* inp_id-addbk;
-                  Fl_Input* inp_author-addbk;
-                  Fl_Input* inp_name-addrdr;
-                  Fl_Input* inp_surname-addrdr;
-                  Fl_Input* inp_grade-addrdr;
-                  Fl_Input* inp_class-addrdr;
-                  Fl_Input* inp_readerid-addrdr;
-                  Fl_Input* inp_search-addrdr;
-                  Fl_Input* inp_bookid-addlns;
-                  Fl_Input* inp_search-addlns;
-                  Fl_Input* inp_readerid-addlns;
-                  Fl_Input* inp_loanid-addlns;
-                  Fl_Input* inp_expirydate-addlns;
-                  Fl_Input* inp_searchterm-editbk;
-                  Fl_Input* inp_title-editbk;
-                  Fl_Input* inp_author-editbk;
-                  Fl_Input* inp_bookid-editbk;
-                  Fl_Input* inp_search-delbks;
-                  Fl_Input* inp_bookid-delbks;
-                  Fl_Input* inp_readername-editrdr;
-                  Fl_Input* inp_readersurname-editrdr;
-                  Fl_Input* inp_grade-editrdr;
-                  Fl_Input* inp_class-editrdr;
-                  Fl_Input* inp_readerid-editrdr;
-                  Fl_Input* inp_search-editrdr;
-                  Fl_Input* inp_search-delrdr;
-                  Fl_Input* inp_readerid-delrdr;
-                  Fl_Input* inp_bookid-editlns;
-                  Fl_Input* inp_search-editlns;
-                  Fl_Input* inp_readerid-editlns;
-                  Fl_Input* inp_loanid-editlns;
-                  Fl_Input* inp_expirydate-editlns;
-                  Fl_Input* inp_search-marklns;
-                  Fl_Input* inp_prolongby-marklns;
-                  // add input fields from any DB menus
-  }
-  
-  void BTN_CB(Fl_Widget* w, void* data) {
-    std::string function_data = *(std::string*)data;
-  
-    std::cout << "BTN_CB called with " << function_data << " as data. \n";
-  
-    if (function_data == "login_btn")
-    {
-      // ADDED: read login inputs from your AppUI
-      std::string usr = (app_ui->inp_usr_log ? app_ui->inp_usr_log->value() : "");
-      std::string pwd = (app_ui->inp_pwd_log ? app_ui->inp_pwd_log->value() : "");
-  
-      std::cout << "Login button clicked!\n";
-      std::cout << "usr=" << usr << "\n";
-      std::cout << "pwd=" << pwd << "\n";
-  
-      // Pass usr/pwd to your function here
-      // login_function(usr, pwd);
-    } 
-    else 
-    {
-      std::cerr << "Unknown function data: " << function_data << " - this is a programmer error! \n";
-    }
+  static void BTN_CB(Fl_Widget *w, void *ud) {    
+  // ud points to the real function you want to invoke    
+  	using cb_t = void(*)(Fl_Widget*, void*);    
+  	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
+  	real_cb(w, nullptr); // call the real handler
   }
 }
 
@@ -1458,9 +1397,9 @@ void BTN_CB(Fl_Widget* w, void* data) {
  Hides all groups
 */
 void hide_all_groups() {
-  group_register.hide();
-  group_login().hide;
-  group_addbooks().hide;
-  group_addreaders().hide;
-  group_addloans().hide;
+  group_register.hide;
+  group_login.hide;
+  group_addbooks.hide;
+  group_addreaders.hide;
+  group_addloans.hide;
 }

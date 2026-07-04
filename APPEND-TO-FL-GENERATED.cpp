@@ -156,5 +156,5 @@ static void BTN_CB(Fl_Widget *w, void *ud) {
 // ud points to the real function you want to invoke    
 	using cb_t = void(*)(Fl_Widget*, void*);    
 	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
-	real_cb(w, nullptr); // call the real handler}
+	real_cb(w, nullptr); // call the real handler
 }

@@ -1,0 +1,86 @@
+shelfsight_gui.cxx:381:12: error: redefinition of ‘Fl_Button* btn_checktitle_editbk’
+  381 | Fl_Button *btn_checktitle_editbk=(Fl_Button *)0;
+      |            ^~~~~~~~~~~~~~~~~~~~~
+shelfsight_gui.cxx:373:12: note: ‘Fl_Button* btn_checktitle_editbk’ previously defined here
+  373 | Fl_Button *btn_checktitle_editbk=(Fl_Button *)0;
+      |            ^~~~~~~~~~~~~~~~~~~~~
+shelfsight_gui.cxx: In function ‘Fl_Double_Window* make_window()’:
+shelfsight_gui.cxx:575:53: error: no matching function for call to ‘Fl_Image::Fl_Image(int, int, int, int)’
+  575 |       assistant_image = new Fl_Image(0, 25, 145, 135);
+      |                                                     ^
+In file included from /usr/local/include/FL/Fl_Bitmap.H:24,
+                 from /usr/local/include/FL/Fl_Window.H:30,
+                 from /usr/local/include/FL/Fl_Double_Window.H:25,
+                 from shelfsight_gui.h:6,
+                 from shelfsight_gui.cxx:3:
+/usr/local/include/FL/Fl_Image.H:140:3: note: candidate: ‘Fl_Image::Fl_Image(int, int, int)’
+  140 |   Fl_Image(int W, int H, int D);
+      |   ^~~~~~~~
+/usr/local/include/FL/Fl_Image.H:140:3: note:   candidate expects 3 arguments, 4 provided
+/usr/local/include/FL/Fl_Image.H:69:3: note: candidate: ‘Fl_Image::Fl_Image(const Fl_Image&)’
+   69 |   Fl_Image(const Fl_Image &);
+      |   ^~~~~~~~
+/usr/local/include/FL/Fl_Image.H:69:3: note:   candidate expects 1 argument, 4 provided
+shelfsight_gui.cxx:576:24: error: ‘class Fl_Image’ has no member named ‘box’
+  576 |       assistant_image->box(FL_NO_BOX);
+      |                        ^~~
+shelfsight_gui.cxx:577:24: error: ‘class Fl_Image’ has no member named ‘color’
+  577 |       assistant_image->color(FL_BACKGROUND_COLOR);
+      |                        ^~~~~
+shelfsight_gui.cxx:578:24: error: ‘class Fl_Image’ has no member named ‘selection_color’
+  578 |       assistant_image->selection_color(FL_BACKGROUND_COLOR);
+      |                        ^~~~~~~~~~~~~~~
+shelfsight_gui.cxx:579:24: error: ‘static void Fl_Image::labeltype(const Fl_Label*, int, int, int, int, Fl_Align)’ is protected within this context
+  579 |       assistant_image->labeltype(FL_NORMAL_LABEL);
+      |                        ^~~~~~~~~
+/usr/local/include/FL/Fl_Image.H:103:15: note: declared protected here
+  103 |   static void labeltype(const Fl_Label *lo, int lx, int ly, int lw, int lh, Fl_Align la);
+      |               ^~~~~~~~~
+shelfsight_gui.cxx:579:33: error: no matching function for call to ‘Fl_Image::labeltype(Fl_Labeltype)’
+  579 |       assistant_image->labeltype(FL_NORMAL_LABEL);
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+/usr/local/include/FL/Fl_Image.H:103:15: note: candidate: ‘static void Fl_Image::labeltype(const Fl_Label*, int, int, int, int, Fl_Align)’
+  103 |   static void labeltype(const Fl_Label *lo, int lx, int ly, int lw, int lh, Fl_Align la);
+      |               ^~~~~~~~~
+/usr/local/include/FL/Fl_Image.H:103:15: note:   candidate expects 6 arguments, 1 provided
+shelfsight_gui.cxx:580:24: error: ‘class Fl_Image’ has no member named ‘labelfont’
+  580 |       assistant_image->labelfont(0);
+      |                        ^~~~~~~~~
+shelfsight_gui.cxx:581:24: error: ‘class Fl_Image’ has no member named ‘labelsize’; did you mean ‘static void Fl_Image::labeltype(const Fl_Label*, int, int, int, int, Fl_Align)’? (not accessible from this context)
+  581 |       assistant_image->labelsize(14);
+      |                        ^~~~~~~~~
+/usr/local/include/FL/Fl_Image.H:103:15: note: declared protected here
+  103 |   static void labeltype(const Fl_Label *lo, int lx, int ly, int lw, int lh, Fl_Align la);
+      |               ^~~~~~~~~
+shelfsight_gui.cxx:582:24: error: ‘class Fl_Image’ has no member named ‘labelcolor’
+  582 |       assistant_image->labelcolor(FL_FOREGROUND_COLOR);
+      |                        ^~~~~~~~~~
+shelfsight_gui.cxx:583:24: error: ‘class Fl_Image’ has no member named ‘align’
+  583 |       assistant_image->align(Fl_Align(FL_ALIGN_CENTER));
+      |                        ^~~~~
+shelfsight_gui.cxx:584:24: error: ‘class Fl_Image’ has no member named ‘when’
+  584 |       assistant_image->when(FL_WHEN_RELEASE);
+      |                        ^~~~
+shelfsight_gui.cxx:600:5: error: ‘w’ was not declared in this scope
+  600 |     w = o; if (w) {/* empty */}
+      |     ^
+shelfsight_gui.cxx: In function ‘void BTN_CB(Fl_Widget*, void*)’:
+shelfsight_gui.cxx:1388:46: error: a function-definition is not allowed here before ‘{’ token
+ 1388 |   static void BTN_CB(Fl_Widget *w, void *ud) {
+      |                                              ^
+shelfsight_gui.cxx: In function ‘void hide_all_groups()’:
+shelfsight_gui.cxx:1400:18: error: request for member ‘hide’ in ‘group_register’, which is of pointer type ‘Fl_Group*’ (maybe you meant to use ‘->’ ?)
+ 1400 |   group_register.hide;
+      |                  ^~~~
+shelfsight_gui.cxx:1401:15: error: request for member ‘hide’ in ‘group_login’, which is of pointer type ‘Fl_Group*’ (maybe you meant to use ‘->’ ?)
+ 1401 |   group_login.hide;
+      |               ^~~~
+shelfsight_gui.cxx:1402:18: error: request for member ‘hide’ in ‘group_addbooks’, which is of pointer type ‘Fl_Group*’ (maybe you meant to use ‘->’ ?)
+ 1402 |   group_addbooks.hide;
+      |                  ^~~~
+shelfsight_gui.cxx:1403:20: error: request for member ‘hide’ in ‘group_addreaders’, which is of pointer type ‘Fl_Group*’ (maybe you meant to use ‘->’ ?)
+ 1403 |   group_addreaders.hide;
+      |                    ^~~~
+shelfsight_gui.cxx:1404:18: error: request for member ‘hide’ in ‘group_addloans’, which is of pointer type ‘Fl_Group*’ (maybe you meant to use ‘->’ ?)
+ 1404 |   group_addloans.hide;
+      |                  ^~~~

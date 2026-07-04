@@ -36,7 +36,7 @@ Function {make_window()} {open
   }
   Fl_Window {} {
     label ShelfSight open
-    xywh {544 208 542 358} type Double resizable visible
+    xywh {770 247 542 358} type Double resizable visible
   } {
     Fl_Menu_Button mnubtn_books {
       label Books
@@ -295,7 +295,7 @@ Function {make_window()} {open
       }
     }
     Fl_Group group_login {
-      comment Login open
+      comment Login
       xywh {0 25 540 340} hide
     } {
       Fl_Text_Display {} {
@@ -337,12 +337,12 @@ Function {make_window()} {open
       Fl_Button btn_help_log {
         label HELP
         user_data HELP_log
-        callback BTN_CB selected
+        callback BTN_CB
         xywh {5 30 75 35} labelsize 21
       }
     }
     Fl_Group group_addbooks {
-      comment {Add Books}
+      comment {Add Books} open
       xywh {0 25 540 335} hide
     } {
       Fl_Text_Display {} {
@@ -377,7 +377,7 @@ Function {make_window()} {open
       }
       Fl_Button btn_checkid_addbk {
         label {Check ID}
-        user_data {checkid-addbk}
+        user_data checkid_addbk
         callback BTN_CB
         comment {Checks f ID already exists}
         xywh {460 120 80 30}
@@ -390,7 +390,7 @@ Function {make_window()} {open
       }
       Fl_Check_Button chk_automaticallycheckid_addbk {
         label {Automatically check ID}
-        user_data {automaticallycheckid-addbk}
+        user_data automaticallycheckid_addbk
         callback BTN_CB
         xywh {240 120 125 30} down_box DOWN_BOX labelsize 12
       }
@@ -871,7 +871,7 @@ Function {make_window()} {open
       }
       Fl_Check_Button chk_automaticallycheckid_editrdr {
         label {Automatically check ID}
-        user_data {automaticallycheckid-editrdr}
+        user_data automaticallycheckid_editrdr
         callback BTN_CB
         xywh {305 120 170 30} down_box DOWN_BOX labelsize 13
       }
@@ -956,7 +956,7 @@ Function {make_window()} {open
         comment {Search results, click to fill text fields}
         xywh {5 125 535 90}
       }
-      Fl_Button {btn_help-delrdr} {
+      Fl_Button btn_help_delrdr {
         label HELP
         user_data HELP_delrdr
         callback BTN_CB
@@ -1162,7 +1162,7 @@ Function {make_window()} {open
         xywh {15 305 10 35} labelsize 35 align 296
       }
     }
-    Fl_Group group_selectdb {open
+    Fl_Group group_selectdb {
       xywh {0 25 540 330}
     } {
       Fl_Text_Display {} {
@@ -1273,83 +1273,21 @@ Function {MENU_BTN_CB(Fl_Widget* w, void* data)} {
 Function {BTN_CB(Fl_Widget* w, void* data)} {
   comment {For non-menu buttons (the ones in groups)} open
 } {
-  code {// Assume you have a global or accessible AppUI pointer named app_ui
-// and it contains: Fl_Input* inp_usr_log; Fl_Input* inp_pwd_log; (etc.)
-
-struct AppUI
-{
-                Fl_Input* inp_usr-reg;
-                Fl_Input* inp_pwd1-reg;
-                Fl_Input* inp_pwd2-reg;
-                Fl_Input* inp_title-addbk;
-                Fl_Input* inp_id-addbk;
-                Fl_Input* inp_author-addbk;
-                Fl_Input* inp_name-addrdr;
-                Fl_Input* inp_surname-addrdr;
-                Fl_Input* inp_grade-addrdr;
-                Fl_Input* inp_class-addrdr;
-                Fl_Input* inp_readerid-addrdr;
-                Fl_Input* inp_search-addrdr;
-                Fl_Input* inp_bookid-addlns;
-                Fl_Input* inp_search-addlns;
-                Fl_Input* inp_readerid-addlns;
-                Fl_Input* inp_loanid-addlns;
-                Fl_Input* inp_expirydate-addlns;
-                Fl_Input* inp_searchterm-editbk;
-                Fl_Input* inp_title-editbk;
-                Fl_Input* inp_author-editbk;
-                Fl_Input* inp_bookid-editbk;
-                Fl_Input* inp_search-delbks;
-                Fl_Input* inp_bookid-delbks;
-                Fl_Input* inp_readername-editrdr;
-                Fl_Input* inp_readersurname-editrdr;
-                Fl_Input* inp_grade-editrdr;
-                Fl_Input* inp_class-editrdr;
-                Fl_Input* inp_readerid-editrdr;
-                Fl_Input* inp_search-editrdr;
-                Fl_Input* inp_search-delrdr;
-                Fl_Input* inp_readerid-delrdr;
-                Fl_Input* inp_bookid-editlns;
-                Fl_Input* inp_search-editlns;
-                Fl_Input* inp_readerid-editlns;
-                Fl_Input* inp_loanid-editlns;
-                Fl_Input* inp_expirydate-editlns;
-                Fl_Input* inp_search-marklns;
-                Fl_Input* inp_prolongby-marklns;
-                // add input fields from any DB menus
-}
-
-void BTN_CB(Fl_Widget* w, void* data) {
-  std::string function_data = *(std::string*)data;
-
-  std::cout << "BTN_CB called with " << function_data << " as data. \\n";
-
-  if (function_data == "login_btn")
-  {
-    // ADDED: read login inputs from your AppUI
-    std::string usr = (app_ui->inp_usr_log ? app_ui->inp_usr_log->value() : "");
-    std::string pwd = (app_ui->inp_pwd_log ? app_ui->inp_pwd_log->value() : "");
-
-    std::cout << "Login button clicked!\\n";
-    std::cout << "usr=" << usr << "\\n";
-    std::cout << "pwd=" << pwd << "\\n";
-
-    // Pass usr/pwd to your function here
-    // login_function(usr, pwd);
-  } 
-  else 
-  {
-    std::cerr << "Unknown function data: " << function_data << " - this is a programmer error! \\n";
+  code {static void BTN_CB(Fl_Widget *w, void *ud) {    
+// ud points to the real function you want to invoke    
+	using cb_t = void(*)(Fl_Widget*, void*);    
+	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
+	real_cb(w, nullptr); // call the real handler
+}} {selected
   }
-}} {}
 }
 
 Function {hide_all_groups()} {
-  comment {Hides all groups}
+  comment {Hides all groups} open
 } {
-  code {group_register.hide();
-group_login().hide;
-group_addbooks().hide;
-group_addreaders().hide;
-group_addloans().hide;} {}
+  code {group_register.hide;
+group_login.hide;
+group_addbooks.hide;
+group_addreaders.hide;
+group_addloans.hide;} {}
 }
