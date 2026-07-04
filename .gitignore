@@ -1,4 +1,5 @@
 /archives /examples
+/gui-linux64
 /libs-external-archives
 vs2005.zip Doxyfile GNUmakefile GNUmakefile-cross *.vcxproj *.vcxproj.filters *vcxproj.user *.txt *.o *.a *.exe *.bin *.zip *.7z *.lib *.tar *.tar.gz
 ANNOUNCEMENT CHANGES CHANGES_1.0 CHANGES_1.1 *.html *.CMake.txt *.Cairo.txt *.MSWindows.txt *.OSX.txt *.Unix.txt *.abi-version.txt *.bundled-libs.txt 

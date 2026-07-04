@@ -289,13 +289,13 @@ Function {make_window()} {open
       }
       Fl_Button btn_help_reg {
         label HELP
-        user_data HELP_REG
+        user_data HELP_reg
         callback BTN_CB
         xywh {5 30 65 30} labelsize 25
       }
     }
     Fl_Group group_login {
-      comment Login
+      comment Login open
       xywh {0 25 540 340} hide
     } {
       Fl_Text_Display {} {
@@ -336,8 +336,8 @@ Function {make_window()} {open
       }
       Fl_Button btn_help_log {
         label HELP
-        user_data HELP_LOG
-        callback BTN_CB
+        user_data HELP_log
+        callback BTN_CB selected
         xywh {5 30 75 35} labelsize 21
       }
     }
@@ -1258,7 +1258,7 @@ Function {make_window()} {open
         MenuItem mnu_verifyloandb_selectdb {
           label {Verify Loan DB}
           user_data verifyloandb_selectdb
-          callback BTN_CB selected
+          callback BTN_CB
           xywh {30 30 100 20} labelsize 15
         }
       }
