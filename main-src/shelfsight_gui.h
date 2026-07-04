@@ -6,9 +6,9 @@
 #include <FL/Fl_Double_Window.H>
 extern Fl_Double_Window *window_assistant;
 #include <FL/Fl_Text_Display.H>
-extern Fl_Image *assistant_image;
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Button.H>
+extern Fl_Double_Window *window_workspace;
 #include <FL/Fl_Menu_Button.H>
 extern Fl_Menu_Button *mnubtn_books;
 extern Fl_Menu_Button *mnubtn_readers;
@@ -102,7 +102,7 @@ extern Fl_Button *btn_checktitle_editbk;
 extern Fl_Input *inp_author_editbk;
 extern Fl_Input *inp_bookid_editbk;
 extern Fl_Button *btn_checkauthor_editbk;
-extern Fl_Button *btn_checktitle_editbk;
+extern Fl_Button *btn_checkid_editbk;
 extern Fl_Check_Button *chk_nonnumeric_editbk;
 extern Fl_Check_Button *chk_automaticallycheck_editbk;
 extern Fl_Choice *cic_category_editbk;

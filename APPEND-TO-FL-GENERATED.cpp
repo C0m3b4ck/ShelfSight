@@ -148,13 +148,4 @@ static void loadconfig_selectdb(Fl_Widget*, void*) {}
 static void BACK_selectdb(Fl_Widget*, void*) {}
 static void setselected_selectdb(Fl_Widget*, void*) {}
 static void verifydb_selectdb(Fl_Widget*, void*) {}
-
-
-
-/// BTN_CB ///
-static void BTN_CB(Fl_Widget *w, void *ud) {    
-// ud points to the real function you want to invoke    
-	using cb_t = void(*)(Fl_Widget*, void*);    
-	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
-	real_cb(w, nullptr); // call the real handler
-}
+static void checkid_editbk(Fl_Widget*, void*) {}

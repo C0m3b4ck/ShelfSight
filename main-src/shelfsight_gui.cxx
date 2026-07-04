@@ -148,10 +148,12 @@ static void loadconfig_selectdb(Fl_Widget*, void*) {}
 static void BACK_selectdb(Fl_Widget*, void*) {}
 static void setselected_selectdb(Fl_Widget*, void*) {}
 static void verifydb_selectdb(Fl_Widget*, void*) {}
+static void checkid_editbk(Fl_Widget*, void*) {}
+
 
 Fl_Double_Window *window_assistant=(Fl_Double_Window *)0;
 
-Fl_Image *assistant_image=(Fl_Image *)0;
+Fl_Double_Window *window_workspace=(Fl_Double_Window *)0;
 
 Fl_Menu_Button *mnubtn_books=(Fl_Menu_Button *)0;
 
@@ -378,7 +380,7 @@ Fl_Input *inp_bookid_editbk=(Fl_Input *)0;
 
 Fl_Button *btn_checkauthor_editbk=(Fl_Button *)0;
 
-Fl_Button *btn_checktitle_editbk=(Fl_Button *)0;
+Fl_Button *btn_checkid_editbk=(Fl_Button *)0;
 
 Fl_Check_Button *chk_nonnumeric_editbk=(Fl_Check_Button *)0;
 
@@ -571,18 +573,6 @@ Fl_Double_Window* make_window() {
       o->labelsize(21);
       o->align(Fl_Align(FL_ALIGN_RIGHT));
     } // Fl_Text_Display* o
-    { // The image of the agent
-      assistant_image = new Fl_Image(0, 25, 145, 135);
-      assistant_image->box(FL_NO_BOX);
-      assistant_image->color(FL_BACKGROUND_COLOR);
-      assistant_image->selection_color(FL_BACKGROUND_COLOR);
-      assistant_image->labeltype(FL_NORMAL_LABEL);
-      assistant_image->labelfont(0);
-      assistant_image->labelsize(14);
-      assistant_image->labelcolor(FL_FOREGROUND_COLOR);
-      assistant_image->align(Fl_Align(FL_ALIGN_CENTER));
-      assistant_image->when(FL_WHEN_RELEASE);
-    } // Fl_Image* assistant_image
     { Fl_Input* o = new Fl_Input(145, 140, 190, 25, "Your question:");
       o->align(Fl_Align(FL_ALIGN_TOP));
     } // Fl_Input* o
@@ -596,8 +586,7 @@ Fl_Double_Window* make_window() {
     } // Fl_Button* o
     window_assistant->end();
   } // Fl_Double_Window* window_assistant
-  { Fl_Double_Window* o = new Fl_Double_Window(542, 358, "ShelfSight");
-    w = o; if (w) {/* empty */}
+  { window_workspace = new Fl_Double_Window(542, 358, "ShelfSight");
     { mnubtn_books = new Fl_Menu_Button(0, 0, 55, 25, "Books");
       mnubtn_books->menu(menu_mnubtn_books);
     } // Fl_Menu_Button* mnubtn_books
@@ -935,7 +924,6 @@ Fl_Double_Window* make_window() {
     } // Fl_Group* group_addloans
     { // edit books
       group_editbooks = new Fl_Group(0, 25, 540, 335);
-      group_editbooks->hide();
       { Fl_Text_Display* o = new Fl_Text_Display(205, 210, 10, 30, "Search");
         o->labelsize(31);
         o->align(Fl_Align(520));
@@ -981,9 +969,9 @@ Fl_Double_Window* make_window() {
         btn_checkauthor_editbk->labelsize(12);
         btn_checkauthor_editbk->callback((Fl_Callback*)BTN_CB, (void*)(checkauthor_editbk));
       } // Fl_Button* btn_checkauthor_editbk
-      { btn_checktitle_editbk = new Fl_Button(460, 120, 80, 30, "Check Title");
-        btn_checktitle_editbk->callback((Fl_Callback*)BTN_CB, (void*)(checktitle_editbk));
-      } // Fl_Button* btn_checktitle_editbk
+      { btn_checkid_editbk = new Fl_Button(460, 120, 80, 30, "Check ID");
+        btn_checkid_editbk->callback((Fl_Callback*)BTN_CB, (void*)(checkid_editbk));
+      } // Fl_Button* btn_checkid_editbk
       { chk_nonnumeric_editbk = new Fl_Check_Button(365, 120, 90, 30, "Non-numeric");
         chk_nonnumeric_editbk->down_box(FL_DOWN_BOX);
         chk_nonnumeric_editbk->labelsize(12);
@@ -1332,6 +1320,7 @@ Fl_Double_Window* make_window() {
       group_backdrop->end();
     } // Fl_Group* group_backdrop
     { group_selectdb = new Fl_Group(0, 25, 540, 330);
+      group_selectdb->hide();
       { Fl_Text_Display* o = new Fl_Text_Display(95, 25, 10, 35, "Select Databases");
         o->labelsize(44);
         o->align(Fl_Align(296));
@@ -1376,30 +1365,40 @@ Fl_Double_Window* make_window() {
       } // Fl_Menu_Button* mnubtn_verifydb_selectdb
       group_selectdb->end();
     } // Fl_Group* group_selectdb
-    o->end();
-  } // Fl_Double_Window* o
-  return window_assistant;
+    window_workspace->end();
+  } // Fl_Double_Window* window_workspace
+  return window_workspace;
+}
+
+/**
+ Buttons from toolbar
+*/
+void MENU_BTN_CB(Fl_Widget* w, void* ud) {
+  // ud points to the real function you want to invoke    
+    	using cb_t = void(*)(Fl_Widget*, void*);    
+    	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
+    	real_cb(w, nullptr); // call the real handler
 }
 
 /**
  For non-menu buttons (the ones in groups)
 */
-void BTN_CB(Fl_Widget* w, void* data) {
-  static void BTN_CB(Fl_Widget *w, void *ud) {    
+void BTN_CB(Fl_Widget* w, void* ud) {
   // ud points to the real function you want to invoke    
   	using cb_t = void(*)(Fl_Widget*, void*);    
   	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
   	real_cb(w, nullptr); // call the real handler
-  }
 }
 
 /**
  Hides all groups
 */
 void hide_all_groups() {
+  /**
   group_register.hide;
   group_login.hide;
   group_addbooks.hide;
   group_addreaders.hide;
   group_addloans.hide;
+  */
 }

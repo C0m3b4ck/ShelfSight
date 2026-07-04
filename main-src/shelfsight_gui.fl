@@ -12,11 +12,6 @@ Function {make_window()} {open
       label {Merlin the Mole}
       xywh {0 0 10 25} labelsize 21 align 8
     }
-    Fl_Box assistant_image {
-      comment {The image of the agent}
-      xywh {0 25 145 135}
-      class Fl_Image
-    }
     Fl_Input {} {
       label {Your question:}
       xywh {145 140 190 25} align 1
@@ -34,9 +29,9 @@ Function {make_window()} {open
       xywh {360 0 55 15} color 41
     }
   }
-  Fl_Window {} {
+  Fl_Window window_workspace {
     label ShelfSight open
-    xywh {770 247 542 358} type Double resizable visible
+    xywh {736 247 542 358} type Double hide resizable
   } {
     Fl_Menu_Button mnubtn_books {
       label Books
@@ -342,7 +337,7 @@ Function {make_window()} {open
       }
     }
     Fl_Group group_addbooks {
-      comment {Add Books} open
+      comment {Add Books}
       xywh {0 25 540 335} hide
     } {
       Fl_Text_Display {} {
@@ -636,8 +631,8 @@ Function {make_window()} {open
       }
     }
     Fl_Group group_editbooks {
-      comment {edit books}
-      xywh {0 25 540 335} hide
+      comment {edit books} open
+      xywh {0 25 540 335}
     } {
       Fl_Text_Display {} {
         label Search
@@ -699,9 +694,9 @@ Function {make_window()} {open
         callback BTN_CB
         xywh {460 90 80 30} labelsize 12
       }
-      Fl_Button btn_checktitle_editbk {
-        label {Check Title}
-        user_data checktitle_editbk
+      Fl_Button btn_checkid_editbk {
+        label {Check ID}
+        user_data checkid_editbk
         callback BTN_CB
         xywh {460 120 80 30}
       }
@@ -1163,7 +1158,7 @@ Function {make_window()} {open
       }
     }
     Fl_Group group_selectdb {
-      xywh {0 25 540 330}
+      xywh {0 25 540 330} hide
     } {
       Fl_Text_Display {} {
         label {Select Databases}
@@ -1266,28 +1261,32 @@ Function {make_window()} {open
   }
 }
 
-Function {MENU_BTN_CB(Fl_Widget* w, void* data)} {
-  comment {Buttons from toolbar} open
-} {}
+Function {MENU_BTN_CB(Fl_Widget* w, void* ud)} {
+  comment {Buttons from toolbar} open selected
+} {
+  code {// ud points to the real function you want to invoke    
+  	using cb_t = void(*)(Fl_Widget*, void*);    
+  	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
+  	real_cb(w, nullptr); // call the real handler} {}
+}
 
-Function {BTN_CB(Fl_Widget* w, void* data)} {
+Function {BTN_CB(Fl_Widget* w, void* ud)} {
   comment {For non-menu buttons (the ones in groups)} open
 } {
-  code {static void BTN_CB(Fl_Widget *w, void *ud) {    
-// ud points to the real function you want to invoke    
+  code {// ud points to the real function you want to invoke    
 	using cb_t = void(*)(Fl_Widget*, void*);    
 	cb_t real_cb = reinterpret_cast<cb_t>(ud);    
-	real_cb(w, nullptr); // call the real handler
-}} {selected
-  }
+	real_cb(w, nullptr); // call the real handler} {}
 }
 
 Function {hide_all_groups()} {
   comment {Hides all groups} open
 } {
-  code {group_register.hide;
+  code {/**
+group_register.hide;
 group_login.hide;
 group_addbooks.hide;
 group_addreaders.hide;
-group_addloans.hide;} {}
+group_addloans.hide;
+*/} {}
 }
