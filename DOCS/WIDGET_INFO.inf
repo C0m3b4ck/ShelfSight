@@ -11,9 +11,10 @@ clk - clock
 flbrw - file browser
 
 [][][] Naming Convention [][][]
+!!! NO HYPHENS !!!
 -=-\-\=/=/ Widgets \=\=/-/-/=-
-[widget abbreviation]_[function/label]-[abbreviated group name]
-Example: btn_login-log
+[widget abbreviation]_[function/label]_[abbreviated group name]
+Example: btn_login_log
 -=-\-\=/=/ CB user_data \=\=/-/-/=-
 [function/widget name]_[group abbreviation]
 Example: checktitle_addbk
