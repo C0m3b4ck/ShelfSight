@@ -1,20 +1,27 @@
 # ShelfSight ![GitHub All Releases](https://img.shields.io/github/downloads/C0m3b4ck/ShelfSight/total)
-<br><b>🇪🇺🇪🇺🇪🇺Made in Europe🇪🇺🇪🇺🇪🇺
-<br><b><a href=https://github.com/C0m3b4ck/ShelfSight/tree/main/README_PL.md>🇵🇱🇵🇱🇵🇱Przeczytaj po polsku!🇵🇱🇵🇱🇵🇱 </a>  
-<br><h2><b>A program for cataloging and lending books, intended for use in libraries. It is the successor to BookwormVB, intended to fix its predecessor's problems and be more efficient.</b></h2>
-<br><h2><b>Made as a legacy-supporting, effective, safe and robust alternative for the Bibliotekarz.NET program by Marek Ryński, especially on the market in Poland, as there aren't many free alternatives for it with Polish support</b></h2> 
+**🇪🇺🇪🇺🇪🇺Made in Europe🇪🇺🇪🇺🇪🇺**
+## [🇵🇱🇵🇱🇵🇱Przeczytaj po polsku!🇵🇱🇵🇱🇵🇱](https://github.com/C0m3b4ck/ShelfSight/tree/main/README_PL.md)
+# What is it?
+## ShelfSight is a program for managing libraries both large and small, private or public. It is ***free, open-source, cross-platform and has legacy-support***
+## A successor to BookwormVB, it is intended to be ***more robust, more efficient and safer***, while having ***broader OS support and better functionality*** than Bibliotekarz.NET in the Polish freeware sphere. 
 # Help!!! How do I install?!?!?!
-<br><b> 1. Go to the "Releases" page on the right-hand side of the page
-<br>2. Click the one on the top
-<br>3. Download the one for your system, according to your needs: </b>
-<br>* <b> portable </b> - just a .7z archive file, extract and run the binary file inside (<b>.exe on Windows</b>)
-<br>* <b> installer </b> - a program that moves the program files to a directory specified by the user (<b>for example, %APPDATA% on Windows</b>)
-<br>* <b> standalone </b> - just the program binary (<b>.exe on Windows</b>) that can be run right after downloading
-## Currently supported systems:
-<br>* <b> Microsoft Windows </b> - versions from XP to 11, x86 and x64 - pre-packaged 'portable', 'installer' and 'standalone'  on "Releases" page
-<br>* <b> Linux </b>- kernel versions from [currently unknown] to 7.x.x, x86 and x64 - pre-packaged 'portable', 'installer' and 'standalone' on "Releases" page
-<br>* <b> Apple MacOS THEORETICALLY </b> supported, though users would need to compile themselves, as the author <b> DOES NOT PROVIDE </b> any binaries for that syst
-# Supported OSes
+- ***1. Open the "Releases" page on the right-hand side of the page.***
+- ***2. Choose the latest release (the one on top).***
+- ***3. Download the package that matches your system:***
+
+| Type		| Description |
+| ------------- | ----------- |
+| **Portable**  | '.7z' archive file, extract using **7zip** and run the binary file inside the extracted folder (<b>.exe on Windows</b>). |
+| **Installer** | A program that moves the program files to a directory specified by the user (<b>for example, %APPDATA% on Windows</b>). |
+| **Standalone** | Just the program binary (<b>.exe on Windows</b>) - **download and run**. |
+## Supported Operating Systems
+| Platform | Versions | Architecture | Packages |
+| -------- | -------- | ------------ | -------- |
+| Microsoft Windows | Versions from XP to 11 (all Windows Server Editions from 2003 to 2025 | x86 and x64 | pre-packaged 'portable', 'installer' and 'standalone'. |
+| Linux distributions | Kernel versions from [minimum kernel currently unknown] to 7.x.x | x86 and x64 | 'portable', 'installer' and 'standalone' |
+| Microsoft Windows (Legacy) | Windows 2000, NT4, Me, 98, 95 | x86 | Packages might not be provided, support for Legacy versions will be finished after 1.0 release. |
+| Microsoft Windows (CE) | Windows CE 2, 3, 4, 5, 6, .NET 4.1, .NET 4.2 | ARM | Support will be considered after MS Windows Legacy support is finalized. |
+| Apple MacOS | **(THEORETICALLY)** supported | MacOS X and above | ARM and ARM64| Users need to compile themselves, there are no official MacOS binaries. | 
 <div align="center">
 
 <img src="badges/95.svg" alt="Windows 95" width="128" height="128" />
@@ -38,20 +45,19 @@
 The badges are meant to represent compatibility. Badges with the word "certified" ARE A VISUAL REPRESENTATION ONLY. This project is not endorsed nor certified by Microsoft.
 Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
-<br><h2><b>Supports all x86 and x64 versions of Linux </b></h2>
-<br><b>Supports all versions of Windows, from Windows 95 up to Windows 11:</b>
+<b>FULL LIST of supported MS Windows versions of Windows: </b>
 
-    Windows 95
+    [Legacy] Windows 95
 
-    Windows NT 4.0
+    [Legacy] Windows NT 4.0
 
-    Windows 98 
+    [Legacy] Windows 98 
 
-    Windows 98 SE
+    [Legacy] Windows 98 SE
 
-    Windows 2000
+    [Legacy] Windows 2000
 
-    Windows Me
+    [Legacy] Windows Me
 
     Windows XP (tested: x86, x32 and 64-bit, Home, Professional, includes: Starter, Tablet PC, Media Center, Embedded)
 
@@ -74,33 +80,39 @@ Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
     (probable future desktop OS from Microsoft)
 
-<br><b>Will require 'compiler magic':</b>
+<b>Will require much different compilers, possible re-writes:</b>
 
     Linux ARM
 
-    Windows CE (including versions 1, 2, 3, 4, 5, 6, .NET 4.1, .NET 4.2, 7, 2013)
+    [Legacy] Windows CE (including versions 2, 3, 4, 5, 6, .NET 4.1, .NET 4.2, 7, 2013)
 
-    Windows CE for Automotive
+    [Legacy] Windows CE for Automotive
 
-    Pocket PC (including versions 2000, 2002)
+    [Legacy] Pocket PC (including versions 2000, 2002)
 
     Windows Mobile
 
-<br><b>Will not be supported: </b></br>
+<b>Will not be supported: </b></br>
 
-* All Xbox OSes
-* Windows CE 1.0 (requires DOS-like C compilation)
-<h2>Apple MacOS THEORETICALLY </b> supported, though users would need to compile themselves, as the author <b> DOES NOT PROVIDE </b> any binaries for that system</h2>
+    All Xbox OSes
+    [Pre-Legacy] Windows CE 1.0 (requires DOS-like C compilation)
 # Build
-<br><h2>1. Open the 'src' folder in a Linux environment (something like MSYS on MS Windows)</h2>
-<br><h2>2. Run: './BUILD_ALL.sh' - this will show a small command-line menu, options will be selected by numerical input</h2>
-<br><h2>All should be built! NOTE: Legacy Windows build is not yet completed and thus will not work!!!</h2>
+Run in POSIX-compatible shell (Linux, MSYS on MS Windows)
+## Clone the repository
+```bash
+git clone https://github.com/C0m3b4ck/ShelfSight.git
+cd ShelfSight/src
+./BUILD_ALL.sh
+```
+# Select correct options for your system via numerical input
+***No errors should occur.***
 # Docs
-Docs are available in <i>/DOCS/</i> subfolder. I will make user manuals after 1.0 release.
-<br><b>For now, check out development videos: </b> https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
+- Docs are available in */DOCS/* subfolder. 
+- User manuals will be made after 1.0 release.
+- For now, check out development videos: https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
 # Credits
-<br><h3>Started on June 19th, 2026, by C0m3b4ck.<h3> 
-<br><h2>Credits to the authors of:</h3>
-<br><a href=https://fltk.org>FLTK</a>, a simple and light C++ GUI library,
-<br><a href=https://github.com/weidai11/cryptopp>CryptoPP</a>, a C++ library for hashing and encryption
+### Started on June 19th, 2026, by C0m3b4ck. 
+## Credits to the authors of the libraries used:</h3>
+<a href=https://fltk.org>FLTK</a>, a simple and light C++ GUI library,
+<a href=https://github.com/weidai11/cryptopp>CryptoPP</a>, a C++ library for hashing and encryption
 

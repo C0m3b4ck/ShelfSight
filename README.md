@@ -1,25 +1,27 @@
 # ShelfSight ![GitHub All Releases](https://img.shields.io/github/downloads/C0m3b4ck/ShelfSight/total)
-<b>🇪🇺🇪🇺🇪🇺Made in Europe🇪🇺🇪🇺🇪🇺
-<b><a href=https://github.com/C0m3b4ck/ShelfSight/tree/main/README_PL.md>🇵🇱🇵🇱🇵🇱Przeczytaj po polsku!🇵🇱🇵🇱🇵🇱 </a>
+**🇪🇺🇪🇺🇪🇺Made in Europe🇪🇺🇪🇺🇪🇺**
+## [🇵🇱🇵🇱🇵🇱Przeczytaj po polsku!🇵🇱🇵🇱🇵🇱](https://github.com/C0m3b4ck/ShelfSight/tree/main/README_PL.md)
 # What is it?
-<h2>ShelfSight is a program for managing libraries both large and small, private or public. It is <b><i>free, open-source, cross-platform and has legacy-support**.</i></b></h2>
-<h2><b>A successor to BookwormVB, it is intended to be more robust, more efficient and safer, while having broader OS support and better functionality than Bibliotekarz.NET in the Polish freeware sphere.</b></h2> 
+## ShelfSight is a program for managing libraries both large and small, private or public. It is ***free, open-source, cross-platform and has legacy-support***
+## A successor to BookwormVB, it is intended to be ***more robust, more efficient and safer***, while having ***broader OS support and better functionality*** than Bibliotekarz.NET in the Polish freeware sphere. 
 # Help!!! How do I install?!?!?!
-<br>1. Open the "Releases" page on the right-hand side of the page.
-<br>2. Choose the latest release (the one on top).
-<br>3. Download the package that matches your system:
+- ***1. Open the "Releases" page on the right-hand side of the page.***
+- ***2. Choose the latest release (the one on top).***
+- ***3. Download the package that matches your system:***
 
-<br>| Type		| Description |
-<br>| ** Portable **  | '.7z' archive file, extract using 7zip and run the binary file inside the extracted folder (<b>.exe on Windows</b>). |
-<br>| ** Installer ** | A program that moves the program files to a directory specified by the user (<b>for example, %APPDATA% on Windows</b>). |
-<br>| **Standalone ** | Just the program binary (<b>.exe on Windows</b>) - download and run. |
+| Type		| Description |
+| ------------- | ----------- |
+| **Portable**  | '.7z' archive file, extract using **7zip** and run the binary file inside the extracted folder (<b>.exe on Windows</b>). |
+| **Installer** | A program that moves the program files to a directory specified by the user (<b>for example, %APPDATA% on Windows</b>). |
+| **Standalone** | Just the program binary (<b>.exe on Windows</b>) - **download and run**. |
 ## Supported Operating Systems
-<br>| Platform | Versions | Architecture | Packages |
-<br>| Microsoft Windows | Versions from XP to 11 (all Windows Server Editions from 2003 to 2025 | x86 and x64 | pre-packaged 'portable', 'installer' and 'standalone'. |
-<br>| Linux distributions | Kernel versions from [currently unknown] to 7.x.x | x86 and x64 | 'portable', 'installer' and 'standalone' |
-<br>| Microsoft Windows (Legacy) | Windows 2000, NT4, Me, 98, 95 | x86 | Packages might not be provided, support for Legacy versions will be finished after 1.0 release. |
-<br>| Microsoft Windows (CE) | Windows CE 2, 3, 4, 5, 6, .NET 4.1, .NET 4.2 | ARM | Support will be considered after MS Windows Legacy support is finalized. |
-<br>| Apple MacOS | (THEORETICALLY) supported | MacOS X and above | ARM and ARM64| Users need to compile themselves, there are no official MacOS binaries. | 
+| Platform | Versions | Architecture | Packages |
+| -------- | -------- | ------------ | -------- |
+| Microsoft Windows | Versions from XP to 11 (all Windows Server Editions from 2003 to 2025 | x86 and x64 | pre-packaged 'portable', 'installer' and 'standalone'. |
+| Linux distributions | Kernel versions from [minimum kernel currently unknown] to 7.x.x | x86 and x64 | 'portable', 'installer' and 'standalone' |
+| Microsoft Windows (Legacy) | Windows 2000, NT4, Me, 98, 95 | x86 | Packages might not be provided, support for Legacy versions will be finished after 1.0 release. |
+| Microsoft Windows (CE) | Windows CE 2, 3, 4, 5, 6, .NET 4.1, .NET 4.2 | ARM | Support will be considered after MS Windows Legacy support is finalized. |
+| Apple MacOS | **(THEORETICALLY)** supported | MacOS X and above | ARM and ARM64| Users need to compile themselves, there are no official MacOS binaries. | 
 <div align="center">
 
 <img src="badges/95.svg" alt="Windows 95" width="128" height="128" />
@@ -92,23 +94,25 @@ Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
 <b>Will not be supported: </b></br>
 
-* All Xbox OSes
-* Windows CE 1.0 (requires DOS-like C compilation)
+    All Xbox OSes
+    [Pre-Legacy] Windows CE 1.0 (requires DOS-like C compilation)
 # Build
 Run in POSIX-compatible shell (Linux, MSYS on MS Windows)
 ## Clone the repository
-<br>git clone https://github.com/C0m3b4ck/ShelfSight.git
-<br>cd ShelfSight/src
-## Run build helper
-<br>./BUILD_ALL.sh
+```bash
+git clone https://github.com/C0m3b4ck/ShelfSight.git
+cd ShelfSight/src
+./BUILD_ALL.sh
+```
 # Select correct options for your system via numerical input
-<br><b><i>No errors should occur.</b></i>
+***No errors should occur.***
 # Docs
-<br>Docs are available in <i>/DOCS/</i> subfolder. User manuals will be made after 1.0 release.
-<br>For now, check out development videos: </b> https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
+- Docs are available in */DOCS/* subfolder. 
+- User manuals will be made after 1.0 release.
+- For now, check out development videos: https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
 # Credits
-<h3>Started on June 19th, 2026, by C0m3b4ck.<h3> 
-<h2>Credits to the authors of the libraries used:</h3>
+### Started on June 19th, 2026, by C0m3b4ck. 
+## Credits to the authors of the libraries used:</h3>
 <a href=https://fltk.org>FLTK</a>, a simple and light C++ GUI library,
 <a href=https://github.com/weidai11/cryptopp>CryptoPP</a>, a C++ library for hashing and encryption
 
