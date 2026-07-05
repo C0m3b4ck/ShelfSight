@@ -31,7 +31,7 @@ Function {make_window()} {open
   }
   Fl_Window window_workspace {
     label ShelfSight open
-    xywh {736 247 542 358} type Double hide resizable
+    xywh {709 209 540 355} type Double resizable visible
   } {
     Fl_Menu_Button mnubtn_books {
       label Books
@@ -215,23 +215,40 @@ Function {make_window()} {open
         xywh {0 0 100 20}
       }
     }
-    Fl_Menu_Button mnubtn_login {
-      label {Log in/out}
-      user_data login_show
-      callback MENU_BTN_CB
+    Fl_Menu_Button mnubtn_account {
+      label Account open selected
       xywh {335 0 80 25}
-    } {}
-    Fl_Menu_Button mnubtn_register {
-      label Register
-      user_data register_show
-      callback MENU_BTN_CB
-      xywh {415 0 75 25}
-    } {}
+    } {
+      MenuItem mnubtn_login {
+        label Login
+        user_data mnubtnshow_login
+        callback BTN_CB
+        xywh {0 0 100 20}
+      }
+      MenuItem mnubtn_logout {
+        label Logout
+        user_data LOGOUT
+        callback BTN_CB
+        xywh {0 0 100 20}
+      }
+      MenuItem mnubtn_register {
+        label Register
+        user_data mnubtnshow_register
+        callback BTN_CB
+        xywh {0 0 100 20}
+      }
+    }
     Fl_Menu_Button menubtn_clear {
       label Clear
       user_data clear_workspace
       callback MENU_BTN_CB
       comment {Clears workspace - shows backdrop}
+      xywh {415 0 70 25}
+    } {}
+    Fl_Menu_Button mnubtn_exit {
+      label Exit
+      user_data EXIT
+      callback MENU_BTN_CB
       xywh {485 0 55 25}
     } {}
     Fl_Group group_register {
@@ -291,19 +308,19 @@ Function {make_window()} {open
     }
     Fl_Group group_login {
       comment Login
-      xywh {0 25 540 340} hide
+      xywh {0 25 540 340}
     } {
       Fl_Text_Display {} {
         label Login
-        xywh {200 30 155 0} labelsize 41 align 34
+        xywh {200 25 155 5} labelsize 41 align 34
       }
       Fl_Input inp_usr_log {
         label Username
-        xywh {110 90 425 30} labelsize 19
+        xywh {110 85 425 30} labelsize 19
       }
       Fl_Input inp_pwd_log {
         label Password
-        xywh {110 125 425 30} labelsize 19
+        xywh {110 120 425 30} labelsize 19
       }
       Fl_Check_Button chk_showpwd_log {
         label {Show password}
@@ -334,6 +351,16 @@ Function {make_window()} {open
         user_data HELP_log
         callback BTN_CB
         xywh {5 30 75 35} labelsize 21
+      }
+      Fl_Button btn_showregister_log {
+        label REGISTER
+        user_data showregister_log
+        callback BTN_CB
+        xywh {290 190 240 35} labelsize 21
+      }
+      Fl_Text_Display {} {
+        label {No account?}
+        xywh {295 190 235 5} labelsize 31
       }
     }
     Fl_Group group_addbooks {
@@ -631,8 +658,8 @@ Function {make_window()} {open
       }
     }
     Fl_Group group_editbooks {
-      comment {edit books} open
-      xywh {0 25 540 335}
+      comment {edit books}
+      xywh {0 25 540 335} hide
     } {
       Fl_Text_Display {} {
         label Search
@@ -1262,7 +1289,7 @@ Function {make_window()} {open
 }
 
 Function {MENU_BTN_CB(Fl_Widget* w, void* ud)} {
-  comment {Buttons from toolbar} open selected
+  comment {Buttons from toolbar} open
 } {
   code {// ud points to the real function you want to invoke    
   	using cb_t = void(*)(Fl_Widget*, void*);    

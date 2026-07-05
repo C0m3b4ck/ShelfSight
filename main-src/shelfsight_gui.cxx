@@ -149,6 +149,11 @@ static void BACK_selectdb(Fl_Widget*, void*) {}
 static void setselected_selectdb(Fl_Widget*, void*) {}
 static void verifydb_selectdb(Fl_Widget*, void*) {}
 static void checkid_editbk(Fl_Widget*, void*) {}
+static void mnubtnshow_login(Fl_Widget*, void*) {}
+static void LOGOUT(Fl_Widget*, void*) {}
+static void mnubtnshow_register(Fl_Widget*, void*) {}
+static void showregister_log(Fl_Widget*, void*) {}
+static void EXIT(Fl_Widget*, void*) {}
 
 
 Fl_Double_Window *window_assistant=(Fl_Double_Window *)0;
@@ -216,11 +221,18 @@ Fl_Menu_Item menu_mnubtn_settings[] = {
  {0,0,0,0,0,0,0,0,0}
 };
 
-Fl_Menu_Button *mnubtn_login=(Fl_Menu_Button *)0;
+Fl_Menu_Button *mnubtn_account=(Fl_Menu_Button *)0;
 
-Fl_Menu_Button *mnubtn_register=(Fl_Menu_Button *)0;
+Fl_Menu_Item menu_mnubtn_account[] = {
+ {"Login", 0,  (Fl_Callback*)BTN_CB, (void*)(mnubtn_login), 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
+ {"Logout", 0,  (Fl_Callback*)BTN_CB, (void*)(mnubtn_logout), 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
+ {"Register", 0,  (Fl_Callback*)BTN_CB, (void*)(mnubtn_register), 0, (uchar)FL_NORMAL_LABEL, 0, 14, 0},
+ {0,0,0,0,0,0,0,0,0}
+};
 
 Fl_Menu_Button *menubtn_clear=(Fl_Menu_Button *)0;
+
+Fl_Menu_Button *mnubtn_exit=(Fl_Menu_Button *)0;
 
 Fl_Group *group_register=(Fl_Group *)0;
 
@@ -257,6 +269,8 @@ Fl_Button *btn_cls_log=(Fl_Button *)0;
 Fl_Button *btn_back_log=(Fl_Button *)0;
 
 Fl_Button *btn_help_log=(Fl_Button *)0;
+
+Fl_Button *btn_showregister_log=(Fl_Button *)0;
 
 Fl_Group *group_addbooks=(Fl_Group *)0;
 
@@ -586,7 +600,7 @@ Fl_Double_Window* make_window() {
     } // Fl_Button* o
     window_assistant->end();
   } // Fl_Double_Window* window_assistant
-  { window_workspace = new Fl_Double_Window(542, 358, "ShelfSight");
+  { window_workspace = new Fl_Double_Window(540, 355, "ShelfSight");
     { mnubtn_books = new Fl_Menu_Button(0, 0, 55, 25, "Books");
       mnubtn_books->menu(menu_mnubtn_books);
     } // Fl_Menu_Button* mnubtn_books
@@ -602,16 +616,16 @@ Fl_Double_Window* make_window() {
     { mnubtn_settings = new Fl_Menu_Button(270, 0, 65, 25, "Settings");
       mnubtn_settings->menu(menu_mnubtn_settings);
     } // Fl_Menu_Button* mnubtn_settings
-    { mnubtn_login = new Fl_Menu_Button(335, 0, 80, 25, "Log in/out");
-      mnubtn_login->callback((Fl_Callback*)MENU_BTN_CB, (void*)(login_show));
-    } // Fl_Menu_Button* mnubtn_login
-    { mnubtn_register = new Fl_Menu_Button(415, 0, 75, 25, "Register");
-      mnubtn_register->callback((Fl_Callback*)MENU_BTN_CB, (void*)(register_show));
-    } // Fl_Menu_Button* mnubtn_register
+    { mnubtn_account = new Fl_Menu_Button(335, 0, 80, 25, "Account");
+      mnubtn_account->menu(menu_mnubtn_account);
+    } // Fl_Menu_Button* mnubtn_account
     { // Clears workspace - shows backdrop
-      menubtn_clear = new Fl_Menu_Button(485, 0, 55, 25, "Clear");
+      menubtn_clear = new Fl_Menu_Button(415, 0, 70, 25, "Clear");
       menubtn_clear->callback((Fl_Callback*)MENU_BTN_CB, (void*)(clear_workspace));
     } // Fl_Menu_Button* menubtn_clear
+    { mnubtn_exit = new Fl_Menu_Button(485, 0, 55, 25, "Exit");
+      mnubtn_exit->callback((Fl_Callback*)MENU_BTN_CB, (void*)(EXIT));
+    } // Fl_Menu_Button* mnubtn_exit
     { // Register
       group_register = new Fl_Group(0, 25, 540, 335);
       group_register->hide();
@@ -665,15 +679,14 @@ Fl_Double_Window* make_window() {
     } // Fl_Group* group_register
     { // Login
       group_login = new Fl_Group(0, 25, 540, 340);
-      group_login->hide();
-      { Fl_Text_Display* o = new Fl_Text_Display(200, 30, 155, 0, "Login");
+      { Fl_Text_Display* o = new Fl_Text_Display(200, 25, 155, 5, "Login");
         o->labelsize(41);
         o->align(Fl_Align(34));
       } // Fl_Text_Display* o
-      { inp_usr_log = new Fl_Input(110, 90, 425, 30, "Username");
+      { inp_usr_log = new Fl_Input(110, 85, 425, 30, "Username");
         inp_usr_log->labelsize(19);
       } // Fl_Input* inp_usr_log
-      { inp_pwd_log = new Fl_Input(110, 125, 425, 30, "Password");
+      { inp_pwd_log = new Fl_Input(110, 120, 425, 30, "Password");
         inp_pwd_log->labelsize(19);
       } // Fl_Input* inp_pwd_log
       { chk_showpwd_log = new Fl_Check_Button(20, 175, 25, 25, "Show password");
@@ -703,6 +716,13 @@ Fl_Double_Window* make_window() {
         btn_help_log->labelsize(21);
         btn_help_log->callback((Fl_Callback*)BTN_CB, (void*)(HELP_log));
       } // Fl_Button* btn_help_log
+      { btn_showregister_log = new Fl_Button(290, 190, 240, 35, "REGISTER");
+        btn_showregister_log->labelsize(21);
+        btn_showregister_log->callback((Fl_Callback*)BTN_CB, (void*)(showregister_log));
+      } // Fl_Button* btn_showregister_log
+      { Fl_Text_Display* o = new Fl_Text_Display(295, 190, 235, 5, "No account?");
+        o->labelsize(31);
+      } // Fl_Text_Display* o
       group_login->end();
     } // Fl_Group* group_login
     { // Add Books
@@ -924,6 +944,7 @@ Fl_Double_Window* make_window() {
     } // Fl_Group* group_addloans
     { // edit books
       group_editbooks = new Fl_Group(0, 25, 540, 335);
+      group_editbooks->hide();
       { Fl_Text_Display* o = new Fl_Text_Display(205, 210, 10, 30, "Search");
         o->labelsize(31);
         o->align(Fl_Align(520));

@@ -149,3 +149,8 @@ static void BACK_selectdb(Fl_Widget*, void*) {}
 static void setselected_selectdb(Fl_Widget*, void*) {}
 static void verifydb_selectdb(Fl_Widget*, void*) {}
 static void checkid_editbk(Fl_Widget*, void*) {}
+static void mnubtnshow_login(Fl_Widget*, void*) {}
+static void LOGOUT(Fl_Widget*, void*) {}
+static void mnubtnshow_register(Fl_Widget*, void*) {}
+static void showregister_log(Fl_Widget*, void*) {}
+static void EXIT(Fl_Widget*, void*) {}

@@ -15,9 +15,9 @@ extern Fl_Menu_Button *mnubtn_readers;
 extern Fl_Menu_Button *mnubtn_loans;
 extern Fl_Menu_Button *mnubtn_databases;
 extern Fl_Menu_Button *mnubtn_settings;
-extern Fl_Menu_Button *mnubtn_login;
-extern Fl_Menu_Button *mnubtn_register;
+extern Fl_Menu_Button *mnubtn_account;
 extern Fl_Menu_Button *menubtn_clear;
+extern Fl_Menu_Button *mnubtn_exit;
 #include <FL/Fl_Group.H>
 extern Fl_Group *group_register;
 extern Fl_Input *inp_usr_reg;
@@ -39,6 +39,7 @@ extern Fl_Button *btn_login_log;
 extern Fl_Button *btn_cls_log;
 extern Fl_Button *btn_back_log;
 extern Fl_Button *btn_help_log;
+extern Fl_Button *btn_showregister_log;
 extern Fl_Group *group_addbooks;
 extern Fl_Input *inp_title_addbk;
 extern Fl_Input *inp_id_addbk;
@@ -222,6 +223,10 @@ extern Fl_Menu_Item menu_mnubtn_settings[];
 #define mnu_performance (menu_mnubtn_settings+2)
 #define mnu_networking (menu_mnubtn_settings+3)
 #define mnu_other (menu_mnubtn_settings+4)
+extern Fl_Menu_Item menu_mnubtn_account[];
+#define mnubtn_login (menu_mnubtn_account+0)
+#define mnubtn_logout (menu_mnubtn_account+1)
+#define mnubtn_register (menu_mnubtn_account+2)
 extern Fl_Menu_Item menu_mnubtn_saveconfig_selectdb[];
 extern Fl_Menu_Item menu_mnubtn_loadconfig_selectdb[];
 #define mnu_loadasdefault_selectdb (menu_mnubtn_loadconfig_selectdb+0)
@@ -230,7 +235,7 @@ extern Fl_Menu_Item menu_mnubtn_verifydb_selectdb[];
 #define mnu_verifybookdb_selectdb (menu_mnubtn_verifydb_selectdb+0)
 #define mnu_verifyreaderdb_selectdb (menu_mnubtn_verifydb_selectdb+1)
 #define mnu_verifyloandb_selectdb (menu_mnubtn_verifydb_selectdb+2)
-void MENU_BTN_CB(Fl_Widget* w, void* data);
-void BTN_CB(Fl_Widget* w, void* data);
+void MENU_BTN_CB(Fl_Widget* w, void* ud);
+void BTN_CB(Fl_Widget* w, void* ud);
 void hide_all_groups();
 #endif

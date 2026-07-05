@@ -1,0 +1,5 @@
+* made universal compile script (g++ with fltk-config) - ./compile-UNIVERSAL.sh
+* added actual loop to main.cpp
+* added "Register" button to login if user account is not registered
+* added "Account" menu to toolbar instead of "Login/out"
+* login shows by default upon running app
