@@ -112,7 +112,7 @@ cd ShelfSight/src
 - For now, check out development videos: https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
 # Credits
 ### Started on June 19th, 2026, by C0m3b4ck. 
-## Credits to the authors of the libraries used:</h3>
-<a href=https://fltk.org>FLTK</a>, a simple and light C++ GUI library,
-<a href=https://github.com/weidai11/cryptopp>CryptoPP</a>, a C++ library for hashing and encryption
+## Credits to the authors of the libraries used:
+- [FLTK](https://fltk.org), a simple and light C++ GUI library,
+- [CryptoPP](https://github.com/weidai11/cryptopp>CryptoPP), a C++ library for hashing and encryption
 
