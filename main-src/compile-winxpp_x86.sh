@@ -1,1 +1,0 @@
-i686-w64-mingw32-g++ *.cpp *.h *.cxx -o gui-win32.exe -D_WIN32_WINNT=0x0501 -I/include/fltk/win32/include -L/fltk-win32-static/lib -lfltk -lfltk_images -lfltk_forms -luser32 -lgdi32 -lole32 -loleaut32 -lcomctl32 -lws2_32 -luuid -static -static-libgcc -static-libstdc++ -mwindows
