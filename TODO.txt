@@ -1,0 +1,6 @@
+Pre-1.0:
+* find no-compile cryptographic library (files that can be compiled along with the program)
+* finish functionality (non-network)
+Post-1.0:
+* add GUI
+* add networking

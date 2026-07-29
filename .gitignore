@@ -7,3 +7,7 @@ ANNOUNCEMENT CHANGES CHANGES_1.0 CHANGES_1.1 *.html *.CMake.txt *.Cairo.txt *.MS
 ShelfSight-Alpha
 ShelfSight-Alpha.exe
 ShelfSight.exe
+*.o
+test
+prog
+shelfsight
