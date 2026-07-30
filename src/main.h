@@ -12,3 +12,4 @@ void shutdown();
 void clear_cli();
 bool is_exit_requested();
 void consume_exit_request();
+void request_exit();

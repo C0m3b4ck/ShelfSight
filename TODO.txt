@@ -1,6 +1,7 @@
 Pre-1.0:
-* find no-compile cryptographic library (files that can be compiled along with the program)
+* find no-compile cryptographic library (files that can be compiled along with the program) [DONE - picosha2.hpp and aes.c]
 * finish functionality (non-network)
 Post-1.0:
+* legacy-supporting remake
 * add GUI
 * add networking
