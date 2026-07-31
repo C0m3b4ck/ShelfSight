@@ -1,0 +1,84 @@
+<HEAD>
+<TITLE>DragDrop</TITLE>
+</HEAD>
+<BODY>
+<h1>DragDrop</h1>
+
+ subclass of <a href="Class.html">Class</a><br>
+ DragDrop is not a widget and is not intended to produce instances. 
+ It is a class that manages drag and drop.
+ A drop can be started using the command <br>
+ <code>Classy::DragDrop start x y value ...<br></code>
+ This should be bound to the  &lt;&lt;Drag&gt;&gt; event of the source window.
+ <p>
+ A window will be notified of a drop by the virtual event &lt;&lt;Drop&gt;&gt;, so<br>
+ bind window &lt;&lt;Drop&gt;&gt; command<br>
+ will execute the command when somethind is dropped on the window
+ <p>
+ The window is also notified of the current drag entering, moving in, or leaving the
+ window by the &lt;&lt;Drag-Enter&gt;&gt; &lt;&lt;Drag-Motion&gt;&gt; and\
+ &lt;&lt;Drag-Leave&gt;&gt; events, and can take apropriate actions.
+ The program can get the data associated with the drag using the command <br>
+ <code>Classy::DragDrop get ?type?</code>
+
+<h2>
+	Config methods
+</h2><dl><b><dt>
+ Classy::DragDrop start x y value ?option value ...?<br>
+</b><dd>
+ starts a drag. It clears all previously changed drag and drop settings to their
+ default values or the ones supplied as options to the start classmethod.
+ x and y must be the x and y position of the pointer on the screen: you can
+ use %X and %Y in the event command to get these.
+ $value is the default value given for the drop if no type is specified.
+ the options are the same as for the Classy::DragDrop configure classmethod.
+<b><dt>
+ Classy::DragDrop configure ?option? ?value? ?option value...?<br>
+</b><dd>
+ returns or changes the options for the current drag. following options are supported:
+<dl>
+<dt>-types {type data ?type data ...?}
+<dd>gives a list of types, and the data that should be returned when the drop site asks for the data.
+<dt>-ftypes {type function ?type function ...?}
+<dd>gives a list of types, and a function which will generate the data desired by the drop site. 
+ The function will be executed at global level in the application where the drag originated.
+<dt>-transfer type
+<dd> type of transfer: $type can be none, copy, move or link
+<dt>-cursor cursor
+<dd> cursor of drag
+<dt>-image image
+<dd> dragged image
+</dl>
+<b><dt>
+ Classy::DragDrop types ?pattern?<br>
+</b><dd>
+ returns a list of all types supported by the current drag; optionally only those
+ matching $pattern are returned
+<b><dt>
+ Classy::DragDrop get ?type?<br>
+</b><dd>
+ returns the data associated with with the type $type of the current drag.
+ If no type is given, the default value is returned (the data given to the start classmethod.)
+<b><dt>
+ Classy::DragDrop bind event ?command?
+</b><dd>
+ with this classmethod, bindings can be added to the current drag, eg. to change the transfer type
+ in response to a keypress. Note that the command must come after the drag was
+ started with the start classmethod.
+<b><dt>
+ Classy::DragDrop abort<br>
+</b><dd>
+ abort the current drag.
+<b><dt>
+ Classy::DragDrop stop<br>
+</b><dd>
+ make the drop. The user normally does not have to call this classmethod, as it is
+ usually called by the bindings of DragDrop.
+<b><dt>
+ Classy::DragDrop move<br>
+</b><dd>
+ This classmethod is called while dragging. It updates the dragged window, and generates
+ the Drag events. The user normally does not have to call this classmethod, as it is
+ usually called by the bindings of DragDrop.
+
+</body>

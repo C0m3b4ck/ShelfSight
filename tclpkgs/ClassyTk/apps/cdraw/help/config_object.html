@@ -1,0 +1,78 @@
+<HEAD>
+<TITLE>Configure objects</TITLE>
+</HEAD>
+<BODY>
+<h1>Configure objects<</h1>
+
+Menu:Options.Configure objects<br>
+Tcl routine:objectconfigure<br>
+
+<h2>Description</h2>
+Each object has properties such as font, text, color, linewidth and
+position. The "Configure Objects" dialog offers a versatile interface
+to change these properties for any object or groups of objects. Several
+parameters can be set that limit property changes to objects fullfilling
+certain criteria. The most common method is to only change the properties
+of the currently selected objects or of the current drawing. Property
+changes can also be limited to a specific type of objects such as bases,
+base pairings, base numbers, helix names or labels. 
+<p>
+The top part of the dialog is used to 
+select which objects the options will be applied to. 
+The bottom part contains the options that might be changed.
+
+<h2>Object selection</h2>
+All actions will be applied to objects fulfilling the selection
+parameters given by the
+two <a href="classy_optionmenu.html">optionmenus</a> and 
+and <a href="classy_entry.html">entry</a> labeled 'Tags'.
+in the top part of the dialog.
+<br>
+The first option menu limits the scope to either the currently 
+selected object alone (Selection), the currently selected structure
+drawing (Drawing) or everything on the page (All).
+<br>
+The second optionmenu limits the action to certain types of
+objects, eg. only the bases or only the helixnames.
+<br>
+The 'Tags' entry limits the action to those objects containing all of 
+the <a href="tags.html">tags</a> given in the entry.
+<br>
+The action will only be applied to objects fulfilling all these parameters.
+
+<h2>Options</h2>
+All options can be applied by typing in a new value and pressing the 
+'Enter' key (or using the buttons labeled 'Select').
+<dl>
+<dt>Fill color (<a href="classy_entry.html">entry</a>)<dd>
+changes the main color of the objects. The button labeled 'Select' allows
+the user to select colors by example, or using RGB or HSV color selection.
+<dt>Outline color (<a href="classy_entry.html">entry</a>)<dd>
+If an object has an outline (rectangle, oval), this entry will change
+the color of this outline. As above, the selection of color can be done
+easier using the 'Select' button.
+<dt>Font (<a href="classy_entry.html">entry</a>)<dd>
+changes the font of the objects.
+<dt>Text (<a href="classy_entry.html">entry</a>)<dd>
+changes the text for matching text objects.
+<dt>Width (<a href="classy_entry.html">entry</a>)<dd>
+changes the line width for matching objects.
+<dt>Add tags (<a href="classy_entry.html">entry</a>)<dd>
+adds tags in the entry to matching objects.
+<dt>Delete tags (<a href="classy_entry.html">entry</a>)<dd>
+removes tags in the entry from matching objects.
+</dl>
+
+<h2>Action buttons</h2>
+<dl>
+<dt><a href="classy_action.html">Action</a> Select
+<dd>In stead of changing a display option, just select the objects fulfilling
+the selection parameters.
+<dt><a href="classy_action.html">Action</a> Help
+<dd>What do you think?
+<dt><a href="classy_action.html">Action</a> Close
+<dd>Close the dialog box without selecting a file.
+</dl>
+</body>
+
+

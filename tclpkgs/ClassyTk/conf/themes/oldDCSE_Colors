@@ -1,0 +1,20 @@
+color,*Background #efe6dc
+color,*darkBackground #e2d9d0
+color,*lightBackground Background
+color,*Foreground black
+color,*activeBackground white
+color,*activeForeground black
+color,*disabledForeground gray55
+color,*selectBackground #799096
+color,*selectForeground black
+color,*selectColor #ad2a47
+color,*highlightBackground Background
+color,*highlightColor black
+text,*ColorList {
+	{blue cyan green yellow orange red magenta}
+	{blue3 cyan3 green3 yellow3 orange3 red3 magenta3}
+	{black gray20 gray40 gray50 gray60 gray80 white}
+}
+color,*Entry.background Background
+color,*Listbox.background lightBackground
+color,*label.background darkBackground

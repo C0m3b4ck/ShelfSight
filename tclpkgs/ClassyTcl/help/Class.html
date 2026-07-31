@@ -1,0 +1,141 @@
+<HEAD>
+<TITLE>Class</TITLE>
+</HEAD>
+<BODY>
+<h1>Class</h1>
+
+ The class named Class forms the basis of the 
+ <a href="classy_object_system.html">ClassyTcl object system</a>. It is the
+ superclass of all classes and object in ClassyTcl.
+ Class provides the functionality to produce classes and objects. Class 
+ will normally not be used by itself to create objects.
+
+<h2>
+ Classmethods
+</h2>
+ The classmethods defined by Class can be invoked from all classes.
+<dl><b><dt>
+ ClassName new <u>object</u> ?...?
+</b><dd>
+ create a new instance (or object) with the name $<u>object</u> of class 
+ ClassName. When the actual object is created,
+ the init method of class ClassName will be invoked with the arguments
+ given after $<u>object</u>.<br>
+ Usually, the init method of the superclass
+ must be invoked somehere in the init method with appropriate parameters.
+ This can be done using the command 
+<pre>super init ?...?</pre>.
+<b><dt>
+ ClassName subclass <u>SubClass</u>
+</b><dd>
+ create a new class named $<u>SubClass</u> that inherits data
+ and methods from class ClassName. ClassName is the parent or
+ superclass of SubClass.
+<b><dt>
+ Classname destroy
+</b><dd>
+ destroys a class. All its instances and subclasses and their
+ instances will also be destroyed. If the classmethod destroy
+ if defined for the class, it will be invoked after the 
+ desctruction of its children, but before destroying the class
+ itself and and its instances.
+<b><dt>
+ ClassName method <u>name</u> <u>args</u> <u>body</u>
+</b><dd>
+ define a new method named $<u>name</u> for class ClassName.
+ Whenever the method is invoked, the contents of body will be executed.
+ The arguments <u>args</u> and <u>body</u> follow the same conventions
+ as in the Tcl command proc.
+<br>
+ In body two extra local variables are available named class and object.
+ They contain the name of respectively the class and the object that
+ invoked the method. If the method was invoked from a class, the values
+ of variables class and object will be identical (name of the class).
+<b><dt>
+ ClassName classmethod <u>name</u> <u>args</u> <u>body</u>
+</b><dd>
+ define a new classmethod named $<u>name</u> for class ClassName.
+ Whenever the classmethod is invoked, the contents of body will be executed.
+ The arguments <u>args</u> and <u>body</u> follow the same conventions
+ as in the Tcl command proc.
+<br>
+ In body two extra local variables are available named class and object.
+ Because a classmethod can only be invoked from a class, they are both
+ contain the name of the class that invoked the method.
+<b><dt>
+ ClassName deletemethod <u>name</u>
+</b><dd>
+ delete the method named $<u>name</u> from class ClassName.
+ Some special methods cannot be deleted.
+<b><dt>
+ ClassName deleteclassmethod <u>name</u>
+</b><dd>
+ delete the classmethod named $<u>name</u> from class ClassName.
+ Some special classmethods cannot be deleted.
+<b><dt>
+ ClassName private ?<u>name</u>? ?<u>value</u>?
+</b><dd>
+ classmethod private is used to get or change private data 
+ associated with a class.
+ Without arguments a list of all private class variables is returned.
+ If the name argument is given, but not the value argument, the 
+ current value of private class variable $<u>name</u> is returned. If both arguments
+ are present, the private class variable $<u>name</u> is set to $<u>value</u>.
+
+</dl><h2>
+ Methods
+</h2>
+ The methods defined by Class can be invoked from all objects
+<dl><b><dt>
+ pathName changeclass <u>newclass</u> ?...?
+</b><dd>
+ change the class of an instance (or object) with the name $<u>pathnName</u> to newclass
+ This can be useful to eg. change to a derived subclass (and back) based on data given
+ The command does not do any checking whether the class being changed to is compatible.
+<b><dt>
+ pathName destroy
+</b><dd>
+ destroys an object.
+ The destroy method of the objects class (if defined) and those
+ of its superclasses (if defined) will be invoked before the 
+ destruction of the actual object.
+<b><dt>
+ pathName info <u>option</u> ?...?
+</b><dd>
+<b>pathName info class</b><br>
+ returns the class of pathName<br>
+<b>pathName info classmethods ?pattern?</b><br>
+ returns a list of all available classmethods except the hidden ones (those starting 
+ with an underscore is returned. When it is invoked with one argument, a list
+ of all classmethods matching the pattern is returned<br>
+<b>pathName info methods ?pattern?</b><br>
+ returns a list of all available methods except the hidden methods (those starting 
+ with an underscore is returned. When it is invoked with one argument, a list
+ of all methods matching the pattern is returned<br>
+<b>pathName info parent</b><br>
+ returns the parent of pathName<br>
+<b>pathName info children</b><br>
+ returns the children of pathName<br>
+<b>pathName info subclasses</b><br>
+ returns the subclasses pathName<br>
+<b>pathName info classmethod option name ...</b><br>
+ returns information about the classmethod $name of pathName. Following options are supported:
+<ul>
+<li> body: returns the body of the classmethod (if it is defined in Tcl)
+<li> args: returns the arguments of the classmethod
+<li> default arg varname: returns 0 if the argument $arg does not have a default value, 
+ otherwise it returns 1, and places the default value in the variable varname
+</ul>
+<br><b>pathName info method option name ...</b><br>
+ returns information about the method $name of pathName. It takes the same options 
+ as "info classmethod"
+<b><dt>
+ pathName private ?<u>name</u>? ?<u>value</u>?
+</b><dd>
+ private is used to get or change data associated with an object.
+ Without arguments a list of all private variables is returned.
+ If the name argument is given, but not the value argument, the 
+ current value of private variable $<u>name</u> is returned. If both arguments
+ are present, the private variable $<u>name</u> is set to $<u>value</u>.
+
+</body>

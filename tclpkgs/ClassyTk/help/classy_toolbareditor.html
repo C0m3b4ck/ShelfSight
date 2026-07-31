@@ -1,0 +1,94 @@
+<HTML>
+<HEAD>
+   <TITLE>ClassyTk toolbar editor</TITLE>
+</HEAD>
+<BODY>
+
+<H1>ClassyTk toolbar editor</H1>
+Toolbars in <a href="ClassyTk.html">ClassyTk</a> applications are handled by a
+class called <a href="widgets/DynaTool.html">DynaTool</a>. The contents of the 
+toolbar are defined by toolbar definition files in the the 
+<a href="classy_configure.html">configuration system</a>.
+These can be edited more easily using the Toolbar Editor.
+<p>
+The Toolbar Editor displays the contents of the toolbar to be edited in
+a tree. New entries of the different possible types
+can be added using the Add menu or the toolbar. Entries can be moved 
+ or deleted using the Edit menu or the toolbar.
+
+<h2>Options</h2>
+The following parameters can be changed for an entry
+<h3>Type</h3>
+Type of entry.
+
+<h3>Name</h3>
+The entry name will be displayed as balloon help on the toolbar button.
+
+<h3>Label / icon / proc</h3>
+This field gives the name of the icon to be displayed on the button. Icons
+of the given are searched in the different <a href="classy_configure.html">
+configuration directories</a>. If no icon of the given name is found, the 
+text in this field will be displayed on the button.
+<p>
+When the entry is of the type widget or tool, the field will be used as the
+widget type or command to create the tool respectively.
+This option is not available separator entries.
+
+<h3>Command (or options)</h3>
+This option defines the functionality of the entry. The specific 
+meaning differs acoording to the type of entry. It is not available 
+for separator entries.
+
+<h2>Entry types</h2>
+<h3>action</h3>
+This creates a button from which a command can be invoked.
+For an action entry, The Command options is the command to be executed when 
+the entry is invoked.
+When the command contains a %W, it will be replaced by the name of the
+widget currently associated as a command window (cmdw) to the toolbar.
+
+<h3>separator</h3>
+This tool takes no parameters, and just creates a separator in a toolbar.
+
+<h3>check</h3>
+A check entry his is typically used to change a variable to an on or off value.
+For a check entry the command option contains a list of options used to create
+the check entry. The options for a typical checkbutton would go:<br>
+-variable test -onvalue yes -offvalue no -command {puts changed}<br>
+When the options contain a %W, it will be replaced by the name of the
+widget currently associated as a command window (cmdw) to the toolbar. This
+can eg. be used to bind private variables of an object to the toolbar entry:<br>
+-variable [privatevar %W test] -onvalue yes -offvalue no<br>
+The entry can also execute a command using the -command option.
+
+<h3>radio</h3>
+A number radio entries are typically used to change a variable to
+one of several values. It can also execute a command.
+For radio entries the command option contains a list of option used to create
+the radio entry. The options for a typical radiobutton would go:<br>
+-variable test -value option1<br>
+When the options contain a %W, it will be replaced by the name of the
+widget currently associated as a command window (cmdw) to the toolbar. This
+can eg. be used to bind private variables of an object to the toolbar entry:<br>
+-variable [privatevar %W test] test -value option1<br>
+
+<h3>widget</h3>
+A widget entry will create a widget that will be placed in the toolbar. The 
+widget will be of the type given in the 'Label / icon / proc' field, and 
+using the configuration parameters given in the 'Command' field. %W in
+the configuration parameters will be replaced by the name of the current
+cmdw (command window) of the toolbar.
+
+
+<h3>tool</h3>
+A tool entry will create a widget that will be placed in the toolbar. The 
+widget will be created by invoking the procedure given in the 
+'Label / icon / proc' field. The 'command' field is ignored.
+The procedure must have one argument: the name of the widget to be created.
+It must return a command that will be executed when the cmdw (command window)
+of the toolbar changes. %W in this command will be replaced by the name of
+the cmdw.
+
+</BODY>
+</HTML>
+

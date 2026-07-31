@@ -1,0 +1,10 @@
+Menus {
+	Application {
+		MainMenu {_menu MainMenu {Main application menu}}
+		TestMenu {_menu TestMenu {Main application menu}}
+		{$.classy__.temp} {_menu {$.classy__.temp} {}}
+	}
+Toolbars {
+	Application {
+		MainTool {_toolbar MainTool {Application main toolbar}}
+	}

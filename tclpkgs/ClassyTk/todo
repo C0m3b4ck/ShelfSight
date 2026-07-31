@@ -1,0 +1,16 @@
+widgets
+-------
+CharDialogs printing bug
+
+cdraw
+-----
+starts up to small
+change attributes (arrow, etc) when nothing selected (first time) -> error
+
+cwww
+----
+closing last window does not close application
+
+cedit
+-----
+save -> undo -> no *

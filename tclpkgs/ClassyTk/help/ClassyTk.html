@@ -1,0 +1,122 @@
+<HTML>
+<HEAD>
+	<TITLE>ClassyTk</TITLE>
+</HEAD>
+<BODY>
+<H1>ClassyTk</H1>
+<I>Object system, widget set and GUI builder for Tcl</I> <BR><I>by
+Peter De Rijk (Universiteit Antwerpen)</I> 
+
+<H2>What is ClassyTk</H2>
+
+<H4>ClassyTcl Object system</H3>
+ClassyTk is based on the <A HREF="ClassyTcl.html">ClassyTcl Object system</a>. 
+This is a dynamically loadable <A HREF="classy_object_system.html">object system</A> for 
+<A HREF="tcltk.html">Tcl</A>. A Tcl-only as well as a C implementation 
+is available. It also doesn't require patches to the Tcl core, so
+keeping up with new releases should be easy. Performance is very
+adequate. The C version is gives extra speed, and makes it possible
+to implement some methods in C.
+<br>
+In contrast to other Tcl object systems for Tcl, it is not modeled after 
+the object system designed for a completely different language such a C. 
+IMHO, it better follows the Tcl philosophy. The system is simple, but 
+flexible. Classes and objects are dynamic, and can easily be queried, 
+changed and debugged at runtime.
+
+<H3>Gui Builder</H3>
+The <a href="classy_builder.html">ClassyTk Builder</a> can be used to graphically 
+create interfaces. It is invoked via the <b>cbuild</b> command in the bin
+directory.
+
+<H3>Widget Set</H3>
+All new widgets in ClassyTk are based on the <a href="Widget.html">Widget</a> class.
+ClassyTk adds a lot of improvements to Tk, ranging from <a href="widgets/DragDrop.html">drag 
+and drop</a> support (between Tk apps) and a <a href="classy_configure.html">configuration 
+system</a> to a large set of <A HREF="widgets/index.html">new
+widgets and commands</A>, written using the object system.<br>
+While the object system itself only requires Tcl (&gt;8.0), the widgets that come with it
+require Tk (of course), and another freely available extension called
+<A HREF="Extral.html">ExtraL</A>. ExtraL also does not require
+compiled code, but can be speeded up by having it available.
+Documentation for the widgets is often somewhat limited, but besides
+the documentation, you can learn a lot from sources, the tests and the demos.
+
+<H3>Sample applications</H3>
+The ClassyTk distribution contains some example applications:
+<ul>
+<li><b>cedit</b>: This editor is actually very useable: I use it for all my developement
+<li><b>ccalc</b>: calculator; demo for the builder
+<li><b>cdraw</b>: vector drawing program
+<li><b>ctester</b>: app to test widgets
+<li><b>cfiles</b>: unfinished: very early stage file manager
+<li><b>ccenter</b>: unfinished: very early stage program manager
+</ul>
+
+<H2>Use</H2>
+You should be able to obtain the latest versions of 
+<A HREF="https://github.com/derijkp/ClassyTcl">ClassyTcl</a> and 
+<A HREF="https://github.com/derijkp/ClassyTk">ClassyTk</a>, and
+<A HREF="https://github.com/derijkp/Extral">ExtraL</a> Both Extral, 
+ClassyTcl and ClassyTk are implemented as loadable packages.
+<p>
+To use the widgets that come with the distribution, use the code:<BR>
+<CODE>tk appname name<br>
+package require ClassyTk</CODE><BR>
+The application name given by the "tk appname" will be
+used for managing defaults and configuration options.
+<p>
+To write a new application, you can try out the builder by starting the program
+cbuild in the bin directory.
+
+<H2>Contributions</H2>
+If you have fixed bugs, made some nice additions to ClassyTk widgets, etc.,
+you can send them to me, and I will consider incorporating them in new
+releases. Thanks to the people that have already contributed:
+<ul>
+<li>Ged Airey <gla@airey.demon.co.uk>
+</ul>
+
+<H2>How to contact me</H2>
+My mailbox gets overwhelmed quite often, and the development of ClassyTk 
+is definately not my only task, so responses might be slower than you 
+would like. However, I will respond as fast as I can.
+<P>
+<ADDRESS>
+Peter De Rijk<BR>University of Antwerp (UA) <BR>
+Department of Biochemistry <BR>Universiteitsplein 1 <BR>
+B-2610 Antwerp 
+<p>
+tel.: 32-03-820.23.27 <BR>fax: 32-03-820.22.48 <BR>
+E-mail: Peter.DeRijk@ua.ac.be <BR>
+</ADDRESS>
+
+<H2>Legalities</H2>
+ClassyTk is Copyright Peter De Rijk, University of Antwerp (UA),
+2000. The following terms apply to all files associated with the
+software unless explicitly disclaimed in individual files. 
+<P>
+The author hereby grant permission to use, copy, modify,
+distribute, and license this software and its documentation for any
+purpose, provided that existing copyright notices are retained in all
+copies and that this notice is included verbatim in any
+distributions. No written agreement, license, or royalty fee is
+required for any of the authorized uses. Modifications to this
+software may be copyrighted by their authors and need not follow the
+licensing terms described here, provided that the new terms are
+clearly indicated on the first page of each file where they apply. 
+<P>
+IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY
+PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION,
+OR ANY DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE. 
+<P>
+THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NON-INFRINGEMENT. THIS SOFTWARE IS PROVIDED ON AN &quot;AS IS&quot;
+BASIS, AND THE AUTHORS AND DISTRIBUTORS HAVE NO OBLIGATION TO PROVIDE
+MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+</BODY>
+</HTML>

@@ -1,0 +1,22 @@
+Only large and incompatible changes with regard to previous 
+versions are listed here:
+
+The former ClassyTcl has been split in to packages: ClassyTcl and ClassyTk
+
+ClassyTcl contains only the object system
+ClassyTk contains the rest (widgets, GUI builder)
+
+ClassyTcl
+---------
+- only classmethods can be invoked from a class
+- the init method used to initialise a new object used to be
+  defined as a classmethod, now as a method (is more logical)
+
+
+ClassyTk
+---------
+- The configuration system has been entirely redone, mainly for 
+  performance reasons
+- builder has changed considerably: The window builder now creates 
+  classes that can be used to create multiple windows. The general 
+  structure is also different.

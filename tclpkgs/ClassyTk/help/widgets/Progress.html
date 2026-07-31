@@ -1,0 +1,48 @@
+<HEAD>
+<TITLE>Progress</TITLE>
+</HEAD>
+<BODY>
+<h1>Progress</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ creates a widget in which the progress of some action will be displayed.
+ The -steps option gives the number of steps needed to progess through for
+ completion of the task. The program using the progressbar calls the "next" method
+ each time a step of the task is completed.The prograssbar displays the
+ percentage of steps done, vs the number of steps to do.
+ The progressbar has the concept of subtasks: if the -steps value is a list, e.g. {2 5}
+ the taks contains 2 main steps, each of which has 5 substeps. Progress in the subtask
+ is given using the next method with the level parameter (here 1).
+ The number of subtasks per level can be changed while running using the steps method:
+ Using the -steps options will reset the counters. The counters can be reset to 0 at 
+ any time using the reset method
+ The display will be updated every -refresh miliseconds (if next is called enough)
+
+<h2>
+	Progress specific options
+</h2><dl><b><dt>Command-Line Name: -ticks</b><b><dt>Database Name: ticks</b><b><dt>Database Class: Ticks</b><dd>
+<b><dt>Command-Line Name: -steps</b><b><dt>Database Name: steps</b><b><dt>Database Class: Steps</b><dd>
+<b><dt>Command-Line Name: -refresh</b><b><dt>Database Name: refresh</b><b><dt>Database Class: Refresh</b><dd>
+
+</dl><h2>
+	Progress specific methods
+</h2><dl><b><dt>
+pathname set value
+</b><dd>
+<b><dt>
+pathname get 
+</b><dd>
+<b><dt>
+pathname percentconfigure ?option? ?value? ...
+</b><dd>
+ change the properties of the text displaying the percentage
+<b><dt>
+pathname barconfigure ?option? ?value? ...
+</b><dd>
+ change the properties of the bar
+<b><dt>
+pathname redraw
+</b><dd>
+ redraw progress bar
+
+</body>

@@ -1,0 +1,45 @@
+<HEAD>
+<TITLE>Print dialog</TITLE>
+</HEAD>
+<BODY>
+<h1>Print dialog</h1>
+
+Menu:File.Print
+Tcl routine:printcanvas
+
+<h2>Description</h2>
+This dialog is used to create a printable postscript file of the current
+page. The file created can be sent straigh to a postscript printer, or
+via ghostscript for non-postscript printers.
+
+<h2>Options</h2>
+<dl>
+<dt>File (<a href="classy_entry.html">Entry</a>)<dd>
+enter the name of the file to save the postscript to, or click on the 
+browse button to use the <a href="classy_file_save.html">file save dialog</a>.
+
+<dt>Print (<a href="classy_optionbox.html">Optionbox</a>)<dd>
+allows yo to select
+wether a color, grayscale or black and white print is produced.
+
+<dt>Printsize<dd>
+Here the size of the paper on which will be printed can set. If this size
+is different from the current paper size (for editing), everything will
+be scale appropriately. The standard papersizes can be selected from 
+the <a href="classy_optionmenu.html">optionmenu</a> to 
+the right. Non standard paper sizes can be entered in the 'Width' and 
+'Height' <a href="classy_entry.html>entries</a>.
+</dl>
+
+<h2>Action buttons</h2>
+<dl>
+<dt><a href="PeosAction.html">Action</a> Save
+<dd>Save the postscript file with the current settings
+<dt><a href="PeosAction.html">Action</a> Help
+<dd>What do you think?
+<dt><a href="PeosAction.html">Action</a> Close
+<dd>Close the dialog box without selecting a file.
+</dl>
+</body>
+
+

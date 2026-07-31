@@ -1,0 +1,140 @@
+<HTML>
+<HEAD>
+	<TITLE>ClassyTcl object system</TITLE>
+</HEAD>
+<BODY>
+<H1>ClassyTcl object system</H1>
+<H2>Introduction</H2>
+The ClassyTcl object system was created as an object system that
+goes well with Tcl (IMHO), rather than being modelled
+after the object system of another language. Some criteria were:
+<UL>
+	<LI>Tcl is a dynamic language: so classes, methods, etc should also
+	be changeable at runtime 
+	<LI>no Tcl core changes 
+	<LI>fast, little overhead 
+	<LI>Tcl only possible, C code also possible for better performance 
+	<LI>Class methods can be defined in Tcl as wel as in C, and also in
+	a mix of the two 
+	<LI>Tk like working model 
+</UL>
+
+<H2>Classes and objects</H2>
+In ClassyTcl classes and objects are very similar: they are both
+entities that combine data and methods (actions that can be
+performed). However, classes are mainly used as a template to
+produce a number of objects or instances. The class of an object
+determines wich data it stores, and which methods it has available.
+<P>
+New classes can be created by subclassing existing classes. The
+subclass inherits the data and methods of its parent class. Extra
+data and methods can be added after the new class is created.
+Inherited methods can be replaced or removed.
+
+<H2>Classmethods and methods</H2>
+Class provides two types of methods: 
+<DL>
+	<DT>classmethods 
+	<DD>A classmethod is a command associated with a class. A new
+	classmethod can be defined using the classmethod <I>classmethod</I>
+	(which is defined in the basic class named <A HREF="Class.html"><I>Class</I></A>
+	and always inherited). A classmethod can be invoked using the
+	command:<br>
+	<code>className classmethod name arguments body</code><br>
+	Classmethods are only available to their class, and cannot be
+	invoked from instances (objects) of that class. 
+	<DT>methods 
+	<DD>A method can be defined using the classmethod <I>method</I>.
+	A method of a class is available to all instances (objects) of the
+	class. A method can be invoked using a	command of the form:<br>
+	<LISTING>pathName method name arguments body</LISTING>
+</DL>
+<P>
+Methods and classmethods starting with an underscore are hidden: they
+can be invoked, but are not shown when methods are queried. A class
+can have both a method and a classmethod with the same name. If this
+is the case, the method is invoked when doing:<BR>
+<CODE>object methodName ?...?</CODE><BR>
+and the classmethod is used when doing:<BR>
+<CODE>class methodName ?...?</CODE><BR>
+
+<H2>Private variables</H2>
+Each object (or class) can store its data in private variables. A
+private variable should only be used by the object owning it. In
+ClassyTcl, an object or a function can access the private variables
+of another object, which is great for debugging. However, it is not
+usually good object oriented programming practice to rely on this
+feature for your programs (data encapsulation). Private variables can
+be accessed using the following commands: 
+<DL>
+	<DT>private object var ?var? ... 
+	<DD>make the local variables in the list refer to the private
+	variables of $object 
+	<DT>setprivate object var value 
+	<DD>set the private variable $var of object $object to $value 
+	<DT>getprivate object var 
+	<DD>returns the current value of the private variable $var of object
+	$object 
+	<DT>privatevar object var 
+	<DD>returns the fully specified name of the private variable $var
+	of object $object. This can eg. be used to link a private variable
+	to an entry:<br>
+	<CODE>entry .e -textvariable [privatevar someobject somevar] </CODE>
+</DL>
+<p>
+Private variables can also be accessed via the method "private".
+<DL>
+	<DT>object/className private
+	<DD>returns a list of private variables of the class or object
+	<DT>object/className private varName
+	<DD>returns the current value of the private variable given by varName
+	<DT>object/className private varName value
+	<DD>sets the current value of the private variable given by varName to 
+		the given value
+</DL>
+<h2>Creation and Destruction of new classes</h2>
+A new class can be created using the method subclass:<BR>
+<CODE>SomeClass subclass SubClass</CODE><br>
+The new subclass inherits all methods, classmethods and private variables of
+its superclass. If the methods, classmethods of a class are changed, they
+will changed for all its subclasses as wel. Changes of private classvariables
+are also propagated, but only if the are changed using the private method.
+<p>
+A class is destroyed by invoking its destroy classmethod:<br>
+<code>className destroy</code><br>
+The destroy classmethod can be redefined. However, it cannot have arguments, 
+and will always succeed: The command can return errors, but the class will be 
+destroyed anyway.
+
+<h2>Creation and Destruction of new objects</h2>
+A new object can be created using the classmethod new:<BR>
+<CODE>SomeClass new objectName</CODE><BR>
+Upon creation of a new object, the init classmethod of the class of the object 
+being created will be invoked.
+Usually, the init classmethod will contain the following line:
+<code>super init ?...?</code>
+If the init classmethod was redefined by the class, this code invokes the init 
+classmethod of its superclass. If the init classmethod was inherited 
+from the superclass, "super init" will find the first superclass of the class 
+that defines a different init classmethod, and invokes that. (
+"super methodName ?...?" can also be used to invoke previous definitions of
+other methods or classmethods.)
+<p>
+Objects are destroyed by invoking their destroy method:<br>
+<code>objectName destroy</code><br>
+the destroy method can be redefined. However, upon destruction, all
+destroy methods defined in superclasses of the class will be invoked as wel.
+A destroy method cannot have arguments, and must always succeed: The command 
+can return errors, but the object will be destroyed anyway.
+
+
+<H2>Class</H2>
+When the package Class is loaded, it will create one base class
+named <A HREF="Class.html">Class</A>. All other classes and
+object will be derived from this base class. <A HREF="Class.html">The
+classmethods and methods defined by Class</A> can normally be invoked
+from all classes.
+</BODY>
+</HTML>
+
+

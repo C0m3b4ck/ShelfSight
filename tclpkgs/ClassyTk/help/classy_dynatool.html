@@ -1,0 +1,129 @@
+<HTML>
+<HEAD>
+   <TITLE>ClassyTk dynatool definition</TITLE>
+</HEAD>
+<BODY>
+
+<H1>ClassyTk dynatool definition</H1>
+
+The contents of the toolbars managed by <a href="widgets/DynaTool.html">DynaTool</a> 
+in <a href="ClassyTk.html">ClassyTk</a> are determined by a toolbar definition.
+Which definition is used for a type of toolbar is determined in the the <a
+href="../classy_configure.html">configuration system</a>.
+
+<p>
+
+A toolbar definition consists of a number of lines. Each line specifies
+one tool, and starts with a word describing the type of tool. The rest of
+the line contains a list of parameters. If a parameter contains spaces, it
+must be surrounded with curly braces ({}) or double quotes (""). A
+parameter enclosed in curly braces can also span multiple lines. A line
+can be commented out by starting with a hash character (#). If the toolbar
+starts with a line "nodisplay", the toolbar will not be displayed.
+
+<p>
+
+Several of these tools take a <b>command</b> or <b>options</b> or optional
+<b>cmdwcommand</b> argument. If these contain a <b>%W</b> it will be
+replaced with the cmdw of the current toolbar. A <b>%w</b> will be
+replaced with the name of the tool widget. All tools (except the
+separator) understand an optional <b>cmdwcommand</b> argument (at the end
+of the line). This cmdwcommand will be executed everytime the cmdw is
+changed.
+
+<p>
+
+The following tool types are supported:
+
+<h2>action</h2>
+This creates a button that when clicked on will perform
+some action. It has the following parameters:
+<ol>
+<li><b>id</b>: The button usually displays an icon. DynaMenu will try to find an icon 
+of this name in the <a href="../classy_configure.html">configuration 
+directories</a>. If no such icon is found, the name will be displayed as text instead.
+<li><b>help</b>: This text will appear in the balloon help that will popup if the
+mousepointer stays above the botton without invoking it.
+<li><b>command</b>: This command will be executed when the button is invoked. Each
+toolbar has an attached cmdw (commmand window) where actions invoked from the toolbar
+will take place. If the command contains <b>%W</b> it will be replaced with the 
+cmdw of the current toolbar. This can be necessary if one toolbar definition is used
+for several toolbars, eg. a number of editor windows, where each toolbar should invoke
+commands on the editor widget in the same window.
+</ol>
+A typical example would be:<br>
+<code>action save "Save" {filesave %W}</code>
+
+<h2>tool</h2>
+This actually calls a procedure written by the developer to create any type of tool.
+It only has two parameters:
+<ol>
+<li><b>name</b>: The name of the procdedure to call to create the tool. The procedure
+will be called with one argument: the name of widget to be created. It must return a
+line that can be executed to initialise the widget for an other cmdw. In this line,
+%W will be replaced by the name of the cmdw before execution.
+<li><b>help</b>: Text that will appear in the balloon help that will popup if the
+mousepointer stays above the botton without invoking it.
+</ol>
+A typical example would be:<br>
+<code>tool zoomtool "Zoom"</code>
+
+<h2>separator</h2>
+This tool takes no parameters, and just creates a little extra space to separate 
+different bloks of tools.
+
+<h2>check</h2>
+check creates a checkbutton. This is typically used to change a variable to
+an on or off value. It can also execute a command. It has the following parameters:
+<ol>
+<li><b>id</b>: same as above
+<li><b>help</b>: same as above
+<li><b>options</b>: A number of options as can be given when configuring the Tcl 
+checkbutton. <b>%W</b> will be replaced by the name of the cmdw of the current toolbar.
+</ol>
+A typical example would be:<br>
+<code>check checked "Checked" {-variable checked -command {puts %W:$checked}}</code>
+
+<h2>radio</h2>
+radio creates a checkbutton. This is typically used to change a variable to
+one of several values. It can also execute a command. It has the following parameters:
+<ol>
+<li><b>id</b>: same as above
+<li><b>help</b>: same as above
+<li><b>options</b>: A number of options as can be given when configuring the Tcl 
+radiobutton. <b>%W</b> will be replaced by the name of the cmdw of the current toolbar.
+</ol>
+A typical example would be:<br>
+<code>
+radio opt1 "opt1" {-variable opt -value opt1 -command {puts %W:$opt}}<br>
+radio opt2 "opt2" {-variable opt -value opt2 -command {puts %W:$opt}}
+</code>
+
+<h2>widget</h2>
+widget can create any widget as a tool. It has the following parameters.
+<ol>
+<li><b>widget command</b>: This command is invoked to create the widget. The command
+will be invoked with one argument: the name of the widget to be created.
+<li><b>help</b>: same as above
+<li><b>options</b>: A number of options. The widget created will be configured using
+these options. <b>%W</b> will be replaced by the name of the cmdw of the current toolbar.
+</ol>
+An example would be:<br>
+<code>
+widget Entry "Entry" {-command {invoke v {puts %W:$v}}}
+</code>
+
+<h2>label</h2>
+creates a toollabel that just displays an icon or text. It has the following parameters.
+<ol>
+<li><b>id</b>: same as above
+<li><b>help</b>: same as above
+</ol>
+A typical example would be:<br>
+<code>
+label label "Just a label"
+</code>
+
+</BODY>
+</HTML>
+

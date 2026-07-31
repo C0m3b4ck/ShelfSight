@@ -1,0 +1,40 @@
+<HEAD>
+<TITLE>ColorHSV</TITLE>
+</HEAD>
+<BODY>
+<h1>ColorHSV</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ An HSV color selector for composing color values.
+ A large part of this code has been inspired by the colorselect widget
+ in the [Incr Tcl] 1.5 distribution
+
+<h2>
+	ColorHSV specific options
+</h2>
+<dl><b><dt>Command-Line Name: -size</b><b><dt>Database Name: size</b><b><dt>Database Class: Size</b><dd>
+ gives the desired size of the widget. (it is square, so no width and height.)
+<b><dt>Command-Line Name: -command</b><b><dt>Database Name: command</b><b><dt>Database Class: Command</b><dd>
+ command to be executed upon changing the color
+
+</dl><h2>
+	ColorHSV specific methods
+</h2>
+<dl><b><dt>
+pathname set value
+</b><dd>
+ set the current color to $value, without executing command
+<b><dt>
+pathname set value
+</b><dd>
+ set the current color to $value
+<b><dt>
+pathname get 
+</b><dd>
+ get the current color
+<b><dt>
+pathname getHSV 
+</b><dd>
+ get the current color as a list of hue, saturation and value
+
+</body>

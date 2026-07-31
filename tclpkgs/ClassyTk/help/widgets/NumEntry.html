@@ -1,0 +1,32 @@
+<HEAD>
+<TITLE>NumEntry</TITLE>
+</HEAD>
+<BODY>
+<h1>NumEntry</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ provides nearly the same options and methods as Entry,
+ but constrains the value to different types of numbers,
+ and has increment and decrement buttons.
+
+<h2>
+	NumEntry specific options
+</h2><dl><b><dt>Command-Line Name: -increment</b><b><dt>Database Name: increment</b><b><dt>Database Class: Increment</b><dd>
+<b><dt>Command-Line Name: -min</b><b><dt>Database Name: min</b><b><dt>Database Class: Min</b><dd>
+<b><dt>Command-Line Name: -max</b><b><dt>Database Name: max</b><b><dt>Database Class: Max</b><dd>
+<b><dt>Command-Line Name: -constraint</b><b><dt>Database Name: constraint</b><b><dt>Database Class: Constraint</b><dd>
+<b><dt>Command-Line Name: -state</b><b><dt>Database Name: state</b><b><dt>Database Class: State</b><dd>
+
+</dl><h2>
+	NumEntry specific methods
+</h2><dl><b><dt>
+pathname incr number
+</b><dd>
+ increment the current value of the entry with $number. $number does not
+ have to be an integer
+<b><dt>
+pathname constrain ?warn?
+</b><dd>
+ check whether the value matches the regular expression given by the -constraint option
+
+</body>

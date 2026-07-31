@@ -1,0 +1,115 @@
+int,*Menubutton.BorderWidth 1
+key,<<BackSpace>> <BackSpace>
+key,<<Bottom>> <Control-End>
+key,<<Close>> {<Alt-q> <Control-q>}
+key,<<CompleteTab>> <Control-Shift-v>
+key,<<Connect>> <Control-Alt-c>
+key,<<Copy>> {<Alt-c> <Control-c>}
+key,<<Cut>> {<Alt-x> <Control-x>}
+key,<<Default>> {<Alt-d> <Control-d>}
+key,<<Delete>> <Delete>
+key,<<DeleteEnd>> <Control-k>
+key,<<Down>> <Down>
+key,<<Empty>> <Control-u>
+key,<<End>> {<End> <Alt-Right>}
+key,<<EndSelect>> <Control-Shift-space>
+key,<<Escape>> <Escape>
+key,<<ExecuteCmd>> <Control-e>
+key,<<Find>> {<Alt-F> <Control-F>}
+key,<<FindFunction>> <Control-Alt-f>
+key,<<FindNext>> {<Alt-f> <Control-f>}
+key,<<FindPrev>> {<Alt-b> <Control-b>}
+key,<<FocusNext>> {<Tab> <Control-Tab>}
+key,<<FocusPrev>> {<Shift-Tab> <Shift-Control-Tab>}
+key,<<Format>> <Control-Alt-j>
+key,<<Goto>> {<Alt-j> <Control-j>}
+key,<<Help>> <F1>
+key,<<HistoryDown>> <Alt-Down>
+key,<<HistoryUp>> <Alt-Up>
+key,<<Home>> {<Home> <Alt-Left>}
+key,<<IndentIn>> {<Alt-i> <Control-i>}
+key,<<IndentOut>> {<Alt-I> <Control-I>}
+key,<<Insert>> <Insert>
+key,<<Invoke>> <space>
+key,<<KeyMenu>> <Alt-m>
+key,<<Left>> <Left>
+key,<<Load>> {<Alt-o> <Control-o>}
+key,<<LoadNext>> <Control-Alt-o>
+key,<<Macro>> {<Alt-m> <Control-m>}
+key,<<MarkerCurrent>> <Alt-w>
+key,<<MarkerPrev>> <Alt-Shift-w>
+key,<<MarkerSelect>> <Control-Shift-w>
+key,<<MarkerSet>> <Control-w>
+key,<<New>> <Control-N>
+key,<<PageBottom>> <Alt-Down>
+key,<<PageDown>> <Next>
+key,<<PageLeft>> <Alt-Prior>
+key,<<PageRight>> <Alt-Next>
+key,<<PageTop>> <Alt-Up>
+key,<<PageUp>> <Prior>
+key,<<ParaDown>> <Control-Down>
+key,<<ParaUp>> <Control-Up>
+key,<<Paste>> {<Alt-v> <Control-v>}
+key,<<PasteSpecial>> {<Control-V>}
+key,<<Print>> <Control-p>
+key,<<Quit>> {<Alt-Q> <Control-Q>}
+key,<<Redo>> {<Alt-U> <Control-Z> <Control-y>}
+key,<<Reopen>> {<Alt-r> <Control-r>}
+key,<<ReplaceFindNext>> {<Alt-g> <Control-g>}
+key,<<Return>> <Return>
+key,<<Right>> <Right>
+key,<<Save>> {<Alt-s> <Control-s>}
+key,<<SaveAs>> {<Alt-S> <Control-S>}
+key,<<ScrollPageDown>> {<Control-Next> <Control-Alt-Down>}
+key,<<ScrollPageUp>> {<Control-Prior> <Control-Alt-Up>}
+key,<<SelectAll>> {<Alt-a> <Control-a>}
+key,<<SelectBottom>> <Shift-Control-End>
+key,<<SelectDown>> <Shift-Down>
+key,<<SelectEnd>> {<Shift-End> <Shift-Alt-Right>}
+key,<<SelectHome>> {<Shift-Home> <Shift-Alt-Left>}
+key,<<SelectLeft>> <Shift-Left>
+key,<<SelectNone>> <Control-n>
+key,<<SelectPageBottom>> <Shift-Alt-Down>
+key,<<SelectPageDown>> <Shift-Next>
+key,<<SelectPageLeft>> <Shift-Alt-Prior>
+key,<<SelectPageRight>> <Shift-Alt-Next>
+key,<<SelectPageTop>> <Shift-Alt-Up>
+key,<<SelectPageUp>> <Shift-Prior>
+key,<<SelectParaDown>> <Shift-Control-Down>
+key,<<SelectParaUp>> <Shift-Control-Up>
+key,<<SelectRight>> <Shift-Right>
+key,<<SelectTableDown>> <Control-Shift-Down>
+key,<<SelectTableLeft>> <Control-Shift-Left>
+key,<<SelectTableRight>> <Control-Shift-Right>
+key,<<SelectTableUp>> <Control-Shift-Up>
+key,<<SelectTop>> <Shift-Control-Home>
+key,<<SelectUp>> <Shift-Up>
+key,<<SelectWordLeft>> <Shift-Control-Left>
+key,<<SelectWordRight>> <Shift-Control-Right>
+key,<<SelectmTableDown>> <Control-Shift-Down>
+key,<<SelectmTableLeft>> <Control-Shift-Left>
+key,<<SelectmTableRight>> <Control-Shift-Right>
+key,<<SelectmTableUp>> <Control-Shift-Up>
+key,<<SpecialFocusNext>> <Control-Tab>
+key,<<SpecialFocusPrev>> <Shift-Control-Tab>
+key,<<StartSelect>> <Control-space>
+key,<<TableDown>> <Control-Down>
+key,<<TableLeft>> <Control-Left>
+key,<<TableReturn>> <Control-Return>
+key,<<TableRight>> <Control-Right>
+key,<<TableUp>> <Control-Up>
+key,<<Top>> <Control-Home>
+key,<<Transpose>> <Control-t>
+key,<<Undo>> {<Alt-u> <Control-z>}
+key,<<Up>> <Up>
+key,<<WordLeft>> <Control-Left>
+key,<<WordRight>> <Control-Right>
+key,<<mTableDown>> <Control-Down>
+key,<<mTableLeft>> <Control-Left>
+key,<<mTableRight>> <Control-Right>
+key,<<mTableUp>> <Control-Up>
+{select Win Classy Tk,*MessageDialog} Win
+{select Win Classy,*GetFont} Win
+{select Win Classy,*SaveFile} Win
+{select Win Classy,*SelectFile} Win
+{select left right,*ScrollSide} right

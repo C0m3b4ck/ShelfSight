@@ -1,0 +1,9 @@
+*~
+*.o
+/work/*
+/old/*
+/linux-ix86/*
+/linux-x86_64/*
+/win32-ix86/*
+/tests/tmp/*
+tclIndex

@@ -1,0 +1,10 @@
+Identifier: Extral
+Version: 2.1.0
+Title: ExtraL
+Creator: Peter De Rijk <Peter.DeRijk@ua.ac.be>
+Description: extra (list and other) commands for Tcl.
+Rights: BSD
+URL: http://extral.sourceforge.net/
+Subject: list
+Subject: array
+Subject: math

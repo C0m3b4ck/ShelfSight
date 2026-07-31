@@ -1,0 +1,85 @@
+<HTML>
+<HEAD>
+   <TITLE>ClassyTk menu editor</TITLE>
+</HEAD>
+<BODY>
+
+<H1>ClassyTk menu editor</H1>
+Menus in <a href="ClassyTk.html">ClassyTk</a> applications are handled by a
+class called <a href="widgets/DynaMenu.html">DynaMenu</a>. The contents of the 
+menus are defined by menu definition files in the the 
+<a href="classy_configure.html">configuration system</a>.
+These can be edited more easily using the Menu Editor.
+<p>
+The Menu Editor displays the contents of the menu to be edited in
+a tree. New entries of type submenu, action, radio, check or separator
+can be added using the Add menu or the toolbar. Entries can be moved 
+ or deleted using the Edit menu or the toolbar.
+
+<h2>Options</h2>
+The following parameters can be changed for an entry
+<h3>Type</h3>
+The type can be changed between non menu types. A menu cannot be changed
+into another type and vice versa.
+
+<h3>Name</h3>
+This option gives the name of the entry, the text label that is displayed in the menu.
+This option is not available separator entries.
+
+<h3>Key shortcut</h3>
+A key shortcut by which the function in the menu can be invoked from a widget
+to which the menu is bound. It can either be a Tcl key event 
+(eg. &lt;Up&gt;, &lt;Alt-a&gt;, &lt;Control-a&gt;, &lt;F2&gt;) or a virtual event 
+(eg. &lt;&lt;Up&gt;&gt;, &lt;&lt;Print&gt;&gt;).
+This option is not available separator entries.
+
+<h3>Command (or options)</h3>
+This option defines the functionality of the entry. The specific 
+meaning differs acoording to the type of entry. It is not available 
+for menu and separator entries.
+
+<h2>Entry types</h2>
+<h3>menu</h3>
+This creates a submenu. It has the following parameters:
+
+<h3>action</h3>
+This creates a menu item from which a command can be invoked.
+For an action entry, The Command options is the command to be executed when 
+the entry is invoked.
+When the command contains a %W, it will be replaced by the name of the
+widget currently associated as a command window (cmdw) to the menu.
+
+<h3>separator</h3>
+This tool takes no parameters, and just creates a separator in a menu.
+
+<h3>check</h3>
+A check entry his is typically used to change a variable to an on or off value.
+For a check entry the command option contains a list of options used to create
+the check entry. The options for a typical checkbutton would go:<br>
+-variable test -onvalue yes -offvalue no -command {puts changed}<br>
+When the options contain a %W, it will be replaced by the name of the
+widget currently associated as a command window (cmdw) to the menu. This
+can eg. be used to bind private variables of an object to the menu entry:<br>
+-variable [privatevar %W test] -onvalue yes -offvalue no<br>
+The entry can also execute a command using the -command option.
+
+<h3>radio</h3>
+A number radio entries are typically used to change a variable to
+one of several values. It can also execute a command.
+For radio entries the command option contains a list of option used to create
+the radio entry. The options for a typical radiobutton would go:<br>
+-variable test -value option1<br>
+When the options contain a %W, it will be replaced by the name of the
+widget currently associated as a command window (cmdw) to the menu. This
+can eg. be used to bind private variables of an object to the menu entry:<br>
+-variable [privatevar %W test] test -value option1<br>
+
+<h3>activemenu</h3>
+This creates a submenu that can be changed upon each
+invocation. The command will be executed upon each invocation of
+the menu. The command should return a menu definition describing the submenu
+that should be displayed.
+
+</BODY>
+</HTML>
+

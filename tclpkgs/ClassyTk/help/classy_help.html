@@ -1,0 +1,31 @@
+<HTML>
+<HEAD>
+   <TITLE>ClassyTk</TITLE>
+</HEAD>
+<BODY>
+
+<H1>ClassyTk Help system</H1>
+The <a href="ClassyTk.html">ClassyTk</a> Help system uses hypertext as its basis. This is text in which some
+words or paragraphs link to other texts, containing a description of or more 
+information about the word. These links are usually shown in another color,
+and clicking on them will fetch the linked text. All Help text are written in
+HTML (HyperText Markup Language), which is also used on the WWW (World Wide Web).
+<p>
+Actually the help system can be used as a simple web browser. Help text can contain 
+links to websites; You can go to any external site (if you are connected to 
+the net) by selecting the File radiobutton in the Help toolbar, typing in the full 
+url name in the entry, and pressing Return.
+<p>
+The <a href="widgets/HTML.html">HTML class</a> that can be based on the compiled
+<a href="http://tkhtml.tcl.tk/">tkhtml widget</a>
+or the <a href="../html_library-0.3/html/help.html">Tcl-only html 
+library by Stephen Uhler</a>. The html library one only understands HTML 2.0 
+and is slower than the compiled one. It is however distributed together with ClassyTk.
+
+Tkhtml (3) will support HTML 4.01 and a lot of neat things like tables and Cascading Style Sheets.
+ClassyTk tries to load tkhtml by doing a "package require Tkhtml". If this does not 
+load the tkhtml widget, it reverts to the tcl-only version.
+
+</BODY>
+</HTML>
+

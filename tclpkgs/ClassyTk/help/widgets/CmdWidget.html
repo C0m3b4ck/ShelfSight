@@ -1,0 +1,108 @@
+<HEAD>
+<TITLE>CmdWidget</TITLE>
+</HEAD>
+<BODY>
+<h1>CmdWidget</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ CmdWidget creates a window in which Tcl commands can be typed.
+ The command will be executed when the Enter key is pressed
+ with the cursor positioned at the end of the command currently 
+ being edited, and the command is complete Tcl command.
+ The output of the commands will be redirected to the cmd widget.
+ Previous commands can be gotten and edited before execution using
+ Alt-Up (default keypress, can be changed).
+<p>
+ <b>Classy::cmd</b><br>
+ is a convience function that pops up a toplevel containing a 
+ CmdWidget with a scroll bar.
+
+<h2>
+	CmdWidget specific options
+</h2><dl><b><dt>Command-Line Name: -prompt</b><b><dt>Database Name: prompt</b><b><dt>Database Class: Prompt</b><dd>
+ This is the prompt that wil be displayed. It is run through subst
+ first, so you can use something like {[pwd] % } as prompt.
+
+</dl><h2>
+	CmdWidget specific methods
+</h2><dl><b><dt>
+pathname do 
+</b><dd>
+ execute the command currently being edited
+<b><dt>
+pathname display args
+</b><dd>
+ insert args into CmdWidget
+<b><dt>
+pathname complete ?what?
+</b><dd>
+ If what (default is file) is set to
+<dl>
+<dt>file<dd>try to complete the word at the cursor to a complete available file
+<dt>var<dd>try to complete the word at the cursor to a complete available variable
+<dt>cmd<dd>try to complete the word at the cursor to a complete available command
+</dl>
+<b><dt>
+pathname insert index chars ?tags?
+</b><dd>
+<b><dt>
+pathname delete ?index? ?index?
+</b><dd>
+<b><dt>
+pathname undo 
+</b><dd>
+<b><dt>
+pathname redo 
+</b><dd>
+<b><dt>
+pathname clearundo 
+</b><dd>
+<b><dt>
+pathname cut 
+</b><dd>
+<b><dt>
+pathname copy 
+</b><dd>
+<b><dt>
+pathname paste 
+</b><dd>
+<b><dt>
+pathname clear 
+</b><dd>
+ remove command being edited
+<b><dt>
+pathname clearall
+</b><dd>
+ clear the entire cmd widget
+<b><dt>
+pathname historyup 
+</b><dd>
+<b><dt>
+pathname historydown 
+</b><dd>
+<b><dt>
+pathname save file
+</b><dd>
+ save the contents of the CmdWidget to file
+<b><dt>
+pathname select mode
+</b><dd>
+<b><dt>
+pathname move mode
+</b><dd>
+<b><dt>
+pathname backspace 
+</b><dd>
+<b><dt>
+pathname textdelete 
+</b><dd>
+<b><dt>
+pathname position index
+</b><dd>
+<b><dt>
+pathname connect ?name?
+</b><dd>
+ connect to a different Tk application with name name using send.
+ if name is not given, returns the current connected application
+
+</body>

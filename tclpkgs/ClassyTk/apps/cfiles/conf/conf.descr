@@ -1,0 +1,12 @@
+Menus {
+	Application {
+		MainMenu {_menu MainMenu {Main application menu}}
+		Classy::Builder {_menu Classy::Builder {menu used in the ClassyTk Builder}}
+		Classy::WindowBuilder {_menu Classy::WindowBuilder {menu used in the ClassyTk WindowBuilder}}
+	}
+Toolbars {
+	Application {
+		MainTool {_toolbar MainTool {Application main toolbar}}
+		DirTool {_toolbar DirTool {}}
+		FileTool {_toolbar FileTool {}}
+	}

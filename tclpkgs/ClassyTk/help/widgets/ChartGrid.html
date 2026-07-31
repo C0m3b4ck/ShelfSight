@@ -1,0 +1,44 @@
+<HEAD>
+<TITLE>ChartGrid</TITLE>
+</HEAD>
+<BODY>
+<h1>ChartGrid</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ <b>ChartGrid is not a widget type</b>. It is a class whose objects can 
+ be associated with a canvas widget. When a ChartGrid instance is 
+ associated with a canvas, it will draw a grid on this canvas. 
+ Several ChartGrid, LineChart and BarChart objects can be associated
+ with the same canvas.
+
+<h2>
+	ChartGrid specific options
+</h2>
+ ChartGrid objects support the following options in its configure method
+<dl>
+<dt>-canvas<dd>name of canvas to draw the barchart
+<dt>-tag<dd>unique tag for all canvas items of the chart
+<dt>-area<dd>area in which to diplay the chart (a list of four numbers)
+<dt>-xrange<dd>xrange to display
+<dt>-yrange<dd>xrange to display
+<dt>-xstep<dd>numbers and gridlines are shown at startx+x*stepx
+<dt>-ystep<dd>numbers and gridlines are shown at starty+y*stepy
+<dt>-font<dd>font used for numbers
+<dt>-showx<dd>show numbers on x axis
+<dt>-showy<dd>show numbers on y axis
+</dl>
+
+<h2>
+	ChartGrid specific methods
+</h2>
+<dl><b><dt>
+pathname destroy 
+</b><dd>
+<b><dt>
+pathname configure ?option? ?value? ?option value ...?
+</b><dd>
+<b><dt>
+pathname redraw
+</b><dd>
+
+</body>

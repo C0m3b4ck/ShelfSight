@@ -1,0 +1,107 @@
+<HEAD>
+<TITLE>TkTable</TITLE>
+</HEAD>
+<BODY>
+<h1>TkTable</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ creates a Table of entries or text fields. This acts much like a 
+ spreadsheet. This Table is based on the tktable widget (and needs it to be available
+ as a package). Classy::TkTable mimics some of the behaviour/API of the older Classy::Table
+ widget. However: the coordinates are in row major order (as in Tktable) and not in
+ column major (as in Classy::Table). 
+ The Classy::TkTable widget has much better performance (because of the underlying 
+ tktable widget), and has some new options not in Classy::Table (all options of tktable,
+ and some extra)
+ <p>
+ The bindings are more like that of most spreadsheets. It hase 2 "modes": a selection where 
+ you basically move the cell, and editing will replace the current value in the current cell,
+ and a editing mode where you edit within the cell (started by double-clicking or F2).
+ Data for Classy::TkTable can be supplied in several ways.
+ <dl>
+ <dt>a variable
+ <dd>the variable is set by using the -variable option. 
+ The type of value is set using the -variabletype option, that can have one of the following types:
+	<dl>
+	<dt>array
+	<dd>the same as the default Tktable variable
+	<dt>list
+	<dd>a list of lists: The first element is the first row in the table, etc.
+	<dt>tlist
+	<dd>a list of lists transposed: The first element is the first column in the table, etc.
+	<dt>table
+	<dd>an Extral table
+	</dl>
+ <dt>Command
+ <dd>The Table can have an associated command. This is used to get the data 
+ to display in the Table and te change data when it
+ is edited. The table command will be called with the following 
+ parameters:<br>
+ <dl>
+ <dt>command object x y ?value?
+ <dd>the parameter object is the name of the Table.<br>
+ When no value is given, the command must return the value to be
+ shown in the given cell.
+ When the command fails, the error message will be shown in the affected cell.
+ <dd>When value is given, it is the new value of the cell.
+ If the setcommand fails, the previous value will be restored.
+ </dl>
+ You can have the command behave like the TkTable -command option by specifying -variabletype tktable
+ </dl>
+
+<h2>
+	TkTable specific options
+</h2><dl><b><dt>Command-Line Name: -autosize</b><b><dt>Database Name: autoSize</b><b><dt>Database Class: AutoSize</b><dd>
+ "pathName autosize" will adapt column and row sizes automatically to the data in the table.
+ This command is automatically run when defining e.g. a new variable or type. 
+ "pathName autosizecol" and "pathName autosizerow" can be used to automatically
+ adapt the size of a givven column or row<br>
+ The -autosize option consists of a list of numbers giving the minimum 
+ and maximum width and heights of the columns and rows respectively.
+ <pre>
+ colminsize colmaxsize rowminsize rowmaxsize<br>
+ </pre>
+ if some numbers are not given (the list contains less than 4 items), 
+ defaults (1 60 1 4) are used. -1 can be used for unbounded
+<b><dt>Command-Line Name: -command</b><b><dt>Database Name: Command</b><b><dt>Database Class: Command</b><dd>
+ gives the command that will be called to get or set the value of a given cell. It must have the 
+ following format:<br>
+ command object x y ?value?<br>
+ The parameters given to the command are the Table objects name, the x and
+ y coordinate in the table.
+ If the parameter value is not given, the command should return thew current value of the cell
+ given by coordinates x and y in the table.
+ If value is given, the command should change the value of the cell to this new value.
+ If the setcommand fails, the previous value will be restored.
+<b><dt>Command-Line Name: -cols</b><b><dt>Database Name: cols</b><b><dt>Database Class: Cols</b><dd>
+ gives the number of columns in the Table
+<b><dt>Command-Line Name: -rows</b><b><dt>Database Name: rows</b><b><dt>Database Class: rows</b><dd>
+ gives the number of rows in the Table
+<b><dt>Command-Line Name: -colsize</b><b><dt>Database Name: colsize</b><b><dt>Database Class: colsize</b><dd>
+ gives the default column size
+<b><dt>Command-Line Name: -rowsize</b><b><dt>Database Name: rowsize</b><b><dt>Database Class: rowsize</b><dd>
+ gives the default row size
+<b><dt>Command-Line Name: -xresize</b><b><dt>Database Name: xResize</b><b><dt>Database Class: Resize</b><dd>
+  allow columns to be resized
+<b><dt>Command-Line Name: -yresize</b><b><dt>Database Name: yResize</b><b><dt>Database Class: Resize</b><dd>
+ allow rows to be resized
+<b><dt>Command-Line Name: -labels</b><b><dt>Database Name: labels</b><b><dt>Database Class: Labels</b><dd>
+ Add a title line with the given labels
+
+</dl><h2>
+	TkTable specific methods
+</h2><dl><b><dt>
+pathname copy
+</b><dd>
+ puts the data in the selected cells in the selection
+<b><dt>
+pathname cut
+</b><dd>
+ puts the data in the selected cells in the selection, and deletes it afterwards
+<b><dt>
+pathname paste ?data?
+</b><dd>
+ paste data in the Table. The data will replace the contents of each selected cell.
+
+
+</body>

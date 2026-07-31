@@ -1,0 +1,52 @@
+<HEAD>
+<TITLE>Toplevel</TITLE>
+</HEAD>
+<BODY>
+<h1>Toplevel</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ Toplevel produces "intelligent" toplevels. They have a simple option to
+make them resizable or not. They automatically assume a reasonable
+minimum size based on their content (The Toplevel will be placed on the
+screen and its size calculated at the first idle moment after Toplevel 
+creation. The Toplevel will place itself so that the mouse pointer is 
+is positioned over it, without being place partly out of the screen.
+If it is resized, it can remember its size for the next display.
+
+<h2>
+	Toplevel specific options
+</h2><dl><b><dt>Command-Line Name: -destroycommand</b><b><dt>Database Name: ?</b><b><dt>Database Class: ?</b><dd>
+commands invoked when destroying the toplevel
+<b><dt>Command-Line Name: -keepgeometry</b><b><dt>Database Name: keepGeometry</b><b><dt>Database Class: KeepGeometry</b><dd>
+remember size of Toplevel for next creation
+<b><dt>Command-Line Name: -keepposition</b><b><dt>Database Name: keepPosition</b><b><dt>Database Class: KeepPosition</b><dd>
+remember size of Toplevel for next creation
+<b><dt>Command-Line Name: -cache</b><b><dt>Database Name: cache</b><b><dt>Database Class: Cache</b><dd>
+hide the Toplevel instead of destroying it when it is closed
+<b><dt>Command-Line Name: -title</b><b><dt>Database Name: Title</b><b><dt>Database Class: Title</b><dd>
+<b><dt>Command-Line Name: -resize</b><b><dt>Database Name: resize</b><b><dt>Database Class: Resize</b><dd>
+list of 2 values determining whether the Toplevel is resizable in x
+and y direction. If they are 0, the window is not resizable in that direction.
+When 1 it is resizable, with the requested size being the minimum size.
+When more than 2, the window is resizable, with the minimum size being 
+the value given
+<b><dt>Command-Line Name: -autoraise</b><b><dt>Database Name: autoRaise</b><b><dt>Database Class: AutoRaise</b><dd>
+
+</dl><h2>
+	Toplevel specific methods
+</h2><dl><b><dt>
+pathname hide 
+</b><dd>
+hide the Toplevel
+<b><dt>
+pathname place 
+</b><dd>
+display the Toplevel in a proper position, size, ...
+<b><dt>
+pathname resize 
+</b><dd>
+<b><dt>
+pathname destroy 
+</b><dd>
+
+</body>

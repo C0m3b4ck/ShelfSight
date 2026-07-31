@@ -1,0 +1,52 @@
+<HEAD>
+<TITLE>DefaultMenu</TITLE>
+</HEAD>
+<BODY>
+<h1>DefaultMenu</h1>
+
+ subclass of <a href="Widget.html">Widget</a><br>
+ creates a button which pops up a <a href="SelectDialog.html">selection 
+ dialog</a> from which the user can choose between different
+ default values, or add new ones.
+
+<h2>
+	DefaultMenu specific options
+</h2>
+<dl><b><dt>Command-Line Name: -command</b><b><dt>Database Name: command</b><b><dt>Database Class: Command</b><dd>
+ This command will be executed when the user selects a value from
+ the DefaultMenu.
+<b><dt>Command-Line Name: -getcommand</b><b><dt>Database Name: getCommand</b><b><dt>Database Class: GetCommand</b><dd>
+ This command will be executed upon invoking the menu. The return value 
+ will be placed in the Add entry. This value can be added easily to
+ the list of default values to choose from
+<b><dt>Command-Line Name: -key</b><b><dt>Database Name: key</b><b><dt>Database Class: Key</b><dd>
+ key by which the default system will be queried and changed
+
+</dl><h2>
+	DefaultMenu specific methods
+</h2>
+<dl><b><dt>
+pathname get 
+</b><dd>
+ get the currently selected value.
+<b><dt>
+pathname menu 
+</b><dd>
+ invoke the DefaultMenu menu
+<b><dt>
+pathname add value
+</b><dd>
+ add $value to the associated defaults list
+<b><dt>
+pathname remove value
+</b><dd>
+ remove $value from the associated defaults list
+<b><dt>
+pathname removemenu 
+</b><dd>
+ remove the DefaultMenu menu from the screen
+<b><dt>
+pathname place 
+</b><dd>
+
+</body>

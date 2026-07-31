@@ -1,0 +1,181 @@
+<HEAD>
+<TITLE>Widget</TITLE>
+</HEAD>
+<BODY>
+<h1>Widget</h1>
+
+ The Widget class is a subclass of <a href="Class.html">Class</a> that
+ forms the basis of all widgets in ClassyTk.
+ Widget provides the functionality to produce objects that behave like
+ Tk widgets. However it will normally not be used by itself to 
+ create objects.
+ Subclasses of Widget are used to produce widgets with extra functionality.
+ All these "object widgets" are based on a Tk base widget, which by default
+ is a frame, but can be different.<p>
+ Widget redefines the Tk destroy and bgerror commands to incorporate
+ proper destruction of object widgets.<p>
+ If SomeWidgetClass is a subclass of Widget, and objectName starts with a dot,
+ the command
+ <pre>SomeWidgetClass objectName</pre>
+ creates an object (a widget) and a new Tcl command 
+ whose name is objectName. This command may be used 
+ to invoke various operations on the widget by using commands of the form:
+ <pre>objectName method ?...?</pre>
+
+<h2>
+	Widget methods
+</h2>
+ The Widget methods are available to all instances of Widget or one
+ of its subclasses.
+<dl><b><dt>
+ init
+</b><dd>
+ The Widget init method will normally be called using the "super init"
+ command in the init classmethod of one of its subclasses.
+ By default the Widget init method will create an object
+ with a frame as Tk base widget.<br>
+ If one argument is given, it will be used as the type of the base
+ widget of the new object, where the class (if possible) or bindtags
+ are adapted to the class name.<br>
+ If more than one argument is given, the args will be evaluated to
+ create the base widget of the object. In this case getting the class
+ and bindtags of the Tk widget right is the resonsability of the caller.
+<b><dt>
+ objectName configure ?<u>option</u>? ?<u>value</u>? ?<u>option</u> <u>value</u> ...?
+</b><dd>
+ Query or modify the configuration options of an widget (object).
+ If no <u>option</u> is specified, returns a list
+ describing all of the available options for the widget. 
+ If <u>option</u> is specified with
+ no <u>value</u>, then the command returns a list describing 
+ the <u>option</u> (this list will be identical to 
+ the  corresponding  sublist  of  the  value
+ returned if no <u>option</u> is specified). If one or
+ more option-value pairs  are  specified, then the
+ command modifies the given class option(s) to have
+ the given value(s)
+<br>eg.:<pre>
+ SomeWidgetClass configure -try yes
+</pre><b><dt>
+ objectName cget <u>option</u>
+</b><dd>
+ get the value of the option <u>option</u>
+<b><dt>
+ objectName component ?<u>componentname</u>? ?<u>widget</u>?
+</b><dd>
+ If no <u>componentname</u> is given, the names of all accessible 
+ components are returned.
+ If <u>componentname</u> is given, the component widget associated with
+ <u>componentname</u> is returned.
+ If <u>componentname</u> and <u>widget</u> are given, <u>widget</u> 
+ will be associated as a component with <u>componentname</u>.
+<b><dt>
+ objectName destroy
+</b><dd>
+ destroys an instance of Widget or one of its subclasses.
+ The Widget class also redefines the Tk destroy command, so
+ that objects can also be properly destroyed by the command
+ <pre>destroy objectName</pre>
+<br>eg.:<pre>
+ objectName destroy
+</pre>
+</dl><h2>
+	Widget classmethods
+</h2>
+ The Widget classmethods are only available to Widget or one
+ of its subclasses, not to its instances.
+<dl><b><dt>
+ className addoption <u>option</u> <u>defaultlist</u> ?<u>body</u>?
+</b><dd>
+ addoption is used to add an option to a class. The value of these options
+ can be changed or queried for each object (Widget) using the configure
+ and cget commands.<br>
+ If <u>body</u> is given, it will be executed every time the option is changed.
+ In <u>body</u>, the special variables class and object are available.
+ Also available is a variable named value. This contains the new
+ value for the option on entry. The option value will be set to the
+ the return value of command. If no explicit return command is given in 
+ command, the option value will be set to the value of the variable
+ value at exit.
+<br>
+ <u>defaultlist</u> must be a list containing three elements:
+ databasename databaseclass defaultvalue
+<br>
+ The values of options for each object are stored in the private
+ array options, and can be accessed by methods this way.
+<br>eg.:<pre>
+ SomeWidgetClass addoption -try {try Try 1} {return [true $value]}
+</pre><b><dt>
+ className configure ?<u>option</u>? ?<u>value</u>? ?<u>option</u> <u>value</u> ...?
+</b><dd>
+ Query or modify the class specific configuration options.
+ If no <u>option</u> is specified, returns a list
+ describing all of the available options for the class. 
+ If <u>option</u> is specified with
+ no <u>value</u>, then the command returns a list describing 
+ the <u>option</u> (this list will be identical to 
+ the  corresponding  sublist  of  the  value
+ returned  if  no  <u>option</u>  is specified).  If one or
+ more <u>option</u>-<u>value</u> pairs  are  specified, then the
+ command modifies the given class option(s) to have
+ the given  value(s)
+<br>eg.:<pre>
+ SomeWidgetClass configure -try yes
+</pre><b><dt>
+ className chainmethods <u>list</u> <u>widget</u>
+</b><dd>
+ chainmethods is a convenience to make commands of the Tk base widget
+ or subwidgets available to your class. It will
+ chain all methods given in <u>list</u> to <u>widget</u>. You can use the variable
+ object in the name; <b>note that if you do this, you must put the $object
+ between braces, to delay substitution to when the actual object
+ calls the chained method!</b>
+<br>eg.:<pre>
+ SomeWidgetClass chainmethods {set get} {$object}
+ SomeWidgetClass chainmethods {action} {$object.subwidget}
+</pre><b><dt>
+ className chainallmethods <u>widget</u> <u>widgettype</u>
+</b><dd>
+ chain all commands of <u>widgettype</u> to a Tk widget <u>widget</u>.
+ The Tk widgets should be of type widgettype.
+ However, commands with the same name of several basic Class methods 
+ are ignored (configure, config, cget, destroy, class, private, component).
+<br>eg.:<pre>
+ SomeWidgetClass chainallmethods {$object} text
+</pre><b><dt>
+ className chainoptions <u>widget</u>
+</b><dd>
+ chainoptions is a convenience to make all options of the base widget
+ or a subwidget available to your class. It will
+ add all options that <u>widget</u> has to the options
+ of the class. Changing one of these options will change the option
+ of the chained widget. <b>The options of only one base widget can
+ be chained this way!</b>
+<br>eg.:<pre>
+ SomeWidgetClass chainoptions {$object}
+</pre><b><dt>
+ className chainoption option <u>widget</u> <u>widgetoption</u> ?<u>widget</u> <u>widgetoption</u>? ...
+</b><dd>
+ chainoption is a convenience to make options of component widgets
+ available to your class. One option can be linked to several component
+ widgets. Changing the option will change the given widgetoptions for
+ all chained widgets. Querying the option will return the value
+ of the first chained option.
+<br>eg.:<pre>
+ SomeWidgetClass chainoption -bg {$object} -bg {$object.sub} -fg
+</pre><b><dt>
+ className synonym_option option <u>fulloption</u>
+</b><dd>
+ synonym_option is a convenience to make synonymous options
+ using option will give the same results as using <u>fulloption</u>
+<br>eg.:<pre>
+ SomeWidgetClass chainoption -bg background
+</pre><b><dt>
+ Widget destroy
+</b><dd>
+ When class Widget is destroyed, it tries to clean up after itself:
+ It undoes the redefinition of the destroy and bgerror command
+<br>eg.:<pre>
+ SomeWidgetClass addoption -try {try Try 1} {return [true $value]}
+</pre>
+</body>

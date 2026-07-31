@@ -1,0 +1,44 @@
+<HEAD>
+<TITLE>Configuration editor</TITLE>
+</HEAD>
+<BODY>
+<h1>Configuration editor</h1>
+
+The configuration editor is used to edit the configuration description 
+files. These files determine which <a href="classy_configure.html">
+configuration options</a> are presented to the user.
+The final <a href="classy_configure.html">configuration dialog</a>
+is constructed by merging the options in the files conf.descr in the
+ClassyTk and Application default configuration directories. 
+<p>
+Several buttons allow navigation in the configuration hierarchy described
+by the conf.descr file:
+<ul>
+<li><b>Parent</b>: go back up one level in the hierarchy
+<li><b>Sublist</b>: go back up one level in the hierarchy
+<li><b>Up</b>: move slected entry up in the list
+<li><b>Down</b>: move slected entry down in the list
+<li><b>Delete</b>: delete selected entry
+<li><b>Add</b>: add an entry to the list. If the list is empty, the 'type'
+of entry will be asked.
+</ul>
+
+<p>
+The entries next to the list allow changing entries. Depending on the type
+of entry, some options ar not available.
+<ul>
+<li><b>Name</b>: change name (label) of current entry
+<li><b>type</b>: change type of current entry
+<li><b>Key</b>: change key of current entry
+<li><b>Description</b>: change desription of current entry
+<li><b>Default value</b>: change default value of current entry. The default 
+values are only used when creating a default init.values.
+</ul>
+
+<p>
+The <b>save</b> button at the bottom saves the edited conf.descr file. The 
+<b>Create</b> button creates a init.values file with default values.
+
+</ul>
+</body>
+

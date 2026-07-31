@@ -1,0 +1,112 @@
+<HEAD>
+<TITLE>Tree</TITLE>
+</HEAD>
+<BODY>
+<h1>Tree</h1>
+
+ subclass of <a href="Class.html">Class</a><br>
+ <b>Tree is not a widget type</b>. It is a class whose objects can 
+ be associated with a canvas widget. When a Tree instance is 
+ associated with a canvas, it will draw a tree on this canvas. 
+
+<h2>
+	Tree options
+</h2>
+ A tree object supports the following options in its configure method
+<dl>
+<dt>-canvas<dd>name of canvas to draw the chart
+<dt>-tag<dd>unique tag for all canvas items of the chart
+<dt>-padx<dd>size of indentation
+<dt>-pady<dd>size left open between different lines
+<dt>-font<dd>default font for the text lines
+<dt>-padtext<dd>size between text parts
+<dt>-startx<dd>x location of root
+<dt>-starty<dd>y location of root
+<dt>-rootimage<dd>optional image displayed on root
+<dt>-roottext<dd>optional text displayed on root
+</dl>
+
+<h2>
+	Tree specific methods
+</h2>
+<dl><b><dt>
+pathname destroy 
+</b><dd>
+<b><dt>
+pathname configure ?option? ?value? ?option value ...?
+</b><dd>
+ changes the way the tree is displayed. Supported options are given above.
+<b><dt>
+ pathname addnode parent node args
+</b><dd>
+ add a node to node $parent. The following arguments can be given:
+ <ul>
+ <li>-text
+ <li>-image
+ <li>-window
+ <li>-length
+ <li>-type
+ <li>-pos
+ </ul>
+<b><dt>
+ pathname confignode node args
+</b><dd>
+ configure a node. The following arguments can be given:
+ <ul>
+ <li>-text
+ <li>-image
+ </ul>
+<b><dt>
+ pathname closenode node
+</b><dd>
+<b><dt>
+ pathname opennode node
+</b><dd>
+<b><dt>
+ pathname clearnode node
+</b><dd>
+<b><dt>
+ pathname deletenode node
+</b><dd>
+<b><dt>
+ pathname exists node
+</b><dd>
+<b><dt>
+ pathname type node
+</b><dd>
+<b><dt>
+ pathname node ...
+</b><dd>
+ <ul>
+ <li>pathname node index
+ <li>pathname node x y
+ </ul>
+<b><dt>
+ pathname what ...
+</b><dd>
+ <ul>
+ <li>pathname what index
+ <li>pathname what x y
+ </ul>
+<b><dt>
+ pathname parentnode node
+</b><dd>
+<b><dt>
+ pathname children node
+</b><dd>
+<b><dt>
+ pathname selection ?option? ...
+</b><dd>
+ <ul>
+ <li>pathname selection
+ <li>pathname selection clear
+ <li>pathname selection add node ?node ...?
+ <li>pathname selection set node ?node ...?
+ <li>pathname selection remove node ?node ...?
+ </ul>
+<b><dt>
+ pathname nodes parent
+</b><dd>
+ returns the child nodes from $parent
+
+</body>

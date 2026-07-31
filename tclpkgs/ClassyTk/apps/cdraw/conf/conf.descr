@@ -1,0 +1,217 @@
+Menus {
+	Application {
+		MainMenu {_menu MainMenu {Main application menu} {
+menu "File" {
+	action "Open file" {fileload %W} <<Load>>
+	action "Save" {filesave %W} <<Save>>
+	action "Save as" {saveas %W} <<SaveAs>>
+	menu "Skeleton" {
+		action "Save skeleton" {saveskeleton %W}
+		action "Load skeleton" {loadskeleton %W}
+		check "No skeleton fonts" {-variable [privatevar %W current(skeletonfonts)] -onvalue 1 -offvalue 0}
+		check "Redraw helices" {-variable [privatevar %W current(skeletonredraw)] -onvalue 1 -offvalue 0}
+	}
+	action "Print" {print %W} <<Print>>
+	separator
+	action "Clear page" {
+		if [Classy::yorn "Are you absolutely sure you want to clear the page (no undo)"] {clearpage %W}
+	} <<Clear>>
+	separator
+	action "Editor" {edit newfile} <<Editor>>
+	action "Command window" {Classy::cmd} <<Cmd>>
+	action "Builder" {catch {destroy .classy__.builder};Classy::Builder .classy__.builder} <<Builder>>
+	action "Customise application" {Classy::Config dialog} <<Customise>>
+	action "Customise menu" {Classy::Config dialog -key menu,MainMenu} <<CustomiseMenu>>
+	action "Customise toolbar" {Classy::Config dialog -key toolbar,MainTool} <<CustomiseTool>>
+	action "Exit" {exit} <<Exit>>
+}
+menu "Edit" {
+	action "Select Tree" {selecttree %W} <t>
+	action "Select Drawing" {selectall %W} <<SelectAll>>
+	action "Deselect" {deselect %W} <<Escape>>
+	action "Adjust selection" {adjustselectiondialog .adjustselectiondialog} <<AdjustSelection>>
+	separator
+	action "Delete" {delete %W} <<Delete>>
+	action "Cut" {cut %W} <<Cut>>
+	action "Copy" {copy %W} <<Copy>>
+	action "Paste" {paste %W} <<Paste>>
+#	action "Copy to windows clipb" {wincopy %W} <<WinCopy>>
+#	action "Copy sel to windows clipb" {wincopy %W _sel} <<WinCopySel>>
+#	action "Copy page to windows clipb" {wincopy %W all} <<WinCopyPage>>
+	separator
+	check "Undo on" {-variable [privatevar %W current(undo)] -onvalue 1 -offvalue 0 -command {undoon %W}} <<UndoStatus>>
+	action "Undo" {undo %W} <<Undo>>
+	action "Redo" {redo %W} <<Redo>>
+	action "Undo steps" {undosteps} <<UndoSteps>>
+	action "Clear undo buffer" {clearundo %W} <<ClearUndo>>
+}
+menu "Objects" {
+	action "Properties toolbars" {extratool %W Properties} <p>
+	action "Group" {group %W} <Control-g>
+	action "Ungroup" {ungroup %W} <Alt-g>
+	separator
+	action "Link object" {link %W} <l>
+	action "Unlink object" {unlink %W _sel} <u>
+	separator
+	action "Raise object" {raise_objects %W _sel} <<Raise>>
+	action "Lower object" {lower_objects %W _sel} <<Lower>>
+	action "Raise to top" {top_objects %W _sel} <<Top>>
+	action "Lower to bottom" {bottom_objects %W _sel} <<Bottom>>
+	separator
+	menu "Hide" {
+		action "Selection" {hide %W _sel}
+		action "Bases" {hide %W _base}
+		action "Helix names" {hide %W _helixname}
+		action "Numbering" {hide %W _numbering}
+		action "Base pairing" {hide %W _dot}
+		action "Non standard Base pairing" {hide %W _dotns}
+		action "Base connections" {hide %W _baseconnect}
+		action "Box" {hide %W _box}
+	}
+	menu "UnHide" {
+		action "Selection" {unhide %W _sel}
+		action "Bases" {unhide %W _base}
+		action "Helix names" {unhide %W _helixname}
+		action "Numbering" {unhide %W _numbering}
+		action "Base pairing" {unhide %W _dot}
+		action "Non standard Base pairing" {unhide %W _dotns}
+		action "Base connections" {unhide %W _baseconnect}
+		action "Box" {unhide %W _box}
+	}
+}
+menu "Mode" {
+	radio "Select" {-command {select_start %W} -variable [privatevar %W current(tool)] -value select} <<Select>>
+	radio "Select trees" {-command {select_start %W tree} -variable [privatevar %W current(tool)] -value tree} <F2>
+	radio "Select elements" {-command {select_start %W element} -variable [privatevar %W current(tool)] -value element} <F3>
+	radio "Select sub-elements" {-command {select_start %W segment} -variable [privatevar %W current(tool)] -value subelement} <F4>
+	radio "Select single objects" {-command {select_start %W single} -variable [privatevar %W current(tool)] -value single} <F5>
+	separator
+	check "Rotate" {-variable [privatevar %W current(rotate)] -command {rotate_set %W}} <r>
+	separator
+	radio "Zoom" {-command {zoom_start %W} -variable [privatevar %W current(tool)] -value zoom} <Control-z>
+	radio "Text" {-command {text_start %W} -variable [privatevar %W current(tool)] -value text} <Control-t>
+	radio "Line" {-command {line_start %W} -variable [privatevar %W current(tool)] -value line} <Control-l>
+	radio "Polygon" {-command {polygon_start %W} -variable [privatevar %W current(tool)] -value polygon} <Control-p>
+	radio "Rectangle" {-command {rectangle_start %W} -variable [privatevar %W current(tool)] -value rectangle} <Control-r>
+	radio "Oval" {-command {oval_start %W} -variable [privatevar %W current(tool)] -value oval} <Control-o>
+	radio "Arc" {-command {arc_start %W} -variable [privatevar %W current(tool)] -value arc} <Control-a>
+	action "Insert bitmap" {bitmap_insert %W [Classy::selectfile]} <<BitMap>>
+}
+menu "Options" {
+	action "Page Setup" {pagesetup %W} <<PageSetup>>
+	action "Structure settings" {settingsdialog .settingsdialog} <<Settings>>
+	separator
+	action "Show double strand by connection" {undocheck %W;connected %W}
+	action "Redraw helices" {undocheck %W;redrawhelices %W}
+	action "Unformatted Single" {undocheck %W;setunformatted %W}
+	action "Reformat Single" {undocheck %W;reformatted %W}
+	action "No auto redraw Single" {undocheck %W;noauto %W}
+	action "Auto redraw Single" {undocheck %W;reauto %W}
+	separator
+	action "Base numbering" {numberingdialog .numberingdialog} n
+	action "Box bases" {undocheck %W;box %W}
+	action "Connect bases" {undocheck %W;connectbases %W}
+	action "Beads" {beadsdialog .beadsdialog}
+	action "Restore text" {undocheck %W;restoretext %W}
+}
+menu "Geometry" {
+	action "Geometry toolbar" {extratool %W Geometry} <g>
+	menu "Orient" {
+		action "Left Up" {orient %W 135}
+		action "Up" {orient %W 90}
+		action "Right Up" {orient %W 45}
+		action "Right" {orient %W 0}
+		action "Right Down" {orient %W -45}
+		action "Down" {orient %W -90}
+		action "Left Down" {orient %W -135}
+		action "Left" {orient %W 180}
+	}
+	action "Flip" {undocheck %W;flip %W} <f>
+	action "Flip Drawing" {undocheck %W;flipall %W}
+	action "Center drawing" {undocheck %W;centerdrawing %W}
+	action "Straighten base" {undocheck %W;straightenbase %W} <s>
+	action "Straighten top" {undocheck %W;straightentop %W} <S>
+	action "Arc" {undocheck %W;arcbase %W} <a>
+	action "Redraw helices" {undocheck %W;redrawhelices %W} <Control-r>
+}
+menu "Help" {
+	action "Quickstart" {Classy::help quickstart.html} <<HelpQuick>>
+	action "RnaViz" {Classy::help rnaviz} <<Help>>
+	action "Tutorials" {Classy::help howto.html} <<HelpHowto>>
+	action "Contents" {Classy::help contents.html} <<HelpContents>>
+	separator
+	action "ClassyTk" {Classy::help ClassyTk} <<HelpClassyTk>>
+	action "Help" {Classy::help classy_help} <<HelpHelp>>
+}
+		}}
+	}
+}
+Toolbars {Application {MainTool {_toolbar MainTool {Main application toolbar} {
+action open "Open" {fileload %W}
+action save "Save" {filesave %W}
+action print "Print" {print %W}
+action undo "Undo" {undo %W}
+action redo "redo" {redo %W}
+separator
+action copy "Copy" {copy %W}
+action cut "Cut" {cut %W}
+action paste "Paste" {paste %W}
+action raiseobj "Raise objects" {raise_objects %W _sel}
+action lowerobj "Lower objects" {lower_objects %W _sel}
+separator
+action objproperties "Properties toolbar" {extratool %W Properties}
+action geometry "Geometry toolbar" {extratool %W Geometry}
+separator
+tool xtool "X coordinate"
+tool ytool "Y coordinate"
+tool locktool "lock aspect ratio"
+tool wtool "Selection width"
+tool htool "Selection height"
+tool zoomentry "Zoom"
+		}} Sidebar {_toolbar SideBar {Application side toolbar} {
+tool selecttool "Select"
+tool selecttreetool "Select tree"
+tool selectelementtool "Select element"
+tool selectsegmenttool "Select segment"
+tool selectsingletool "Select single"
+separator
+tool rotatetool "Rotate"
+tool zoomtool "Set zoom"
+tool texttool "Text"
+tool linetool "Line"
+tool polytool "Polygon"
+tool recttool "Rectangle"
+tool ovaltool "Oval"
+tool arctool "Arc"
+separator
+		}} Properties {_toolbar Properties {Properties toolbar} {
+action adjustsel "Adjust selection" {adjustselection}
+tool filltool "Fill color"
+tool outlinetool "Outline color"
+tool fonttool "Select font"
+tool smoothtool "Draw smoothed line"
+tool capstyletool "Cap style"
+tool joinstyletool "Join style"
+tool arrowtool "Arrow"
+tool arrowshapetool "Arrow shape"
+tool widthtool "Object width"
+tool contenttool "Object text"
+tool tagstool "Object tags"
+tool selectstippletool "Object tags"
+		}} Zoom {_toolbar Zoom {Zoom toolbar} {
+action 10% "Zoom to 10%" {zoom %W 10}
+action 25% "Zoom to 25%" {zoom %W 25}
+action 50% "Zoom to 50%" {zoom %W 50}
+action 75% "Zoom to 75%" {zoom %W 75}
+action 100% "Zoom to 100%" {zoom %W 100}
+action 200% "Zoom to 200%" {zoom %W 200}
+action 400% "Zoom to 400%" {zoom %W 400}
+tool zoomentry "Zoom"
+		}}}}
+Keys {
+	Object {
+		Link {_key <<Link>> {Link key} <l>}
+		UnLink {_key <<UnLink>> {UnLink key} <u>}
+		Rotate {_key <<Rotate>> {Rotate key} <r>}
+	}
+}

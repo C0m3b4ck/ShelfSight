@@ -1,0 +1,46 @@
+<HEAD>
+<TITLE>SelectDialog</TITLE>
+</HEAD>
+<BODY>
+<h1>SelectDialog</h1>
+
+ subclass of <a href="Dialog.html">Dialog</a><br>
+ creates a selection dialog. It allows selection out of a list of
+ values. It also optionally allows adding or removing values from 
+ the list. Using -selectmode enter, values not in the list can 
+ be entered.
+<p>
+ When -selectmode is single or browse (only one element can be selected),
+ the result is this one element. In selectmodes where multiple elements can be
+ selected, the result is always a list, even if only one element was selected.
+ (a list of one element in this case)
+<p>
+ The command<br>
+<b>Classy::select title list</b><br>
+ can be used to easily pop op a dialog for simply selecting a value
+ out of a list.
+
+<h2>
+	SelectDialog specific options
+</h2><dl><b><dt>Command-Line Name: -command</b><b><dt>Database Name: ?</b><b><dt>Database Class: ?</b><dd>
+<b><dt>Command-Line Name: -command</b><b><dt>Database Name: ?</b><b><dt>Database Class: ?</b><dd>
+<b><dt>Command-Line Name: -default</b><b><dt>Database Name: default</b><b><dt>Database Class: Default</b><dd>
+<b><dt>Command-Line Name: -combo</b><b><dt>Database Name: combo</b><b><dt>Database Class: Combo</b><dd>
+<b><dt>Command-Line Name: -combopreset</b><b><dt>Database Name: comboPreset</b><b><dt>Database Class: ComboPreset</b><dd>
+<b><dt>Command-Line Name: -addcommand</b><b><dt>Database Name: addCommand</b><b><dt>Database Class: AddCommand</b><dd>
+<b><dt>Command-Line Name: -deletecommand</b><b><dt>Database Name: deleteCommand</b><b><dt>Database Class: DeleteCommand</b><dd>
+<b><dt>Command-Line Name: -renamecommand</b><b><dt>Database Name: renameCommand</b><b><dt>Database Class: RenameCommand</b><dd>
+
+</dl><h2>
+	SelectDialog specific methods
+</h2><dl><b><dt>
+pathname fill names
+</b><dd>
+<b><dt>
+pathname get 
+</b><dd>
+<b><dt>
+pathname set name
+</b><dd>
+
+</body>
