@@ -1,8 +1,0 @@
-Menus {
-	Application {
-		MainMenu {_menu MainMenu {Main application menu}}
-	}
-Toolbars {
-	Application {
-		MainTool {_toolbar MainTool {Application main toolbar}}
-	}

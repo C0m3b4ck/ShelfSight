@@ -1,5 +1,0 @@
-#define indel_col_width 3
-#define indel_col_height 5
-static unsigned char indel_col_bits[] = {
-  0x02, 0x07, 0x02, 0x02, 0x02, };
-

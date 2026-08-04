@@ -30,17 +30,31 @@ The badges are meant to represent compatibility. Badges with the word "certified
 Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
 ## Build
-Run in POSIX-compatible shell (Linux, MSYS on MS Windows)
-### Clone the repository
-```bash
-git clone https://github.com/C0m3b4ck/ShelfSight.git
-cd ShelfSight/src
-./BUILD_ALL.sh
-```
-### Usage
-Select the correct options for your system via numerical input.
+### Prerequisites
+- CMake >= 3.16 and a C++17 compiler
+- [wxWidgets](https://www.wxwidgets.org) 3.x (`libwxgtk3.2-dev` on Debian/Ubuntu)
+- SQLite 3 (`libsqlite3-dev`)
+- OpenSSL (`libssl-dev`)
 
-***No errors should occur.***
+### Build
+```bash
+cd ShelfSight/src
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+ctest --test-dir build        # optional: run headless backend tests
+./build/shelfsight [--db <path>]   # --db overrides the database file
+```
+
+### Project layout
+```
+src/
+├── backend/     # framework-independent logic (SQLite data layer, crypto, auth, library)
+│   └── test_backend.cpp   # headless backend tests (SQL-injection safe paths covered)
+├── gui/         # wxWidgets UI (main frame, panels)
+├── main.cpp     # wxApp entry point
+└── CMakeLists.txt
+```
+The backend has no GUI dependency and can be built and tested on its own.
 ## Documentation
 - Docs are available in */DOCS/* subfolder. 
 - User manuals will be made after 1.0 release.
@@ -48,6 +62,7 @@ Select the correct options for your system via numerical input.
 ## Credits
 ### Started on June 19th, 2026, by C0m3b4ck. 
 ### Libraries used:
-- [FLTK](https://fltk.org), a simple and light C++ GUI library,
-- [CryptoPP](https://github.com/weidai11/cryptopp>CryptoPP), a C++ library for hashing and encryption
+- [wxWidgets](https://www.wxwidgets.org), a cross-platform C++ GUI toolkit,
+- [SQLite](https://www.sqlite.org), a lightweight embedded SQL database,
+- [OpenSSL](https://www.openssl.org), for SHA-256 hashing and AES-256-CBC encryption
 

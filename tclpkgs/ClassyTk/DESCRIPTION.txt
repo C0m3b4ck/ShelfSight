@@ -1,9 +1,0 @@
-Identifier: ClassyTk
-Version: 1.1.0
-Title: ClassyTk
-Creator: Peter De Rijk <Peter.DeRijk@ua.ac.be>
-Description: widget set and GUI builder based on ClassyTcl.
-Rights: BSD
-URL: https://github.com/derijkp/ClassyTk
-Subject: widgets
-Subject: GUI builder

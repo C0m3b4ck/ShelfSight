@@ -1,8 +1,0 @@
-Identifier: ClassyTcl
-Version: 1.1.0
-Title: ClassyTcl
-Creator: Peter De Rijk <Peter.DeRijk@ua.ac.be>
-Description: Tcl object system
-Rights: BSD
-URL: http://classytcl.sourceforge.net/
-Subject: object oriented

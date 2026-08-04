@@ -1,5 +1,0 @@
-#define canvas_select_width 5
-#define canvas_select_height 5
-static unsigned char canvas_select_bits[] = {
-  0x1f, 0x1f, 0x1f, 0x1f, 0x1f, };
-

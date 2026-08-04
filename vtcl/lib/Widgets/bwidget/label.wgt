@@ -1,6 +1,0 @@
-Class		BWLabel
-Lib		bwidget
-
-Icon		icon_label.gif
-TreeLabel	BWidget Label
-CreateCmd	Label

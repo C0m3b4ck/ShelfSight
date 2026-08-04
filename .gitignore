@@ -2,6 +2,7 @@
 shelf
 shelfSight
 shelf_gui
+shelfsight
 *.exe
 *.bin
 *.o
@@ -9,6 +10,7 @@ shelf_gui
 *.lib
 
 # DB / data files (generated at runtime)
+*.db
 *.DB
 *.CAT
 *.CFG
@@ -22,13 +24,15 @@ shelf_gui
 
 # External / generated directories
 /archives
-/fl-attempt
 /badges
 /html
 /documentation
 /ide
 /gui-linux64
 /libs-external-archives
+
+# Build directory
+/build
 
 # IDE / build files
 *.vcxproj

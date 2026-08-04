@@ -1,9 +1,0 @@
-Class		MainFrame
-Lib		bwidget
-
-Icon		unknown.gif
-TreeLabel	BWidget MainFrame
-CreateCmd	MainFrame
-MegaWidget	yes
-
-SpecialOpt -menu	"menu"		command
