@@ -1,0 +1,14 @@
+///---Register---\\\
+procedure Tregister_form.btnRegisterClick(Sender: TObject);
+
+///---Login---\\\
+procedure Tlogin_form.btnLoginClick(Sender: TObject);
+
+///---Main form---\\\
+function Tmain_workspace.authenticate(minimumRole: Integer): Boolean;
+procedure Tmain_workspace.btnAddBookClick(Sender: TObject);
+procedure Tmain_workspace.btnAddReadersClick(Sender: TObject); 
+procedure Tmain_workspace.btnEdit2Click(Sender: TObject);
+procedure Tmain_workspace.btnSearchClick(Sender: TObject);
+procedure Tmain_workspace.btnAddUserClick(Sender: TObject);
+procedure Tmain_workspace.Button31Click(Sender: TObject);   -> database create button 

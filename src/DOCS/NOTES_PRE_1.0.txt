@@ -1,0 +1,7 @@
+Make sure all text has Trim() applied to it
+Clean up useless SQL.Execute calls
+Fix some button names (like reader_name_add) to follow standard
+Save configs in .db files, check if DB has correct type upon selecting DB
+CheckID button: based on SQL EOF when getting stuff by ID
+make search actually work, not just list all DB results, also don't just search directly, as the user can make typos
+for each DB, upon first delete - create dbname_deleted, which stores deleted lines for "undo last delete"

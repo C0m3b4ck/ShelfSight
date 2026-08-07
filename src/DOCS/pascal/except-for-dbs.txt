@@ -1,0 +1,12 @@
+  except
+    on E: EDatabaseError do
+    begin
+      ShowMessage('DB error: ' + E.Message);
+      Exit; //exit on error
+    end;
+    on E: Exception do
+    begin
+      ShowMessage('General Error: ' + E.ClassName + ' - ' + E.Message);
+      Exit; //exit on error
+    end;
+  end;

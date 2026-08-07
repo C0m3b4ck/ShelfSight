@@ -8,6 +8,7 @@ shelfsight
 *.o
 *.a
 *.lib
+*.dll
 
 # DB / data files (generated at runtime)
 *.db

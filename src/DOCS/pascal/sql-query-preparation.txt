@@ -1,0 +1,6 @@
+MainWorkspace.SQLQueryUsers.SQL.Clear;
+MainWorkspace.SQLQueryUsers.SQL.Add('SELECT id, username, password, role FROM users WHERE username = :username_hash');
+MainWorkspace.SQLQueryUsers.Prepare;  // parse params BEFORE ParamByName
+
+MainWorkspace.SQLQueryUsers.ParamByName('username_hash').AsString := current_user_username_hash;
+MainWorkspace.SQLQueryUsers.Open; 
