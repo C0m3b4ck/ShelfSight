@@ -42,6 +42,8 @@ private slots:
 
     void on_actionRegister_triggered();
 
+    void set_to_backdrop();
+
 private:
     Ui::MainWindow *ui;
 };

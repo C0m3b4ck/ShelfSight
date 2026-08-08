@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    set_to_backdrop();
 }
 
 MainWindow::~MainWindow()
@@ -55,7 +56,8 @@ void MainWindow::on_btnHelp_role_login_clicked()
 void MainWindow::on_actionLog_out_triggered()
 {
     // change logged in bool to false or whatever the checking function will be
-    // set role to null, switch workspace to login
+    // set role to null, switch workspace to backdrop
+    set_to_backdrop();
 }
 
 void MainWindow::on_actionLog_in_triggered()
@@ -69,7 +71,12 @@ void MainWindow::on_actionRegister_triggered()
     // navigate to register workspace (magic numbers)
     ui->workspaces->setCurrentIndex(0);
 }
-
+///// =========== HELPERS ============
+void MainWindow::set_to_backdrop()
+{
+    // sets to backdrop (currently 2)
+    ui->workspaces->setCurrentIndex(2);
+}
 ////////////////////////////// FUNCTIONAL BUTTONS /////////////////////////////////////////
 // =============== ACCOUT MANAGEMENT ==================
 void MainWindow::on_btnRegister_clicked()
