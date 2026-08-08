@@ -1,3 +1,0 @@
-If TabSheetXShow does not run when you show TabSheet:
-
-* make sure toolbar calls both the three-liner and TabSheetXShow(Self)

@@ -1,6 +1,0 @@
-readerdb_execute := 'CREATE TABLE IF NOT EXISTS readers (' + LineEnding +
-  		  'id INTEGER PRIMARY KEY AUTOINCREMENT, ' + LineEnding +
-  		  'name TEXT NOT NULL UNIQUE, ' + LineEnding +
-  		  'surname TEXT NOT NULL, ' + LineEnding +
-  		  'grade INTEGER PRIMARY NOT NULL,' + LineEnding +
-                  'class INTEGER NOT NULL)'; 

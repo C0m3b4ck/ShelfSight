@@ -1,1 +1,0 @@
-SQLConnection, SQLTransaction and SQLQuery have intertwining connections

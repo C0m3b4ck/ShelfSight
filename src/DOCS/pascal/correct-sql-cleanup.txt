@@ -1,3 +1,0 @@
-	  SQLQuery1.Close;
-	  SQLTransaction1.Active := False;
-	  SQLite3Connection1.Close; 

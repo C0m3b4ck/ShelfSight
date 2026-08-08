@@ -1,8 +1,0 @@
-bookdb_execute := 'CREATE TABLE IF NOT EXISTS books (' + LineEnding +
-  		  'id INTEGER PRIMARY KEY AUTOINCREMENT,' + LineEnding +
-  		  'book_id TEXT NOT NULL UNIQUE,' + LineEnding +
-  		  'book_title TEXT NOT NULL,' + LineEnding +
-  		  'book_author TEXT NOT NULL,' + LineEnding +
-                  'book_location TEXT NOT NULL,' + LineEnding +
-                  'book_category TEXT NOT NULL,' + LineEnding +
-                  'book_status TEXT NOT NULL)';
