@@ -32,7 +32,7 @@ Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 ## Build
 ### Prerequisites
 - CMake >= 3.16 and a C++17 compiler
-- [wxWidgets](https://www.wxwidgets.org) 3.x (`libwxgtk3.2-dev` on Debian/Ubuntu)
+- [Qt](https://www.qt.io) 6.x (`qt6-base-dev` on Debian/Ubuntu)
 - SQLite 3 (`libsqlite3-dev`)
 - OpenSSL (`libssl-dev`)
 
@@ -50,8 +50,8 @@ ctest --test-dir build        # optional: run headless backend tests
 src/
 ├── backend/     # framework-independent logic (SQLite data layer, crypto, auth, library)
 │   └── test_backend.cpp   # headless backend tests (SQL-injection safe paths covered)
-├── gui/         # wxWidgets UI (main frame, panels)
-├── main.cpp     # wxApp entry point
+├── gui/         # Qt UI (main window, panels)
+├── main.cpp     # QApplication entry point
 └── CMakeLists.txt
 ```
 The backend has no GUI dependency and can be built and tested on its own.
@@ -62,7 +62,7 @@ The backend has no GUI dependency and can be built and tested on its own.
 ## Credits
 ### Started on June 19th, 2026, by C0m3b4ck. 
 ### Libraries used:
-- [wxWidgets](https://www.wxwidgets.org), a cross-platform C++ GUI toolkit,
+- [Qt](https://www.qt.io), a cross-platform C++ GUI toolkit,
 - [SQLite](https://www.sqlite.org), a lightweight embedded SQL database,
 - [OpenSSL](https://www.openssl.org), for SHA-256 hashing and AES-256-CBC encryption
 

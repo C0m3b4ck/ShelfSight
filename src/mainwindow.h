@@ -44,6 +44,32 @@ private slots:
 
     void set_to_backdrop();
 
+    void on_actionAddBooks_triggered();
+
+    void on_actionEditBooks_triggered();
+
+    void on_btnClear_title_addbooks_clicked();
+
+    void on_btnClear_author_addbooks_clicked();
+
+    void on_btnClear_id_addbooks_clicked();
+
+    void on_btnAddBook_addbooks_clicked();
+
+    void on_btnClear_title_editbooks_clicked();
+
+    void on_btnClear_author_editbooks_clicked();
+
+    void on_btnClear_id_editbooks_clicked();
+
+    void on_btnUndoEdit_editbooks_clicked();
+
+    void on_btnEditBook_editbooks_clicked();
+
+    void on_btnSearch_editbooks_clicked();
+
+    void on_actionRemove_triggered();
+
 private:
     Ui::MainWindow *ui;
 };
