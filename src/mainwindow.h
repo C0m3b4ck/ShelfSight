@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QListWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -68,7 +69,15 @@ private slots:
 
     void on_btnSearch_editbooks_clicked();
 
-    void on_actionRemove_triggered();
+    void on_btnSearch_managecategories_clicked();
+
+    void on_lstSearch_managecategories_itemClicked(QListWidgetItem *item);
+
+    void on_actionManage_Categories_triggered();
+
+    void on_actionUndo_Removed_triggered();
+
+    void on_actionRemoveBooks_triggered();
 
 private:
     Ui::MainWindow *ui;

@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
+#include <QListWidget>
 
 // =============== VARIABLES =====================
-std::string last_book[5] = {"title", "author", "location", "category", "status"}; //title, author, location, category, status
+std::string last_book_added[5] = {"title", "author", "location", "category", "status"}; //title, author, location, category, status
+std::string last_book_edited[5] = {"title", "author", "location", "category", "status"}; //title, author, location, category, status
+std::string last_book_removed[5] = {"title", "author", "location", "category", "status"}; //title, author, location, category, status
 
 // =============== PRE-DEFINITONS ===============
 QString sanitize_string(QString stringValue);
@@ -106,6 +109,21 @@ void MainWindow::on_btnSearch_editbooks_clicked()
     }
 }
 
+void MainWindow::on_btnSearch_managecategories_clicked()
+{
+    // if user query is empty, throw error
+    QString to_check_string = ui->txtSearch_managecategories->text();
+    if (sanitize_string(to_check_string).isEmpty())
+    {
+        QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
+    }
+    else
+    {
+        // get results from SQL DB
+        // while not EOF - populate list widget
+    }
+}
+
 /////////////// HELPERS ////////////////
 QString sanitize_string(QString stringValue)
 {
@@ -165,6 +183,40 @@ void MainWindow::on_actionEditBooks_triggered()
     ui->workspaces->setCurrentIndex(4);
 }
 
+void MainWindow::on_actionManage_Categories_triggered()
+{
+    // check if categories file exists
+    // -> if not, create
+    // ==== BEFORE SHOWING ====
+    // update comboBoxes for: category, status, locations from DBs
+    ui->workspaces->setCurrentIndex(5);
+}
+
+void MainWindow::on_actionRemoveBooks_triggered()
+{
+    // check if a DB is selected
+    // -> if yes - find its deleted books section
+    // -> if no - ask about loading default config
+    //      -> if yes, use default and navigate to add books
+    //      -> if no, navigate to DB selection
+
+    // ==== BEFORE SHOWING ====
+    // update listBox from deleted dbs
+    ui->workspaces->setCurrentIndex(6);
+}
+
+void MainWindow::on_actionUndo_Removed_triggered()
+{
+    // check if a DB is selected
+    // -> if yes - find its deleted books section
+    // -> if no - ask about loading default config
+    //      -> if yes, use default and navigate to add books
+    //      -> if no, navigate to DB selection
+
+    // ==== BEFORE SHOWING ====
+    // update listBox from deleted dbs
+    ui->workspaces->setCurrentIndex(2); // backdrop
+}
 ///// =========== HELPERS ============
 void MainWindow::set_to_backdrop()
 {
@@ -209,6 +261,7 @@ void MainWindow::on_btnLogin_clicked()
 
 // =============== BOOKS ====================
 
+//undo edit button
 void MainWindow::on_btnUndoEdit_editbooks_clicked()
 {
     // when adding, all of the info is stored in last_book
@@ -225,11 +278,11 @@ void MainWindow::on_btnUndoEdit_editbooks_clicked()
             "Category: %4\n"
             "Status: %5"
             )
-            .arg(last_book[0])
-            .arg(last_book[1])
-            .arg(last_book[2])
-            .arg(last_book[3])
-            .arg(last_book[4]));
+            .arg(last_book_edited[0])
+            .arg(last_book_edited[1])
+            .arg(last_book_edited[2])
+            .arg(last_book_edited[3])
+            .arg(last_book_edited[4]));
     box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     box.setDefaultButton(QMessageBox::No);
 
@@ -238,7 +291,7 @@ void MainWindow::on_btnUndoEdit_editbooks_clicked()
     }
 }
 
-/////////// MAIN FUNC ///////////
+// add book button
 void MainWindow::on_btnAddBook_addbooks_clicked()
 {
     // check if ID checking is checked
@@ -250,6 +303,7 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
     // -> if no, add to DB and inform user
 }
 
+// edit book button
 void MainWindow::on_btnEditBook_editbooks_clicked()
 {
     // check if ID checking is checked
@@ -258,12 +312,12 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
     //          -> if yes, add to DB
     //          -> if no, break function
     //      -> if no, do nothing
-    // -> if no, add to DB and inform user
+    // -> if no, replace the previous line in DB and inform user
 }
 
-
-void MainWindow::on_actionRemove_triggered()
+// lst clicked in manage categories
+void MainWindow::on_lstSearch_managecategories_itemClicked(QListWidgetItem *item)
 {
-
+    //populate txtName_managecategories.Text with the category name
 }
 
