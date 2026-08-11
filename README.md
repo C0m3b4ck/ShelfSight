@@ -57,7 +57,7 @@ src/
 The backend has no GUI dependency and can be built and tested on its own.
 ## Documentation
 - Docs are available in */DOCS/* subfolder. 
-- User manuals will be made after 1.0 release.
+- User and developer manuals will be made after 1.0 release.
 - For now, check out development videos: https://www.youtube.com/watch?v=Hd-j296d3xY&list=PL_FbJyFLAmlil2avw-L_tHQugj_nknzCE 
 ## Credits
 ### Started on June 19th, 2026, by C0m3b4ck. 

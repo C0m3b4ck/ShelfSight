@@ -15,6 +15,7 @@
 // 6 - undo removed books
 // 7 - remove books
 // 8 - manage locations
+// 9 - add readers
 // =============== VARIABLES =====================
 // ====== books - for undoing =====
 QString last_book_added[5] = {"", "", "", "", ""}; //title, author, location, category, status
@@ -331,6 +332,21 @@ void MainWindow::on_actionManage_Locations_triggered()
     // update listBox from location DB
     ui->workspaces->setCurrentIndex(8);
 }
+
+void MainWindow::on_actionAddReaders_triggered()
+{
+    // check if a DB is selected
+    // -> if yes - find its deleted books section
+    // -> if no - ask about loading default config
+    //      -> if yes, use default and navigate to add books
+    //      -> if no, navigate to DB selection
+
+    // ==== BEFORE SHOWING ====
+    // clear text fields
+    // update listBox from deleted dbs (all results due to empty search term)
+    ui->workspaces->setCurrentIndex(9);
+}
+
 ///// =========== HELPERS ============
 void MainWindow::set_to_backdrop()
 {
@@ -860,4 +876,3 @@ void MainWindow::on_btnRedoAllSelected_undoremovebooks_clicked()
         }
     }
 }
-
