@@ -17,12 +17,22 @@
 // 8 - manage locations
 // 9 - add readers
 // =============== VARIABLES =====================
+// ====== databases =======
+QString database_books = "";
+QString database_readers = "";
+QString database_loans = "";
 // ====== books - for undoing =====
 QString last_book_added[5] = {"", "", "", "", ""}; //title, author, location, category, status
 QString last_book_edited[5] = {"", "", "", "", ""}; //title, author, location, category, status
 QString last_book_removed[5] = {"", "", "", "", ""}; //title, author, location, category, status
 QString last_book_undone[5] = {"", "", "", "", ""}; //title, author, location, category, status
 std::vector<QString> last_undoall_books;
+// ====== readers - for undoing =====
+QString last_reader_added[5] = {"", "", "", "", ""}; //name, surname, grade, class, ID
+QString last_reader_edited[5] = {"", "", "", "", ""}; //name, surname, grade, class, ID
+QString last_reader_removed[5] = {"", "", "", "", ""}; //name, surname, grade, class, ID
+QString last_reader_undone[5] = {"", "", "", "", ""}; //name, surname, grade, class, ID
+std::vector<QString> last_undoall_readers;
 // ====== categories - for undoing =====
 QString last_category_added = "";
 QString last_category_edited[2] = {"", ""}; // previous_name, current_name
@@ -53,12 +63,22 @@ MainWindow::~MainWindow()
 // =========== HELPERS ==========
 void sanitize_variables() //clears variables (called my MainWindow and upon logging out/re-logging)
 {
+    // ====== databases ======
+    database_books = "";
+    database_readers = "";
+    database_loans = "";
     // ====== books - for undoing =====
     last_book_added[5].clear();
     last_book_edited[5].clear();
     last_book_removed[5].clear();
     last_book_undone[5].clear();
     last_undoall_books.clear();
+    // ====== books - for undoing =====
+    last_reader_added[5].clear();
+    last_reader_edited[5].clear();
+    last_reader_removed[5].clear();
+    last_reader_undone[5].clear();
+    last_undoall_readers.clear();
     // ====== categories - for undoing =====
     last_category_added = "";
     last_category_edited[2].clear(); // previous_name, current_name
@@ -129,6 +149,32 @@ void MainWindow::on_btnClear_name_managelocations_clicked()
 {
     ui->txtName_managelocations->setText("");
 }
+
+void MainWindow::on_btnClear_name_addreaders_clicked()
+{
+    ui->txtName_addreaders->setText("");
+}
+
+void MainWindow::on_btnClear_surname_addreaders_clicked()
+{
+    ui->txtSurname_addreaders->setText("");
+}
+
+void MainWindow::on_btnClear_grade_addreaders_clicked()
+{
+    ui->txtGrade_addreaders->setText("");
+}
+
+void MainWindow::on_btnClear_class_addreaders_clicked()
+{
+    ui->txtClass_addreaders->setText("");
+}
+
+void MainWindow::on_btnClear_id_addreaders_clicked()
+{
+    ui->txtID_addreaders->setText("");
+}
+
 // =============== HELP BUTTONS =======================
 void MainWindow::on_btnHelp_pwdStrenght_register_clicked()
 {
@@ -354,7 +400,7 @@ void MainWindow::set_to_backdrop()
     ui->workspaces->setCurrentIndex(2);
 }
 ////////////////////////////// FUNCTIONAL BUTTONS /////////////////////////////////////////
-// =============== ACCOUT MANAGEMENT ==================
+// ============================ ACCOUT MANAGEMENT ======================================================
 void MainWindow::on_btnRegister_clicked()
 {
     // check whether username and password are the same
@@ -389,7 +435,7 @@ void MainWindow::on_btnLogin_clicked()
     // if not EOF - log in
 }
 
-// =============== BOOKS ====================
+// ======================================= BOOKS ======================================================
 
 //undo edit button
 void MainWindow::on_btnUndoEdit_editbooks_clicked()
@@ -455,6 +501,29 @@ void MainWindow::on_btnUndoAdd_addbooks_clicked()
 // add book button
 void MainWindow::on_btnAddBook_addbooks_clicked()
 {
+    // check if DB is selected
+    if (is_qstring_empty(database_books) == true)
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No book database selected"));
+    }
+    // check fields
+    else if(is_qstring_empty(ui->txtTitle_addbooks->text()) == true) // title
+    {
+        QMessageBox::critical(this, tr("EMPTY TITLE"), tr("Title cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtAuthor_addbooks->text()) == true) // author
+    {
+        QMessageBox::critical(this, tr("EMPTY AUTHOR"), tr("Author cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtID_addbooks->text()) == true) // ID
+    {
+        QMessageBox::critical(this, tr("EMPTY ID"), tr("ID cannot be empty!"));
+    }
+    // add checking if anything is selected on cboBoxes
+    else
+    {
+        QMessageBox::critical(this, tr("NOT DONE YET"), tr("NOT DONE YET"));
+    }
     // check if ID checking is checked
     //  -> if yes, check if ID exists in book DB
     //      -> if yes, warn user about adding Y/N
@@ -467,6 +536,25 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
 // edit book button
 void MainWindow::on_btnEditBook_editbooks_clicked()
 {
+    // check if DB is selected
+    if (is_qstring_empty(database_books) == true)
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No book database selected"));
+    }
+    // check fields
+    else if(is_qstring_empty(ui->txtTitle_editbooks->text()) == true) // title
+    {
+        QMessageBox::critical(this, tr("EMPTY TITLE"), tr("Title cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtAuthor_editbooks->text()) == true) // author
+    {
+        QMessageBox::critical(this, tr("EMPTY AUTHOR"), tr("Author cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtID_editbooks->text()) == true) // ID
+    {
+        QMessageBox::critical(this, tr("EMPTY ID"), tr("ID cannot be empty!"));
+    }
+    // add checking if anything is selected on cboBoxes
     // check if ID checking is checked
     //  -> if yes, check if ID exists in book DB
     //      -> if yes, warn user about adding Y/N
@@ -876,3 +964,113 @@ void MainWindow::on_btnRedoAllSelected_undoremovebooks_clicked()
         }
     }
 }
+
+/// =============================================== READERS ===================================
+// add readers button
+void MainWindow::on_btnAddBook_addreaders_clicked()
+{
+    // check if DB is selected
+    if (is_qstring_empty(database_readers) == true)
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No reader database selected"));
+    }
+    // check fields
+    else if(is_qstring_empty(ui->txtName_addreaders->text()) == true) // name
+    {
+        QMessageBox::critical(this, tr("EMPTY NAME"), tr("Name cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtSurname_addreaders->text()) == true) // surname
+    {
+        QMessageBox::critical(this, tr("EMPTY SURNAME"), tr("Surname cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtGrade_addreaders->text()) == true) // grade
+    {
+        QMessageBox::critical(this, tr("EMPTY GRADE"), tr("Grade cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtClass_addreaders->text()) == true) // class
+    {
+        QMessageBox::critical(this, tr("EMPTY CLASS"), tr("Class cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtID_addreaders->text()) == true) // ID
+    {
+        QMessageBox::critical(this, tr("EMPTY ID"), tr("ID cannot be empty!"));
+    }
+    // add checking if anything is selected on cboBoxes
+    // check if ID checking is checked
+    //  -> if yes, check if ID exists in book DB
+    //      -> if yes, warn user about adding Y/N
+    //          -> if yes, add to DB
+    //          -> if no, break function
+    //      -> if no, do nothing
+    // -> if no, add to DB and inform user
+}
+
+// edit readers button
+void MainWindow::on_btnEditBook_editreaders_clicked()
+{
+    // check if DB is selected
+    if (is_qstring_empty(database_readers) == true)
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No reader database selected"));
+    }
+    // check fields
+    else if(is_qstring_empty(ui->txtName_editreaders->text()) == true) // name
+    {
+        QMessageBox::critical(this, tr("EMPTY NAME"), tr("Name cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtSurname_editreaders->text()) == true) // surname
+    {
+        QMessageBox::critical(this, tr("EMPTY SURNAME"), tr("Surname cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtGrade_editreaders->text()) == true) // grade
+    {
+        QMessageBox::critical(this, tr("EMPTY GRADE"), tr("Grade cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtClass_editreaders->text()) == true) // class
+    {
+        QMessageBox::critical(this, tr("EMPTY CLASS"), tr("Class cannot be empty!"));
+    }
+    else if(is_qstring_empty(ui->txtID_editreaders->text()) == true) // ID
+    {
+        QMessageBox::critical(this, tr("EMPTY ID"), tr("ID cannot be empty!"));
+    }
+    // add checking if anything is selected on cboBoxes
+    // check if ID checking is checked
+    //  -> if yes, check if ID exists in book DB
+    //      -> if yes, warn user about adding Y/N
+    //          -> if yes, add to DB
+    //          -> if no, break function
+    //      -> if no, do nothing
+    // -> if no, add to DB and inform user
+}
+
+// undo edit edit readers
+void MainWindow::on_btnUndoEdit_editreaders_clicked()
+{
+    // when adding, all of the info is stored in last_book_edit
+    // confirm if user wants to proceed
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("Undo edit?"));
+    box.setText(
+        tr(
+            "Are you sure you want to undo edit reader:\n"
+            "Name: %1\n"
+            "Surname: %2\n"
+            "Grade: %3\n"
+            "Class: %4\n"
+            "ID: %5"
+            )
+            .arg(last_reader_edited[0])
+            .arg(last_reader_edited[1])
+            .arg(last_reader_edited[2])
+            .arg(last_reader_edited[3])
+            .arg(last_reader_edited[4]));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+
+    if (box.exec() == QMessageBox::Yes) {
+        // remove the line based on the info in last_reader
+    }
+}
+

@@ -123,6 +123,24 @@ private slots:
 
     void on_btnRedoAllSelected_undoremovebooks_clicked();
 
+    void on_actionAddReaders_triggered();
+
+    void on_btnClear_name_addreaders_clicked();
+
+    void on_btnClear_surname_addreaders_clicked();
+
+    void on_btnClear_grade_addreaders_clicked();
+
+    void on_btnClear_class_addreaders_clicked();
+
+    void on_btnClear_id_addreaders_clicked();
+
+    void on_btnAddBook_addreaders_clicked();
+
+    void on_btnEditBook_editreaders_clicked();
+
+    void on_btnUndoEdit_editreaders_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
