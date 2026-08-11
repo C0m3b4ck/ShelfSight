@@ -79,6 +79,50 @@ private slots:
 
     void on_actionRemoveBooks_triggered();
 
+    void on_btnClear_name_managecategories_clicked();
+
+    void on_btnUndoAdd_addbooks_clicked();
+
+    void on_btnUndoRemove_managecategories_clicked();
+
+    void on_btnUndoEdit_managecategories_clicked();
+
+    void on_btnUndoAdd_managecategories_clicked();
+
+    void on_btnAddCategory_managecategories_clicked();
+
+    void on_btnEditCategory_managecategories_clicked();
+
+    void on_btnRemoveCategory_managecategories_clicked();
+
+    void on_btnSearch_undoremovebooks_clicked();
+
+    void on_btnUndoAll_undoremovebooks_clicked();
+
+    void on_btnSearch_managelocations_clicked();
+
+    void on_actionManage_Locations_triggered();
+
+    void on_btnClear_name_managelocations_clicked();
+
+    void on_btnRemoveLocation_managelocations_clicked();
+
+    void on_btnEditLocation_managelocations_clicked();
+
+    void on_btnAddLocation_managelocations_clicked();
+
+    void on_btnUndoRemove_managelocations_clicked();
+
+    void on_btnUndoAdd_managelocations_clicked();
+
+    void on_btnUndoEdit_managelocations_clicked();
+
+    void on_btnUndoSelected_undoremovebooks_clicked();
+
+    void on_btnRedoRemove_undoremovebooks_clicked();
+
+    void on_btnRedoAllSelected_undoremovebooks_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
