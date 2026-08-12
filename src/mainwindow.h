@@ -73,9 +73,23 @@ private slots:
 
     void on_lstSearch_managecategories_itemClicked(QListWidgetItem *item);
 
+    void on_lstSearch_editbooks_itemClicked(QListWidgetItem *item);
+
+    void on_lstSearch_undoremovebooks_itemClicked(QListWidgetItem *item);
+
+    void on_lstSearch_removebooks_itemClicked(QListWidgetItem *item);
+
+    void on_lstSearch_managelocations_itemClicked(QListWidgetItem *item);
+
+    void on_lstSearch_editreaders_itemClicked(QListWidgetItem *item);
+
+    void on_lstSearch_removereaders_itemClicked(QListWidgetItem *item);
+
     void on_actionManage_Categories_triggered();
 
     void on_actionUndo_Removed_triggered();
+
+    void on_actionUndo_Removed_2_triggered();
 
     void on_actionRemoveBooks_triggered();
 
@@ -96,6 +110,8 @@ private slots:
     void on_btnRemoveCategory_managecategories_clicked();
 
     void on_btnSearch_undoremovebooks_clicked();
+
+    void on_btnSearch_removebooks_clicked();
 
     void on_btnUndoAll_undoremovebooks_clicked();
 
@@ -123,6 +139,18 @@ private slots:
 
     void on_btnRedoAllSelected_undoremovebooks_clicked();
 
+    void on_btnSearch_undoremovereaders_clicked();
+
+    void on_lstSearch_undoremovereaders_itemClicked(QListWidgetItem *item);
+
+    void on_btnUndoAll_undoremovereaders_clicked();
+
+    void on_btnUndoSelected_undoremovereaders_clicked();
+
+    void on_btnRedoRemove_undoremovereaders_clicked();
+
+    void on_btnRedoAllSelected_undoremovereaders_clicked();
+
     void on_actionAddReaders_triggered();
 
     void on_btnClear_name_addreaders_clicked();
@@ -140,6 +168,32 @@ private slots:
     void on_btnEditBook_editreaders_clicked();
 
     void on_btnUndoEdit_editreaders_clicked();
+
+    void on_btnRemove_removebooks_clicked();
+
+    void on_btnSearch_editreaders_clicked();
+
+    void on_btnSearch_removereaders_clicked();
+
+    void on_btnRemove_removereaders_clicked();
+
+    void on_btnUndoRemoval_removereaders_clicked();
+
+    void on_btnUndoLast_removereaders_clicked();
+
+    void on_btnClear_name_removereaders_clicked();
+
+    void on_btnClear_surname_removereaders_clicked();
+
+    void on_btnClear_grade_removereaders_clicked();
+
+    void on_btnClear_class_removereaders_clicked();
+
+    void on_btnClear_id_removereaders_clicked();
+
+    void on_actionRemoveReaders_triggered();
+
+    void on_actionEditReaders_triggered();
 
 private:
     Ui::MainWindow *ui;
