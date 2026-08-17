@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/cmake_install.cmake",
+		"/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -195,6 +195,16 @@ private slots:
 
     void on_actionEditReaders_triggered();
 
+    void on_actionAddLoans_triggered();
+
+    void on_btnSearchBook_addloan_clicked();
+
+    void on_btnSearchReader_addloan_clicked();
+
+    void on_btnAddLoan_addloan_clicked();
+
+    void on_btnClear_addloan_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

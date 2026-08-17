@@ -1,18 +1,9 @@
-QT += widgets sql
+TEMPLATE = subdirs
 
-CONFIG += c++17
+CONFIG += ordered
 
-SOURCES += \
-    main.cpp \
-    mainwindow.cpp
+SUBDIRS = \
+    sqlitecpp \
+    app
 
-HEADERS += \
-    mainwindow.h
-
-FORMS += \
-    mainwindow.ui
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+app.depends = sqlitecpp

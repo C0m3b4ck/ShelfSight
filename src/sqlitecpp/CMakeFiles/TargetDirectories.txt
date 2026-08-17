@@ -1,0 +1,14 @@
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/SQLiteCpp.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/edit_cache.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/rebuild_cache.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/list_install_components.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/install.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/install/local.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/CMakeFiles/install/strip.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/sqlite3.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/edit_cache.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/rebuild_cache.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/list_install_components.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/install.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/install/local.dir
+/home/sb3x/Code/ShelfSight/src/src/sqlitecpp/sqlite3/CMakeFiles/install/strip.dir

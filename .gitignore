@@ -15,6 +15,9 @@ shelfsight
 *.DB
 *.CAT
 *.CFG
+*.db3
+*.sql
+*.sq3
 
 # Archives
 *.zip
@@ -31,6 +34,9 @@ shelfsight
 /ide
 /gui-linux64
 /libs-external-archives
+/examples
+/docs
+/tests
 
 # Build directory
 /build

@@ -4049,9 +4049,296 @@
        <string>ID:</string>
       </property>
      </widget>
+</widget>
+    <widget class="QWidget" name="page_14">
+      <widget class="QLabel" name="label_loan_title">
+        <property name="geometry">
+          <rect>
+            <x>150</x>
+            <y>0</y>
+            <width>211</width>
+            <height>41</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>30</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Add Loan</string>
+        </property>
+      </widget>
+      <widget class="QLabel" name="label_book_search">
+        <property name="geometry">
+          <rect>
+            <x>0</x>
+            <y>40</y>
+            <width>71</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Book:</string>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="txtBookSearch_addloan">
+        <property name="geometry">
+          <rect>
+            <x>70</x>
+            <y>40</y>
+            <width>261</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="btnSearchBook_addloan">
+        <property name="geometry">
+          <rect>
+            <x>340</x>
+            <y>40</y>
+            <width>81</width>
+            <height>20</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>15</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Search</string>
+        </property>
+      </widget>
+      <widget class="QLabel" name="label_reader_search">
+        <property name="geometry">
+          <rect>
+            <x>0</x>
+            <y>70</y>
+            <width>71</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Reader:</string>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="txtReaderSearch_addloan">
+        <property name="geometry">
+          <rect>
+            <x>70</x>
+            <y>70</y>
+            <width>261</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="btnSearchReader_addloan">
+        <property name="geometry">
+          <rect>
+            <x>340</x>
+            <y>70</y>
+            <width>81</width>
+            <height>20</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>15</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Search</string>
+        </property>
+      </widget>
+      <widget class="QLabel" name="label_book_selected">
+        <property name="geometry">
+          <rect>
+            <x>0</x>
+            <y>100</y>
+            <width>101</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Book Selected:</string>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="txtBookSelected_addloan">
+        <property name="geometry">
+          <rect>
+            <x>110</x>
+            <y>100</y>
+            <width>381</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="readOnly">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="label_reader_selected">
+        <property name="geometry">
+          <rect>
+            <x>0</x>
+            <y>130</y>
+            <width>101</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Reader Selected:</string>
+        </property>
+      </widget>
+      <widget class="QLineEdit" name="txtReaderSelected_addloan">
+        <property name="geometry">
+          <rect>
+            <x>110</x>
+            <y>130</y>
+            <width>381</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="readOnly">
+          <bool>true</bool>
+        </property>
+      </widget>
+      <widget class="QLabel" name="label_loan_days">
+        <property name="geometry">
+          <rect>
+            <x>0</x>
+            <y>160</y>
+            <width>91</width>
+            <height>21</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Loan Days:</string>
+        </property>
+      </widget>
+      <widget class="QSpinBox" name="spnLoanDays_addloan">
+        <property name="geometry">
+          <rect>
+            <x>100</x>
+            <y>160</y>
+            <width>81</width>
+            <height>25</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="minimum">
+          <number>1</number>
+        </property>
+        <property name="maximum">
+          <number>365</number>
+        </property>
+        <property name="value">
+          <number>14</number>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="btnAddLoan_addloan">
+        <property name="geometry">
+          <rect>
+            <x>260</x>
+            <y>200</y>
+            <width>241</width>
+            <height>41</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>20</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Create Loan</string>
+        </property>
+      </widget>
+      <widget class="QPushButton" name="btnClear_addloan">
+        <property name="geometry">
+          <rect>
+            <x>0</x>
+            <y>200</y>
+            <width>251</width>
+            <height>41</height>
+          </rect>
+        </property>
+        <property name="font">
+          <font>
+            <pointsize>20</pointsize>
+            <bold>true</bold>
+          </font>
+        </property>
+        <property name="text">
+          <string>Clear</string>
+        </property>
+      </widget>
     </widget>
     <widget class="QWidget" name="page_13">
-     <widget class="QLabel" name="label_undo_removed_readers_title">
+      <widget class="QLabel" name="label_undo_removed_readers_title">
       <property name="geometry">
        <rect>
         <x>80</x>
