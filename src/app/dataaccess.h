@@ -1,32 +1,33 @@
 #pragma once
 
 #include "domain.h"
-#include <QString>
+#include <string>
 #include <optional>
 #include <vector>
+#include <exception>
 
 namespace DataAccess {
 
 class DataAccessException : public std::exception {
 public:
-    explicit DataAccessException(const QString& message) : m_message(message) {}
-    const char* what() const noexcept override { return m_message.toStdString().c_str(); }
-    QString message() const { return m_message; }
+    explicit DataAccessException(const std::string& message) : m_message(message) {}
+    const char* what() const noexcept override { return m_message.c_str(); }
+    const std::string& message() const { return m_message; }
 private:
-    QString m_message;
+    std::string m_message;
 };
 
 class IDataAccess {
 public:
     virtual ~IDataAccess() = default;
-    virtual void initialize(const QString& booksDb, const QString& readersDb, const QString& loansDb) = 0;
+    virtual void initialize(const std::string& booksDb, const std::string& readersDb, const std::string& loansDb) = 0;
     virtual void shutdown() = 0;
     virtual bool isConnected() const = 0;
 
     // Book operations
     virtual std::vector<Domain::Book> getAllBooks() = 0;
     virtual std::optional<Domain::Book> getBookById(int id) = 0;
-    virtual std::vector<Domain::Book> searchBooks(const QString& term, const QString& field) = 0;
+    virtual std::vector<Domain::Book> searchBooks(const std::string& term, const std::string& field) = 0;
     virtual bool addBook(const Domain::Book& book) = 0;
     virtual bool updateBook(const Domain::Book& book) = 0;
     virtual bool removeBook(int id) = 0;
@@ -36,7 +37,7 @@ public:
     // Reader operations
     virtual std::vector<Domain::Reader> getAllReaders() = 0;
     virtual std::optional<Domain::Reader> getReaderById(int id) = 0;
-    virtual std::vector<Domain::Reader> searchReaders(const QString& term, const QString& field) = 0;
+    virtual std::vector<Domain::Reader> searchReaders(const std::string& term, const std::string& field) = 0;
     virtual bool addReader(const Domain::Reader& reader) = 0;
     virtual bool updateReader(const Domain::Reader& reader) = 0;
     virtual bool removeReader(int id) = 0;
@@ -62,6 +63,12 @@ public:
     virtual std::vector<Domain::Loan> getOverdueLoans() = 0;
     virtual std::vector<Domain::Loan> getLoansForReader(int readerId) = 0;
     virtual std::vector<Domain::Loan> getLoansForBook(int bookId) = 0;
+
+    // User operations
+    virtual bool addUser(const Domain::User& user) = 0;
+    virtual std::optional<Domain::User> getUserByUsername(const std::string& username) = 0;
+    virtual bool updateUser(const Domain::User& user) = 0;
+    virtual std::vector<Domain::User> getAllUsers() = 0;
 };
 
 } // namespace DataAccess

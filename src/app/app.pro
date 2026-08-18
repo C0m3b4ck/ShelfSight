@@ -5,12 +5,15 @@ TARGET = ShelfSight
 QT += widgets sql
 
 INCLUDEPATH += ../sqlitecpp/include
+INCLUDEPATH += /usr/include/sodium
 DEPENDPATH += ../sqlitecpp/include
 
 LIBS += -L$$OUT_PWD/../sqlitecpp -lSQLiteCpp -lsqlite3
+LIBS += -lsodium
 
 SOURCES += \
     businesslogic.cpp \
+    crypto.cpp \
     dataaccesslayer.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -18,6 +21,7 @@ SOURCES += \
 
 HEADERS += \
     businesslogic.h \
+    crypto.h \
     dataaccesslayer.h \
     domain.h \
     mainwindow.h

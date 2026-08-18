@@ -28,7 +28,7 @@
  *   It encodes the algorithm, version, parameters, salt, and hash all in one
  *   string — safe to store directly in the database TEXT column.
  */
-#include <QString>
+#include <string>
 
 namespace Librarian {
 
@@ -41,13 +41,13 @@ public:
      * Returns the self-describing hash string suitable for DB storage.
      * Throws std::runtime_error if libsodium cannot allocate enough memory.
      */
-    static QString hash(const QString& password);
+    static std::string hash(const std::string& password);
 
     /**
      * Returns true if @p password matches @p storedHash.
      * Constant-time comparison — safe against timing side-channels.
      */
-    static bool verify(const QString& password, const QString& storedHash);
+    static bool verify(const std::string& password, const std::string& storedHash);
 
     /**
      * Returns true when @p storedHash was created with weaker parameters
@@ -57,7 +57,7 @@ public:
      *   if (PasswordHasher::needsRehash(user.passwordHash))
      *       repo.updatePasswordHash(user.id, PasswordHasher::hash(plaintext));
      */
-    static bool needsRehash(const QString& storedHash);
+    static bool needsRehash(const std::string& storedHash);
 };
 
 } // namespace Librarian

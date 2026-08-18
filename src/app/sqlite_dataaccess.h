@@ -5,22 +5,29 @@
 #include <SQLiteCpp/Statement.h>
 #include <memory>
 #include <mutex>
+#include <string>
 
 namespace DataAccess {
+
+struct ListItem {
+    int id = 0;
+    std::string displayText;
+    std::string searchField;
+};
 
 class SQLiteDataAccess : public IDataAccess {
 public:
     SQLiteDataAccess();
     ~SQLiteDataAccess() override;
 
-    void initialize(const QString& booksDb, const QString& readersDb, const QString& loansDb) override;
+    void initialize(const std::string& booksDb, const std::string& readersDb, const std::string& loansDb) override;
     void shutdown() override;
     bool isConnected() const override;
 
     // Book operations
     std::vector<Domain::Book> getAllBooks() override;
     std::optional<Domain::Book> getBookById(int id) override;
-    std::vector<Domain::Book> searchBooks(const QString& term, const QString& field) override;
+    std::vector<Domain::Book> searchBooks(const std::string& term, const std::string& field) override;
     bool addBook(const Domain::Book& book) override;
     bool updateBook(const Domain::Book& book) override;
     bool removeBook(int id) override;
@@ -30,7 +37,7 @@ public:
     // Reader operations
     std::vector<Domain::Reader> getAllReaders() override;
     std::optional<Domain::Reader> getReaderById(int id) override;
-    std::vector<Domain::Reader> searchReaders(const QString& term, const QString& field) override;
+    std::vector<Domain::Reader> searchReaders(const std::string& term, const std::string& field) override;
     bool addReader(const Domain::Reader& reader) override;
     bool updateReader(const Domain::Reader& reader) override;
     bool removeReader(int id) override;
@@ -57,6 +64,18 @@ public:
     std::vector<Domain::Loan> getLoansForReader(int readerId) override;
     std::vector<Domain::Loan> getLoansForBook(int bookId) override;
 
+    // User operations
+    bool addUser(const Domain::User& user) override;
+    std::optional<Domain::User> getUserByUsername(const std::string& username) override;
+    bool updateUser(const Domain::User& user) override;
+    std::vector<Domain::User> getAllUsers() override;
+
+    // ID checking
+    bool checkIdExists(const std::string& entityType, int id);
+
+    // Listbox population
+    std::vector<ListItem> populateList(const std::string& entityType, const std::string& searchTerm = "", const std::string& filterField = "");
+
 private:
     void createTables();
     void createIndexes();
@@ -65,8 +84,9 @@ private:
     Domain::Category rowToCategory(const SQLite::Statement& stmt);
     Domain::Location rowToLocation(const SQLite::Statement& stmt);
     Domain::Loan rowToLoan(const SQLite::Statement& stmt);
-    QString dateTimeToString(const QDateTime& dt);
-    QDateTime stringToDateTime(const QString& str);
+    Domain::User rowToUser(const SQLite::Statement& stmt);
+    std::string dateTimeToString(const Domain::DateTime& dt);
+    Domain::DateTime stringToDateTime(const std::string& str);
 
     std::unique_ptr<SQLite::Database> m_booksDb;
     std::unique_ptr<SQLite::Database> m_readersDb;

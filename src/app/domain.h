@@ -1,117 +1,150 @@
 #pragma once
 
-#include <QString>
-#include <QDateTime>
+#include <string>
+#include <chrono>
 #include <vector>
 #include <optional>
+#include <sstream>
+#include <iomanip>
 
 namespace Domain {
 
+using DateTime = std::chrono::system_clock::time_point;
+
+inline DateTime now() {
+    return std::chrono::system_clock::now();
+}
+
+inline std::string toISOString(const DateTime& dt) {
+    auto t = std::chrono::system_clock::to_time_t(dt);
+    std::stringstream ss;
+    ss << std::put_time(std::gmtime(&t), "%Y-%m-%dT%H:%M:%SZ");
+    return ss.str();
+}
+
+inline DateTime fromISOString(const std::string& str) {
+    std::tm tm = {};
+    std::istringstream ss(str);
+    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
+    if (ss.fail()) {
+        return DateTime{};
+    }
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
+inline bool isNull(const DateTime& dt) {
+    return dt == DateTime{};
+}
+
 struct Book {
-    QString id = 0;
-    QString title;
-    QString author;
-    QString location;
-    QString category;
-    QString status;
-    QDateTime createdAt;
-    QDateTime updatedAt;
+    int id = 0;
+    std::string title;
+    std::string author;
+    std::string location;
+    std::string category;
+    std::string status;
+    DateTime createdAt;
+    DateTime updatedAt;
 
     bool isValid() const {
-        return !title.isEmpty() && !author.isEmpty() && id > 0;
+        return !title.empty() && !author.empty() && id > 0;
     }
 
-    QString toDisplayString() const {
-        return QString("%1 | %2 | %3 | %4 | %5 | ID: %6")
-            .arg(title, author, location, category, status).arg(id);
+    std::string toDisplayString() const {
+        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + std::to_string(id);
     }
 };
 
 struct Reader {
-    QString id = 0;
-    QString name;
-    QString surname;
+    int id = 0;
+    std::string name;
+    std::string surname;
     short grade = 0;
-    QChar classGroup = 'A';
-    QString studentId;
-    QDateTime createdAt;
-    QDateTime updatedAt;
+    char classGroup = 'A';
+    std::string studentId;
+    DateTime createdAt;
+    DateTime updatedAt;
 
     bool isValid() const {
-        return !name.isEmpty() && !surname.isEmpty() && id > 0;
+        return !name.empty() && !surname.empty() && id > 0;
     }
 
-    QString toDisplayString() const {
-        return QString("%1 | %2 | %3 | %4 | %5")
-            .arg(name, surname, QString::number(grade), classGroup, studentId);
+    std::string toDisplayString() const {
+        return name + " | " + surname + " | " + std::to_string(grade) + " | " + classGroup + " | " + studentId;
     }
 
-    QString fullName() const {
-        return QString("%1 %2").arg(name, surname);
+    std::string fullName() const {
+        return name + " " + surname;
     }
 };
 
 struct Category {
     int id = 0;
-    QString name;
+    std::string name;
 
     bool isValid() const {
-        return !name.isEmpty();
+        return !name.empty();
     }
 };
 
 struct Location {
     int id = 0;
-    QString name;
+    std::string name;
 
     bool isValid() const {
-        return !name.isEmpty();
+        return !name.empty();
     }
 };
 
 struct User {
-    enum Role { UserRole = 1, Admin = 2, SuperAdmin = 3 };
+    enum class Role { UserRole = 1, Admin = 2, SuperAdmin = 3 };
 
-    QString id = 0;
-    QString username;
-    QString passwordHash;
-    QString salt;
-    Role role = UserRole;
-    QDateTime createdAt;
-    QDateTime lastLogin;
+    int id = 0;
+    std::string username;
+    std::string passwordHash;
+    std::string salt;
+    Role role = Role::UserRole;
+    DateTime createdAt;
+    DateTime lastLogin;
 
     bool isValid() const {
-        return !username.isEmpty() && !passwordHash.isEmpty() && id > 0;
+        return !username.empty() && !passwordHash.empty() && id > 0;
     }
 };
 
 struct Loan {
-    QString id = 0;
-    QString bookId = 0;
-    QString readerId = 0;
-    QDateTime loanDate;
-    QDateTime dueDate;
-    QDateTime returnDate;
-    QString status;
+    int id = 0;
+    int bookId = 0;
+    int readerId = 0;
+    DateTime loanDate;
+    DateTime dueDate;
+    DateTime returnDate;
+    std::string status;
 
     bool isActive() const {
-        return returnDate.isNull() && status == "active";
+        return isNull(returnDate) && status == "active";
     }
 
     bool isOverdue() const {
-        return isActive() && QDateTime::currentDateTime() > dueDate;
+        return isActive() && now() > dueDate;
+    }
+
+    std::string toDisplayString() const {
+        return "Loan ID: " + std::to_string(id) + " | Book: " + std::to_string(bookId) + " | Reader: " + std::to_string(readerId) +
+               " | Loan: " + Domain::toISOString(loanDate) + " | Due: " + Domain::toISOString(dueDate) +
+               " | Return: " + (isNull(returnDate) ? "N/A" : Domain::toISOString(returnDate)) + " | Status: " + status;
     }
 };
 
 struct UndoEntry {
-    enum Type { Add, Edit, Remove };
-    enum Entity { BookEntity, ReaderEntity, CategoryEntity, LocationEntity };
+    enum class Type { Add, Edit, Remove };
+    enum class Entity { BookEntity, ReaderEntity, CategoryEntity, LocationEntity };
 
     Type type;
     Entity entity;
-    QString previousData;
-    QString currentData;
-    QDateTime timestamp;
+    std::string previousData;
+    std::string currentData;
+    DateTime timestamp;
 };
 
 } // namespace Domain
@@ -119,22 +152,21 @@ struct UndoEntry {
 namespace DTO {
 
 struct BookDTO {
-    QString id = 0;
-    QString title;
-    QString author;
-    QString location;
-    QString category;
-    QString status;
-    QString createdAt;
-    QString updatedAt;
+    int id = 0;
+    std::string title;
+    std::string author;
+    std::string location;
+    std::string category;
+    std::string status;
+    std::string createdAt;
+    std::string updatedAt;
 
     bool isValid() const {
-        return !title.isEmpty() && !author.isEmpty() && !id.isEmpty();
+        return !title.empty() && !author.empty() && id > 0;
     }
 
-    QString toDisplayString() const {
-        return QString("%1 | %2 | %3 | %4 | %5 | ID: %6")
-            .arg(title, author, location, category, status).arg(id);
+    std::string toDisplayString() const {
+        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + std::to_string(id);
     }
 
     Domain::Book toDomain() const {
@@ -145,8 +177,8 @@ struct BookDTO {
         book.location = location;
         book.category = category;
         book.status = status;
-        book.createdAt = QDateTime::fromString(createdAt, Qt::ISODate);
-        book.updatedAt = QDateTime::fromString(updatedAt, Qt::ISODate);
+        book.createdAt = Domain::fromISOString(createdAt);
+        book.updatedAt = Domain::fromISOString(updatedAt);
         return book;
     }
 
@@ -158,33 +190,32 @@ struct BookDTO {
         dto.location = book.location;
         dto.category = book.category;
         dto.status = book.status;
-        dto.createdAt = book.createdAt.toString(Qt::ISODate);
-        dto.updatedAt = book.updatedAt.toString(Qt::ISODate);
+        dto.createdAt = Domain::toISOString(book.createdAt);
+        dto.updatedAt = Domain::toISOString(book.updatedAt);
         return dto;
     }
 };
 
 struct ReaderDTO {
-    QString id = 0;
-    QString name;
-    QString surname;
+    int id = 0;
+    std::string name;
+    std::string surname;
     short grade = 0;
-    QChar classGroup = 'A';
-    QString studentId;
-    QString createdAt;
-    QString updatedAt;
+    char classGroup = 'A';
+    std::string studentId;
+    std::string createdAt;
+    std::string updatedAt;
 
     bool isValid() const {
-        return !name.isEmpty() && !surname.isEmpty() && !id.isEmpty();
+        return !name.empty() && !surname.empty() && id > 0;
     }
 
-    QString toDisplayString() const {
-        return QString("%1 | %2 | %3 | %4 | %5")
-            .arg(name, surname, QString::number(grade), classGroup, studentId);
+    std::string toDisplayString() const {
+        return name + " | " + surname + " | " + std::to_string(grade) + " | " + classGroup + " | " + studentId;
     }
 
-    QString fullName() const {
-        return QString("%1 %2").arg(name, surname);
+    std::string fullName() const {
+        return name + " " + surname;
     }
 
     Domain::Reader toDomain() const {
@@ -195,8 +226,8 @@ struct ReaderDTO {
         reader.grade = grade;
         reader.classGroup = classGroup;
         reader.studentId = studentId;
-        reader.createdAt = QDateTime::fromString(createdAt, Qt::ISODate);
-        reader.updatedAt = QDateTime::fromString(updatedAt, Qt::ISODate);
+        reader.createdAt = Domain::fromISOString(createdAt);
+        reader.updatedAt = Domain::fromISOString(updatedAt);
         return reader;
     }
 
@@ -208,34 +239,34 @@ struct ReaderDTO {
         dto.grade = reader.grade;
         dto.classGroup = reader.classGroup;
         dto.studentId = reader.studentId;
-        dto.createdAt = reader.createdAt.toString(Qt::ISODate);
-        dto.updatedAt = reader.updatedAt.toString(Qt::ISODate);
+        dto.createdAt = Domain::toISOString(reader.createdAt);
+        dto.updatedAt = Domain::toISOString(reader.updatedAt);
         return dto;
     }
 };
 
 struct LoanDTO {
-    QString id = 0;
-    QString bookId = 0;
-    QString readerId = 0;
-    QString loanDate;
-    QString dueDate;
-    QString returnDate;
-    QString status;
+    int id = 0;
+    int bookId = 0;
+    int readerId = 0;
+    std::string loanDate;
+    std::string dueDate;
+    std::string returnDate;
+    std::string status;
 
     bool isActive() const {
-        return returnDate.isEmpty() && status == "active";
+        return returnDate.empty() && status == "active";
     }
 
     bool isOverdue() const {
         if (!isActive()) return false;
-        QDateTime due = QDateTime::fromString(dueDate, Qt::ISODate);
-        return QDateTime::currentDateTime() > due;
+        auto due = Domain::fromISOString(dueDate);
+        return Domain::now() > due;
     }
 
-    QString toDisplayString() const {
-        return QString("Loan ID: %1 | Book: %2 | Reader: %3 | Loan: %4 | Due: %5 | Return: %6 | Status: %7")
-            .arg(id).arg(bookId).arg(readerId).arg(loanDate).arg(dueDate).arg(returnDate).arg(status);
+    std::string toDisplayString() const {
+        return "Loan ID: " + std::to_string(id) + " | Book: " + std::to_string(bookId) + " | Reader: " + std::to_string(readerId) + 
+               " | Loan: " + loanDate + " | Due: " + dueDate + " | Return: " + returnDate + " | Status: " + status;
     }
 
     Domain::Loan toDomain() const {
@@ -243,9 +274,9 @@ struct LoanDTO {
         loan.id = id;
         loan.bookId = bookId;
         loan.readerId = readerId;
-        loan.loanDate = QDateTime::fromString(loanDate, Qt::ISODate);
-        loan.dueDate = QDateTime::fromString(dueDate, Qt::ISODate);
-        loan.returnDate = returnDate.isEmpty() ? QDateTime() : QDateTime::fromString(returnDate, Qt::ISODate);
+        loan.loanDate = Domain::fromISOString(loanDate);
+        loan.dueDate = Domain::fromISOString(dueDate);
+        loan.returnDate = returnDate.empty() ? Domain::DateTime{} : Domain::fromISOString(returnDate);
         loan.status = status;
         return loan;
     }
@@ -255,57 +286,78 @@ struct LoanDTO {
         dto.id = loan.id;
         dto.bookId = loan.bookId;
         dto.readerId = loan.readerId;
-        dto.loanDate = loan.loanDate.toString(Qt::ISODate);
-        dto.dueDate = loan.dueDate.toString(Qt::ISODate);
-        dto.returnDate = loan.returnDate.isNull() ? "" : loan.returnDate.toString(Qt::ISODate);
+        dto.loanDate = Domain::toISOString(loan.loanDate);
+        dto.dueDate = Domain::toISOString(loan.dueDate);
+        dto.returnDate = Domain::isNull(loan.returnDate) ? "" : Domain::toISOString(loan.returnDate);
         dto.status = loan.status;
         return dto;
     }
 };
 
 struct CategoryDTO {
-    //QString id = 0;
-    QString name;
+    int id = 0;
+    std::string name;
 
     bool isValid() const {
-        return !name.isEmpty();
+        return !name.empty();
     }
 
     Domain::Category toDomain() const {
         Domain::Category cat;
-        //cat.id = id;
+        cat.id = id;
         cat.name = name;
         return cat;
     }
 
     static CategoryDTO fromDomain(const Domain::Category& cat) {
         CategoryDTO dto;
-        //dto.id = cat.id;
+        dto.id = cat.id;
         dto.name = cat.name;
         return dto;
     }
 };
 
 struct LocationDTO {
-    //QString id = 0;
-    QString name;
+    int id = 0;
+    std::string name;
 
     bool isValid() const {
-        return !name.isEmpty();
+        return !name.empty();
     }
 
     Domain::Location toDomain() const {
         Domain::Location loc;
-        //loc.id = id;
+        loc.id = id;
         loc.name = name;
         return loc;
     }
 
     static LocationDTO fromDomain(const Domain::Location& loc) {
         LocationDTO dto;
-        //dto.id = loc.id;
+        dto.id = loc.id;
         dto.name = loc.name;
         return dto;
+    }
+};
+
+struct UserDTO {
+    int id = 0;
+    std::string username;
+    std::string password;
+    std::optional<Domain::User::Role> role;
+
+    bool isValid() const {
+        return !username.empty() && !password.empty();
+    }
+
+    Domain::User toDomain() const {
+        Domain::User user;
+        user.id = id;
+        user.username = username;
+        user.passwordHash = password;
+        user.role = role.value_or(Domain::User::Role::UserRole);
+        user.createdAt = Domain::now();
+        return user;
     }
 };
 

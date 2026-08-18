@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "domain.h"
 #include "businesslogic.h"
+#include "crypto.h"
 #include <QMessageBox>
 #include <QListWidget>
 #include <vector>
@@ -61,27 +62,82 @@ bool is_qstring_empty(QString stringtocheck);
 
 // Helper to check if BookDTO is empty
 bool is_book_dto_empty(const DTO::BookDTO& book) {
-    return book.title.isEmpty() && book.author.isEmpty() && book.id == 0;
+    return book.title.empty() && book.author.empty() && book.id == 0;
 }
 
 // Helper to check if ReaderDTO is empty
 bool is_reader_dto_empty(const DTO::ReaderDTO& reader) {
-    return reader.name.isEmpty() && reader.surname.isEmpty() && reader.id == 0;
+    return reader.name.empty() && reader.surname.empty() && reader.id == 0;
 }
 
 // Helper to check if CategoryDTO is empty
 bool is_category_dto_empty(const DTO::CategoryDTO& cat) {
-    return cat.name.isEmpty();
+    return cat.name.empty();
 }
 
 // Helper to check if LocationDTO is empty
 bool is_location_dto_empty(const DTO::LocationDTO& loc) {
-    return loc.name.isEmpty();
+    return loc.name.empty();
 }
 
 // Helper to check if LoanDTO is empty
 bool is_loan_dto_empty(const DTO::LoanDTO& loan) {
     return loan.id == 0 && loan.bookId == 0 && loan.readerId == 0;
+}
+
+// Helper to convert QString to std::string
+static inline std::string toStd(const QString& qstr) {
+    return qstr.toStdString();
+}
+
+// Login verification
+bool MainWindow::isLoggedIn() const {
+    return m_isLoggedIn;
+}
+
+void MainWindow::setLoggedIn(bool loggedIn) {
+    m_isLoggedIn = loggedIn;
+}
+
+bool MainWindow::checkLoginRequired() {
+    if (!m_isLoggedIn) {
+        QMessageBox::warning(this, tr("LOGIN REQUIRED"), tr("Please log in to access this feature."));
+        return false;
+    }
+    return true;
+}
+
+bool MainWindow::checkRoleRequired(BusinessLogic::RequiredRole required) {
+    if (!checkLoginRequired()) {
+        return false;
+    }
+    if (!m_currentUser.has_value()) {
+        QMessageBox::warning(this, tr("ACCESS DENIED"), tr("User session invalid. Please log in again."));
+        return false;
+    }
+    auto result = BusinessLogic::checkUserRole(m_currentUser, required);
+    if (!result.hasAccess) {
+        QMessageBox::warning(this, tr("ACCESS DENIED"), QString::fromStdString(result.errorMessage));
+        return false;
+    }
+    return true;
+}
+
+Domain::User::Role MainWindow::getCurrentUserRole() const {
+    if (m_currentUser.has_value()) {
+        return m_currentUser->role;
+    }
+    return Domain::User::Role::UserRole;
+}
+
+void MainWindow::setCurrentUser(const Domain::User& user) {
+    m_currentUser = user;
+    m_isLoggedIn = true;
+}
+
+void MainWindow::clearCurrentUser() {
+    m_currentUser.reset();
+    m_isLoggedIn = false;
 }
 
 // =============== MAIN WINDOW ===================
@@ -90,6 +146,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    if (load_libsodium() == false)
+    {
+        QMessageBox::critical(this, tr("LIBSODIUM FAILED"), tr("The application cannot function correctly without cryptographic functions."));
+    }
     set_to_backdrop();
 }
 
@@ -548,12 +608,12 @@ void MainWindow::on_lstSearch_removereaders_itemClicked(QListWidgetItem *item)
         ui->txtID_removereaders->setText(parts[4].trimmed());
 
         // Populate reader_selected DTO
-        reader_selected.name = parts[0].trimmed();
-        reader_selected.surname = parts[1].trimmed();
+        reader_selected.name = toStd(parts[0].trimmed());
+        reader_selected.surname = toStd(parts[1].trimmed());
         reader_selected.grade = parts[2].trimmed().toShort();
-        reader_selected.classGroup = parts[3].trimmed().at(0);
-        reader_selected.studentId = parts[4].trimmed();
-        reader_selected.id = reader_selected.studentId.toInt();
+        reader_selected.classGroup = parts[3].trimmed().at(0).toLatin1();
+        reader_selected.studentId = toStd(parts[4].trimmed());
+        reader_selected.id = std::stoi(reader_selected.studentId);
     }
 }
 
@@ -590,12 +650,12 @@ void MainWindow::on_btnRemove_removereaders_clicked()
     if (box.exec() == QMessageBox::Yes) {
         // remove from reader DB
         // store for undo
-        reader_selected.name = ui->txtName_removereaders->text();
-        reader_selected.surname = ui->txtSurname_removereaders->text();
+        reader_selected.name = toStd(ui->txtName_removereaders->text());
+        reader_selected.surname = toStd(ui->txtSurname_removereaders->text());
         reader_selected.grade = ui->txtGrade_removereaders->text().toShort();
-        reader_selected.classGroup = ui->txtClass_removereaders->text().at(0);
-        reader_selected.studentId = ui->txtID_removereaders->text();
-        reader_selected.id = reader_selected.studentId.toInt();
+        reader_selected.classGroup = ui->txtClass_removereaders->text().at(0).toLatin1();
+        reader_selected.studentId = toStd(ui->txtID_removereaders->text());
+        reader_selected.id = std::stoi(reader_selected.studentId);
     }
 }
 
@@ -685,6 +745,8 @@ void MainWindow::on_btnClear_id_removereaders_clicked()
 // menu action: navigate to remove readers page
 void MainWindow::on_actionRemoveReaders_triggered()
 {
+    if (!checkLoginRequired()) return;
+
     // check if a DB is selected
     if (database_readers.isEmpty())
     {
@@ -722,14 +784,18 @@ bool is_qstring_empty(QString stringtocheck)
 ////////////////////////////// MENU BUTTONS //////////////////////////////////////////////
 void MainWindow::on_actionLog_out_triggered()
 {
-    // change logged in bool to false or whatever the checking function will be
-    // set role to null, switch workspace to backdrop
+    clearCurrentUser();
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    facade.currentUser.reset();
+    sanitize_variables();
     set_to_backdrop();
 }
 
 void MainWindow::on_actionLog_in_triggered()
 {
     // clear text fields
+    ui->txtUsr_register_3->clear();
+    ui->txtPwd1_register_3->clear();
     // navigate to login workspace (magic numbers)
     ui->workspaces->setCurrentIndex(1);
 }
@@ -737,12 +803,18 @@ void MainWindow::on_actionLog_in_triggered()
 void MainWindow::on_actionRegister_triggered()
 {
     // clear text fields
+    ui->txtUsr_register->clear();
+    ui->txtPwd1_register->clear();
+    ui->txtPwd2_register->clear();
+    ui->cboRole_register->setCurrentIndex(0);
     // navigate to register workspace (magic numbers)
     ui->workspaces->setCurrentIndex(0);
 }
 
 void MainWindow::on_actionAddBooks_triggered()
 {
+    if (!checkLoginRequired()) return;
+
     // check if a DB is selected
     // -> if yes - navigate to add books (magic numbers)
     // -> if no - ask about loading default config
@@ -757,6 +829,8 @@ void MainWindow::on_actionAddBooks_triggered()
 
 void MainWindow::on_actionEditBooks_triggered()
 {
+    if (!checkLoginRequired()) return;
+
     // check if a DB is selected
     // -> if yes - navigate to edit books (magic numbers)
     // -> if no - ask about loading default config
@@ -771,6 +845,8 @@ void MainWindow::on_actionEditBooks_triggered()
 
 void MainWindow::on_actionManage_Categories_triggered()
 {
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
     // check if categories file exists
     // -> if not, create
     // ==== BEFORE SHOWING ====
@@ -781,6 +857,8 @@ void MainWindow::on_actionManage_Categories_triggered()
 
 void MainWindow::on_actionRemoveBooks_triggered()
 {
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
     // check if a DB is selected
     // -> if yes - find its deleted books section
     // -> if no - ask about loading default config
@@ -795,6 +873,8 @@ void MainWindow::on_actionRemoveBooks_triggered()
 
 void MainWindow::on_actionUndo_Removed_triggered()
 {
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
     // check if a DB is selected
     // -> if yes - find its deleted books section
     // -> if no - ask about loading default config
@@ -809,6 +889,8 @@ void MainWindow::on_actionUndo_Removed_triggered()
 
 void MainWindow::on_actionUndo_Removed_2_triggered()
 {
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
     // check if a reader DB is selected
     // -> if yes - find its deleted readers section
     // -> if no - ask about loading default config
@@ -818,11 +900,13 @@ void MainWindow::on_actionUndo_Removed_2_triggered()
     // ==== BEFORE SHOWING ====
     // clear text fields
     // update listBox from deleted readers dbs (all results due to empty search term)
-    ui->workspaces->setCurrentIndex(13);
+    ui->workspaces->setCurrentIndex(15); // page_13 (Undo Removed Readers)
 }
 
 void MainWindow::on_actionManage_Locations_triggered()
 {
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
     // if location DB does not exist - make blank
     // clear text fields
     // update listBox from location DB
@@ -831,6 +915,8 @@ void MainWindow::on_actionManage_Locations_triggered()
 
 void MainWindow::on_actionAddReaders_triggered()
 {
+    if (!checkLoginRequired()) return;
+
     // check if a DB is selected
     // -> if yes - find its deleted books section
     // -> if no - ask about loading default config
@@ -845,6 +931,8 @@ void MainWindow::on_actionAddReaders_triggered()
 
 void MainWindow::on_actionEditReaders_triggered()
 {
+    if (!checkLoginRequired()) return;
+
     // check if a DB is selected
     // -> if yes - find its deleted reader section
     // -> if no - ask about loading default config
@@ -859,25 +947,79 @@ void MainWindow::on_actionEditReaders_triggered()
 
 void MainWindow::on_actionAddLoans_triggered()
 {
+    if (!checkLoginRequired()) return;
+
     // check if DBs are selected via business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.db) {
         auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("NO DATABASE SELECTED"), result.errorMessage);
+            QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
 
     // ==== BEFORE SHOWING ====
     // clear text fields
-    ui->txtBookSearch_addloan->clear();
-    ui->txtReaderSearch_addloan->clear();
-    ui->txtBookSelected_addloan->clear();
-    ui->txtReaderSelected_addloan->clear();
-    ui->spnLoanDays_addloan->setValue(14);
+    ui->txtBookSearch_AddLoans->clear();
+    ui->txtReaderSearch_AddLoans->clear();
+    ui->txtBookSelected_AddLoans->clear();
+    ui->txtReaderSelected_AddLoans->clear();
+    ui->spnLoanDays_AddLoans->setValue(14);
 
-    ui->workspaces->setCurrentIndex(13); // page_14 (Add Loan)
+    ui->workspaces->setCurrentIndex(12); // page_14 (Add Loan)
+}
+
+void MainWindow::on_actionEditLoans_triggered()
+{
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
+    // check if DBs are selected via business logic
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    if (facade.db) {
+        auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
+        if (!result.isValid) {
+            QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+            return;
+        }
+    }
+
+    // ==== BEFORE SHOWING ====
+    // clear text fields
+    ui->txtLoanSearch_EditLoans->clear();
+    ui->txtLoanSelected_EditLoans->clear();
+    ui->txtDueDate_EditLoans->clear();
+    ui->txtReturnDate_EditLoans->clear();
+    ui->cboStatus_EditLoans->setCurrentIndex(0);
+
+    // populate search field combo box
+    ui->cboLoanSearchField_EditLoans->clear();
+    ui->cboLoanSearchField_EditLoans->addItems({"ID", "Book ID", "Reader ID", "Status"});
+
+    ui->workspaces->setCurrentIndex(13); // page_15 (Edit Loans)
+}
+
+void MainWindow::on_actionSearchLoans_triggered()
+{
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
+    // check if DBs are selected via business logic
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    if (facade.db) {
+        auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
+        if (!result.isValid) {
+            QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+            return;
+        }
+    }
+
+    // ==== BEFORE SHOWING ====
+    // clear text fields
+    ui->txtSearch_LoanStatuses->clear();
+    ui->cboStatusFilter_LoanStatuses->setCurrentIndex(0);
+    ui->lstSearch_LoanStatuses->clear();
+
+    ui->workspaces->setCurrentIndex(14); // page_16 (Loan Statuses)
 }
 
 ///// =========== HELPERS ============
@@ -890,11 +1032,111 @@ void MainWindow::set_to_backdrop()
 // ============================ ACCOUT MANAGEMENT ======================================================
 void MainWindow::on_btnRegister_clicked()
 {
-    // check whether username and password are the same
-    // check if both passwords match
-    // check password score - if it is low, warn user
-    // if both pass, create DB if not exist, make hash from usr+pwd+salt, write to DB
-    // then let user in with the role that they registered with (bypass login)
+    QString username = ui->txtUsr_register->text().trimmed();
+    QString password1 = ui->txtPwd1_register->text();
+    QString password2 = ui->txtPwd2_register->text();
+
+    if (username.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("All fields are required"));
+        return;
+    }
+
+    if (password1 != password2) {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Passwords do not match"));
+        return;
+    }
+
+    int roleIndex = ui->cboRole_register->currentIndex();
+    if (roleIndex < 0) {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Please select a role"));
+        return;
+    }
+
+    Domain::User::Role role;
+    switch (roleIndex) {
+        case 0: role = Domain::User::Role::UserRole; break;
+        case 1: role = Domain::User::Role::Admin; break;
+        case 2: role = Domain::User::Role::SuperAdmin; break;
+        default: role = Domain::User::Role::UserRole; break;
+    }
+
+    DTO::UserDTO userDTO;
+    userDTO.username = toStd(username);
+    userDTO.password = toStd(password1);
+    userDTO.role = role;
+
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    if (!facade.users) {
+        QMessageBox::critical(this, tr("ERROR"), tr("User service not available"));
+        return;
+    }
+
+    auto result = BusinessLogic::addUser(*facade.users, userDTO);
+    if (!result.isValid) {
+        QMessageBox::critical(this, tr("REGISTRATION FAILED"), QString::fromStdString(result.errorMessage));
+        return;
+    }
+
+    // Auto-login after registration
+    auto loginResult = facade.users->login(userDTO.username, userDTO.password);
+    if (loginResult.has_value()) {
+        setCurrentUser(*loginResult);
+        facade.currentUser = *loginResult;
+        QMessageBox::information(this, tr("SUCCESS"), tr("Registration successful! You are now logged in."));
+        set_to_backdrop();
+    } else {
+        QMessageBox::information(this, tr("SUCCESS"), tr("Registration successful! Please log in."));
+        ui->workspaces->setCurrentIndex(1); // Go to login page
+    }
+
+    // Clear form
+    ui->txtUsr_register->clear();
+    ui->txtPwd1_register->clear();
+    ui->txtPwd2_register->clear();
+    ui->cboRole_register->setCurrentIndex(0);
+}
+
+void MainWindow::on_btnLogin_clicked()
+{
+    QString username = ui->txtUsr_register_3->text().trimmed();
+    QString password = ui->txtPwd1_register_3->text();
+    QString roleStr = ui->cboRole_login->currentText();
+
+    if (username.isEmpty() || password.isEmpty()) {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Username and password are required"));
+        return;
+    }
+
+    Domain::User::Role selectedRole;
+    if (roleStr == "Admin") selectedRole = Domain::User::Role::Admin;
+    else if (roleStr == "Superadmin") selectedRole = Domain::User::Role::SuperAdmin;
+    else selectedRole = Domain::User::Role::UserRole;
+
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    if (!facade.users) {
+        QMessageBox::critical(this, tr("ERROR"), tr("User service not available"));
+        return;
+    }
+
+    auto loginResult = facade.users->login(toStd(username), toStd(password));
+    if (loginResult.has_value()) {
+        // Verify role matches
+        if (loginResult->role != selectedRole) {
+            QMessageBox::critical(this, tr("LOGIN FAILED"), tr("Invalid role for this user"));
+            return;
+        }
+        setCurrentUser(*loginResult);
+        facade.currentUser = *loginResult;
+        QMessageBox::information(this, tr("SUCCESS"), tr("Login successful!"));
+        set_to_backdrop();
+
+        // Clear form
+        ui->txtUsr_register_3->clear();
+        ui->txtPwd1_register_3->clear();
+        ui->cboRole_login->setCurrentIndex(0);
+    } else {
+        QMessageBox::critical(this, tr("LOGIN FAILED"), tr("Invalid username or password"));
+    }
 }
 
 void MainWindow::on_actionClose_Application_triggered()
@@ -910,16 +1152,6 @@ void MainWindow::on_actionClose_Application_triggered()
         // gracefully close all streams etc etc
         QCoreApplication::exit();
     }
-}
-
-
-void MainWindow::on_btnLogin_clicked()
-{
-    // check if empty usr/pwd
-    // if not - make hash from usr + pwd + salt
-    // then search for it in user DB using SQL
-    // if EOF - no such account, refuse
-    // if not EOF - log in
 }
 
 // ======================================= BOOKS ======================================================
@@ -998,7 +1230,7 @@ void MainWindow::on_btnUndoAdd_addbooks_clicked()
         for (int i = 0; i < ui->lstSearch_editbooks->count(); ++i)
         {
             QListWidgetItem *item = ui->lstSearch_editbooks->item(i);
-            if (item->text().contains(last_book_added.title) && item->text().contains(last_book_added.author))
+            if (item->text().contains(QString::fromStdString(last_book_added.title)) && item->text().contains(QString::fromStdString(last_book_added.author)))
             {
                 delete ui->lstSearch_editbooks->takeItem(i);
                 break;
@@ -1021,26 +1253,26 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
     }
 
     DTO::BookDTO book;
-    book.title = ui->txtTitle_addbooks->text();
-    book.author = ui->txtAuthor_addbooks->text();
+    book.title = toStd(ui->txtTitle_addbooks->text());
+    book.author = toStd(ui->txtAuthor_addbooks->text());
     book.id = ui->txtID_addbooks->text().toInt();
-    book.location = ui->cboLocation_addbooks->currentText();
-    book.category = ui->cboCategory_addbooks->currentText();
-    book.status = ui->cboStatus_addbooks->currentText();
-    book.createdAt = QDateTime::currentDateTime().toString(Qt::ISODate);
-    book.updatedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
+    book.location = toStd(ui->cboLocation_addbooks->currentText());
+    book.category = toStd(ui->cboCategory_addbooks->currentText());
+    book.status = toStd(ui->cboStatus_addbooks->currentText());
+    book.createdAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
+    book.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.books) {
         auto result = BusinessLogic::addBook(*facade.books, book);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
 
-    QString display = book.toDisplayString();
+    QString display = QString::fromStdString(book.toDisplayString());
 
     // add to list widget for immediate feedback
     ui->lstSearch_editbooks->addItem(display);
@@ -1073,32 +1305,32 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
     }
 
     DTO::BookDTO newBook;
-    newBook.title = ui->txtTitle_editbooks->text();
-    newBook.author = ui->txtAuthor_editbooks->text();
+    newBook.title = toStd(ui->txtTitle_editbooks->text());
+    newBook.author = toStd(ui->txtAuthor_editbooks->text());
     newBook.id = ui->txtID_editbooks->text().toInt();
-    newBook.location = ui->cboLocation_editbooks->currentText();
-    newBook.category = ui->cboCategory_editbooks->currentText();
-    newBook.status = ui->cboStatus_editbooks->currentText();
+    newBook.location = toStd(ui->cboLocation_editbooks->currentText());
+    newBook.category = toStd(ui->cboCategory_editbooks->currentText());
+    newBook.status = toStd(ui->cboStatus_editbooks->currentText());
     newBook.createdAt = book_selected.createdAt;
-    newBook.updatedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
+    newBook.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.books) {
         auto result = BusinessLogic::updateBook(*facade.books, newBook);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
 
-    QString display = newBook.toDisplayString();
+    QString display = QString::fromStdString(newBook.toDisplayString());
 
     // find and replace the selected item in the list
     for (int i = 0; i < ui->lstSearch_editbooks->count(); ++i)
     {
         QListWidgetItem *item = ui->lstSearch_editbooks->item(i);
-        if (item->text().contains(book_selected.title) && item->text().contains(book_selected.author))
+        if (item->text().contains(QString::fromStdString(book_selected.title)) && item->text().contains(QString::fromStdString(book_selected.author)))
         {
             item->setText(display);
             break;
@@ -1118,7 +1350,7 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
 void MainWindow::on_lstSearch_managecategories_itemClicked(QListWidgetItem *item)
 {
     ui->txtName_managecategories->setText(item->text());
-    category_selected.name = item->text();
+    category_selected.name = toStd(item->text());
 }
 
 // lst clicked in edit books - populate edit fields
@@ -1139,15 +1371,15 @@ void MainWindow::on_lstSearch_editbooks_itemClicked(QListWidgetItem *item)
         ui->txtID_editbooks->setText(id_part.trimmed());
 
         // Populate book_selected DTO
-        book_selected.title = parts[0].trimmed();
-        book_selected.author = parts[1].trimmed();
-        book_selected.location = parts[2].trimmed();
-        book_selected.category = parts[3].trimmed();
-        book_selected.status = parts[4].trimmed();
+        book_selected.title = toStd(parts[0].trimmed());
+        book_selected.author = toStd(parts[1].trimmed());
+        book_selected.location = toStd(parts[2].trimmed());
+        book_selected.category = toStd(parts[3].trimmed());
+        book_selected.status = toStd(parts[4].trimmed());
         book_selected.id = id_part.trimmed().toInt();
 
         // Also populate loan form if visible
-        ui->txtBookSelected_addloan->setText(text);
+        ui->txtBookSelected_AddLoans->setText(text);
     }
 }
 
@@ -1173,11 +1405,11 @@ void MainWindow::on_lstSearch_removebooks_itemClicked(QListWidgetItem *item)
     QStringList parts = text.split(" | ");
     if (parts.size() >= 6)
     {
-        book_selected.title = parts[0].trimmed();
-        book_selected.author = parts[1].trimmed();
-        book_selected.location = parts[2].trimmed();
-        book_selected.category = parts[3].trimmed();
-        book_selected.status = parts[4].trimmed();
+        book_selected.title = toStd(parts[0].trimmed());
+        book_selected.author = toStd(parts[1].trimmed());
+        book_selected.location = toStd(parts[2].trimmed());
+        book_selected.category = toStd(parts[3].trimmed());
+        book_selected.status = toStd(parts[4].trimmed());
         QString id_part = parts[5];
         if (id_part.startsWith("ID: "))
             id_part = id_part.mid(4);
@@ -1189,7 +1421,7 @@ void MainWindow::on_lstSearch_removebooks_itemClicked(QListWidgetItem *item)
 void MainWindow::on_lstSearch_managelocations_itemClicked(QListWidgetItem *item)
 {
     ui->txtName_managelocations->setText(item->text());
-    location_selected.name = item->text();
+    location_selected.name = toStd(item->text());
 }
 
 // lst clicked in edit readers - populate edit fields
@@ -1206,15 +1438,15 @@ void MainWindow::on_lstSearch_editreaders_itemClicked(QListWidgetItem *item)
         ui->txtID_editreaders->setText(parts[4].trimmed());
 
         // Populate reader_selected DTO
-        reader_selected.name = parts[0].trimmed();
-        reader_selected.surname = parts[1].trimmed();
+        reader_selected.name = toStd(parts[0].trimmed());
+        reader_selected.surname = toStd(parts[1].trimmed());
         reader_selected.grade = parts[2].trimmed().toShort();
-        reader_selected.classGroup = parts[3].trimmed().at(0);
-        reader_selected.studentId = parts[4].trimmed();
-        reader_selected.id = reader_selected.studentId.toInt();
+        reader_selected.classGroup = parts[3].trimmed().at(0).toLatin1();
+        reader_selected.studentId = toStd(parts[4].trimmed());
+        reader_selected.id = std::stoi(reader_selected.studentId);
 
         // Also populate loan form if visible
-        ui->txtReaderSelected_addloan->setText(text);
+        ui->txtReaderSelected_AddLoans->setText(text);
     }
 }
 
@@ -1310,7 +1542,7 @@ void MainWindow::on_btnRemove_removebooks_clicked()
             for (int i = 0; i < ui->lstSearch_removebooks->count(); ++i)
             {
                 QListWidgetItem *item = ui->lstSearch_removebooks->item(i);
-                if (item->text().contains(book_selected.title) && item->text().contains(book_selected.author))
+                if (item->text().contains(QString::fromStdString(book_selected.title)) && item->text().contains(QString::fromStdString(book_selected.author)))
                 {
                     delete ui->lstSearch_removebooks->takeItem(i);
                     break;
@@ -1357,7 +1589,7 @@ void MainWindow::on_btnUndoRemove_managecategories_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // re-add category to list widget (frontend only)
-            ui->lstSearch_managecategories->addItem(last_category_removed.name);
+            ui->lstSearch_managecategories->addItem(QString::fromStdString(last_category_removed.name));
             last_category_removed = DTO::CategoryDTO{};
             QMessageBox::information(this, tr("SUCCESS"), tr("Category restored (frontend only - requires DB implementation)"));
         }
@@ -1391,7 +1623,7 @@ void MainWindow::on_btnUndoEdit_managecategories_clicked()
                 QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
                 if (item->text() == category_selected.name) // current name
                 {
-                    item->setText(last_category_edited.name);
+                    item->setText(QString::fromStdString(last_category_edited.name));
                     break;
                 }
             }
@@ -1445,14 +1677,14 @@ void MainWindow::on_btnAddCategory_managecategories_clicked()
     QString category_toadd = ui->txtName_managecategories->text();
 
     DTO::CategoryDTO category;
-    category.name = category_toadd;
+    category.name = toStd(category_toadd);
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.categories) {
         auto result = BusinessLogic::addCategory(*facade.categories, category);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
@@ -1462,7 +1694,7 @@ void MainWindow::on_btnAddCategory_managecategories_clicked()
 
     // inform user if it worked
     // -> if worked, set last_category_added to category_toadd
-    last_category_added.name = category_toadd; // !!! ONLY HAPPENS UPON SUCCESS !!!
+    last_category_added.name = toStd(category_toadd); // !!! ONLY HAPPENS UPON SUCCESS !!!
     category_toadd = "";
 
     // clear input field
@@ -1485,7 +1717,7 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
         QMessageBox::critical(this, tr("Target not selected!"), tr("Category to be edited is not selected! Please select before proceeding!"));
         return;
     }
-    else if (category_selected.name == category_toadd) // if 'edited' category is the same as the selected one
+    else if (category_selected.name == toStd(category_toadd)) // if 'edited' category is the same as the selected one
     {
         QMessageBox::critical(this, tr("Category not changed!"), tr("Category is unchanged from selected category! Not making any changes!"));
         return;
@@ -1493,14 +1725,14 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
 
     DTO::CategoryDTO category;
     category.id = category_selected.id;
-    category.name = category_toadd;
+    category.name = toStd(category_toadd);
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.categories) {
         auto result = BusinessLogic::updateCategory(*facade.categories, category);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
@@ -1509,7 +1741,7 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
     for (int i = 0; i < ui->lstSearch_managecategories->count(); ++i)
     {
         QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
-        if (item->text() == category_selected.name)
+        if (item->text() == QString::fromStdString(category_selected.name))
         {
             item->setText(category_toadd);
             break;
@@ -1521,7 +1753,7 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
     last_category_edited = category_selected; // !!! ONLY HAPPENS UPON SUCCESS !!!
 
     // update category_selected
-    category_selected.name = category_toadd;
+    category_selected.name = toStd(category_toadd);
     category_toadd = "";
 
     // clear input field
@@ -1578,7 +1810,7 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
         QMessageBox::critical(this, tr("Target not selected!"), tr("Location to be edited is not selected! Please select before proceeding!"));
         return;
     }
-    else if (location_selected.name == location_toadd) // if 'edited' location is the same as the selected one
+    else if (location_selected.name == toStd(location_toadd)) // if 'edited' location is the same as the selected one
     {
         QMessageBox::critical(this, tr("Location not changed!"), tr("Location is unchanged from selected location! Not making any changes!"));
         return;
@@ -1586,14 +1818,14 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
 
     DTO::LocationDTO location;
     location.id = location_selected.id;
-    location.name = location_toadd;
+    location.name = toStd(location_toadd);
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.locations) {
         auto result = BusinessLogic::updateLocation(*facade.locations, location);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
@@ -1602,7 +1834,7 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
     for (int i = 0; i < ui->lstSearch_managelocations->count(); ++i)
     {
         QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
-        if (item->text() == location_selected.name)
+        if (item->text() == QString::fromStdString(location_selected.name))
         {
             item->setText(location_toadd);
             break;
@@ -1614,7 +1846,7 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
     last_location_edited = location_selected; // !!! ONLY HAPPENS UPON SUCCESS !!!
 
     // update location_selected
-    location_selected.name = location_toadd;
+    location_selected.name = toStd(location_toadd);
     location_toadd = "";
 
     // clear input field
@@ -1663,14 +1895,14 @@ void MainWindow::on_btnAddLocation_managelocations_clicked()
     QString location_toadd = ui->txtName_managelocations->text();
 
     DTO::LocationDTO location;
-    location.name = location_toadd;
+    location.name = toStd(location_toadd);
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.locations) {
         auto result = BusinessLogic::addLocation(*facade.locations, location);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
@@ -1680,7 +1912,7 @@ void MainWindow::on_btnAddLocation_managelocations_clicked()
 
     // inform user if it worked
     // -> if worked, set last_location_added to location_toadd
-    last_location_added.name = location_toadd; // !!! ONLY HAPPENS UPON SUCCESS !!!
+    last_location_added.name = toStd(location_toadd); // !!! ONLY HAPPENS UPON SUCCESS !!!
     location_toadd = "";
 
     // clear input field
@@ -1713,7 +1945,7 @@ void MainWindow::on_btnUndoRemove_managelocations_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // re-add location to list widget (frontend only)
-            ui->lstSearch_managelocations->addItem(last_location_removed.name);
+            ui->lstSearch_managelocations->addItem(QString::fromStdString(last_location_removed.name));
             last_location_removed = DTO::LocationDTO{};
             QMessageBox::information(this, tr("SUCCESS"), tr("Location restored (frontend only - requires DB implementation)"));
         }
@@ -1785,7 +2017,7 @@ void MainWindow::on_btnUndoEdit_managelocations_clicked()
                 QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
                 if (item->text() == location_selected.name) // current name
                 {
-                    item->setText(last_location_edited.name);
+                    item->setText(QString::fromStdString(last_location_edited.name));
                     break;
                 }
             }
@@ -1830,7 +2062,7 @@ void MainWindow::on_btnUndoSelected_undoremovebooks_clicked()
 
     if (box.exec() == QMessageBox::Yes) {
         // add the book back to list widget (frontend only)
-        QString display = last_book_removed.toDisplayString();
+        QString display = QString::fromStdString(last_book_removed.toDisplayString());
         ui->lstSearch_undoremovebooks->addItem(display);
 
         // store for redo
@@ -1881,7 +2113,7 @@ void MainWindow::on_btnRedoRemove_undoremovebooks_clicked()
             for (int i = 0; i < ui->lstSearch_undoremovebooks->count(); ++i)
             {
                 QListWidgetItem *item = ui->lstSearch_undoremovebooks->item(i);
-                if (item->text().contains(last_book_undone.title) && item->text().contains(last_book_undone.author))
+                if (item->text().contains(QString::fromStdString(last_book_undone.title)) && item->text().contains(QString::fromStdString(last_book_undone.author)))
                 {
                     delete ui->lstSearch_undoremovebooks->takeItem(i);
                     break;
@@ -2084,7 +2316,7 @@ void MainWindow::on_btnUndoSelected_undoremovereaders_clicked()
 
     if (box.exec() == QMessageBox::Yes) {
         // add the reader back to list widget (frontend only)
-        QString display = reader_selected.toDisplayString();
+        QString display = QString::fromStdString(reader_selected.toDisplayString());
         ui->lstSearch_undoremovereaders->addItem(display);
 
         // store for redo
@@ -2132,7 +2364,7 @@ void MainWindow::on_btnRedoRemove_undoremovereaders_clicked()
         for (int i = 0; i < ui->lstSearch_undoremovereaders->count(); ++i)
         {
             QListWidgetItem *item = ui->lstSearch_undoremovereaders->item(i);
-            if (item->text().contains(last_reader_undone.name) && item->text().contains(last_reader_undone.surname))
+            if (item->text().contains(QString::fromStdString(last_reader_undone.name)) && item->text().contains(QString::fromStdString(last_reader_undone.surname)))
             {
                 delete ui->lstSearch_undoremovereaders->takeItem(i);
                 break;
@@ -2192,26 +2424,26 @@ void MainWindow::on_btnAddBook_addreaders_clicked()
     }
 
     DTO::ReaderDTO reader;
-    reader.name = ui->txtName_addreaders->text();
-    reader.surname = ui->txtSurname_addreaders->text();
+    reader.name = toStd(ui->txtName_addreaders->text());
+    reader.surname = toStd(ui->txtSurname_addreaders->text());
     reader.grade = ui->txtGrade_addreaders->text().toShort();
-    reader.classGroup = ui->txtClass_addreaders->text().at(0);
-    reader.studentId = ui->txtID_addreaders->text();
-    reader.id = reader.studentId.toInt();
-    reader.createdAt = QDateTime::currentDateTime().toString(Qt::ISODate);
-    reader.updatedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
+    reader.classGroup = ui->txtClass_addreaders->text().at(0).toLatin1();
+    reader.studentId = toStd(ui->txtID_addreaders->text());
+    reader.id = std::stoi(reader.studentId);
+    reader.createdAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
+    reader.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.readers) {
         auto result = BusinessLogic::addReader(*facade.readers, reader);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
 
-    QString display = reader.toDisplayString();
+    QString display = QString::fromStdString(reader.toDisplayString());
 
     // add to list widget for immediate feedback
     ui->lstSearch_editreaders->addItem(display);
@@ -2246,32 +2478,32 @@ void MainWindow::on_btnEditBook_editreaders_clicked()
     }
 
     DTO::ReaderDTO newReader;
-    newReader.name = ui->txtName_editreaders->text();
-    newReader.surname = ui->txtSurname_editreaders->text();
+    newReader.name = toStd(ui->txtName_editreaders->text());
+    newReader.surname = toStd(ui->txtSurname_editreaders->text());
     newReader.grade = ui->txtGrade_editreaders->text().toShort();
-    newReader.classGroup = ui->txtClass_editreaders->text().at(0);
-    newReader.studentId = ui->txtID_editreaders->text();
-    newReader.id = newReader.studentId.toInt();
+    newReader.classGroup = ui->txtClass_editreaders->text().at(0).toLatin1();
+    newReader.studentId = toStd(ui->txtID_editreaders->text());
+    newReader.id = std::stoi(newReader.studentId);
     newReader.createdAt = reader_selected.createdAt;
-    newReader.updatedAt = QDateTime::currentDateTime().toString(Qt::ISODate);
+    newReader.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
     auto& facade = BusinessLogic::BusinessLogicFacade::instance();
     if (facade.readers) {
         auto result = BusinessLogic::updateReader(*facade.readers, newReader);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
 
-    QString display = newReader.toDisplayString();
+    QString display = QString::fromStdString(newReader.toDisplayString());
 
     // find and replace the selected item in the list
     for (int i = 0; i < ui->lstSearch_editreaders->count(); ++i)
     {
         QListWidgetItem *item = ui->lstSearch_editreaders->item(i);
-        if (item->text().contains(reader_selected.name) && item->text().contains(reader_selected.surname))
+        if (item->text().contains(QString::fromStdString(reader_selected.name)) && item->text().contains(QString::fromStdString(reader_selected.surname)))
         {
             item->setText(display);
             break;
@@ -2328,7 +2560,7 @@ void MainWindow::on_btnUndoEdit_editreaders_clicked()
 // search book for loan
 void MainWindow::on_btnSearchBook_addloan_clicked()
 {
-    QString search_term = ui->txtBookSearch_addloan->text();
+    QString search_term = ui->txtBookSearch_AddLoans->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Please enter a book title or author to search"));
@@ -2371,12 +2603,13 @@ void MainWindow::on_btnSearchBook_addloan_clicked()
 }
 
 // search reader for loan
-void MainWindow::on_btnSearchReader_addloan_clicked()
+void MainWindow::on_btnSearchReader_clicked()
 {
-    QString search_term = ui->txtReaderSearch_addloan->text();
+    QString search_term = ui->txtReaderSearch_AddLoans->text();
+    QString searchField = ui->cboReaderSearchField_AddLoans->currentText();
     if (sanitize_string(search_term).isEmpty())
     {
-        QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Please enter a reader name or surname to search"));
+        QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Please enter a search term"));
         return;
     }
 
@@ -2386,30 +2619,11 @@ void MainWindow::on_btnSearchReader_addloan_clicked()
         return;
     }
 
-    QString filter = search_term.toLower();
-    bool found = false;
-
-    for (int i = 0; i < ui->lstSearch_editreaders->count(); ++i)
-    {
-        QListWidgetItem *item = ui->lstSearch_editreaders->item(i);
-        if (item->text().toLower().contains(filter))
-        {
-            item->setHidden(false);
-            found = true;
-        }
-        else
-        {
-            item->setHidden(true);
-        }
-    }
-
-    if (!found && ui->lstSearch_editreaders->count() > 0)
-    {
-        QMessageBox::information(this, tr("NO RESULTS"), tr("No matching readers found"));
-    }
-    else if (found)
-    {
-        QMessageBox::information(this, tr("SEARCH COMPLETE"), tr("Click a reader in the Edit Readers list to select it, then return here"));
+    // Use business logic to populate the list
+    auto items = BusinessLogic::populateList("readers", search_term.toStdString(), searchField.toStdString());
+    ui->lstSearchReaders_AddLoans->clear();
+    for (const auto& item : items) {
+        ui->lstSearchReaders_AddLoans->addItem(QString::fromStdString(item.displayText));
     }
 }
 
@@ -2421,29 +2635,29 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     if (facade.db) {
         auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("NO DATABASE SELECTED"), result.errorMessage);
+            QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
 
     // check if book is selected
-    if (ui->txtBookSelected_addloan->text().isEmpty())
+    if (ui->txtBookSelected_AddLoans->text().isEmpty())
     {
         QMessageBox::critical(this, tr("NO BOOK SELECTED"), tr("Please select a book for the loan"));
         return;
     }
 
     // check if reader is selected
-    if (ui->txtReaderSelected_addloan->text().isEmpty())
+    if (ui->txtReaderSelected_AddLoans->text().isEmpty())
     {
         QMessageBox::critical(this, tr("NO READER SELECTED"), tr("Please select a reader for the loan"));
         return;
     }
 
-    int loanDays = ui->spnLoanDays_addloan->value();
+    int loanDays = ui->spnLoanDays_AddLoans->value();
 
     // Parse book ID from selected book text
-    QString bookText = ui->txtBookSelected_addloan->text();
+    QString bookText = ui->txtBookSelected_AddLoans->text();
     QStringList bookParts = bookText.split(" | ");
     int bookId = 0;
     if (bookParts.size() >= 6)
@@ -2455,7 +2669,7 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     }
 
     // Parse reader ID from selected reader text
-    QString readerText = ui->txtReaderSelected_addloan->text();
+    QString readerText = ui->txtReaderSelected_AddLoans->text();
     QStringList readerParts = readerText.split(" | ");
     int readerId = 0;
     if (readerParts.size() >= 5)
@@ -2473,8 +2687,8 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     DTO::LoanDTO loan;
     loan.bookId = bookId;
     loan.readerId = readerId;
-    loan.loanDate = QDateTime::currentDateTime().toString(Qt::ISODate);
-    loan.dueDate = QDateTime::currentDateTime().addDays(loanDays).toString(Qt::ISODate);
+    loan.loanDate = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
+    loan.dueDate = toStd(QDateTime::currentDateTime().addDays(loanDays).toString(Qt::ISODate));
     loan.status = "active";
     loan.returnDate = "";
 
@@ -2482,7 +2696,7 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     if (facade.loans) {
         auto result = BusinessLogic::addLoan(*facade.loans, loan);
         if (!result.isValid) {
-            QMessageBox::critical(this, tr("VALIDATION ERROR"), result.errorMessage);
+            QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
         }
     }
@@ -2490,20 +2704,236 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     QMessageBox::information(this, tr("SUCCESS"), tr("Loan created successfully"));
 
     // Clear form
-    ui->txtBookSearch_addloan->clear();
-    ui->txtReaderSearch_addloan->clear();
-    ui->txtBookSelected_addloan->clear();
-    ui->txtReaderSelected_addloan->clear();
-    ui->spnLoanDays_addloan->setValue(14);
+    ui->txtBookSearch_AddLoans->clear();
+    ui->txtReaderSearch_AddLoans->clear();
+    ui->txtBookSelected_AddLoans->clear();
+    ui->txtReaderSelected_AddLoans->clear();
+    ui->spnLoanDays_AddLoans->setValue(14);
 }
 
 // clear loan form
 void MainWindow::on_btnClear_addloan_clicked()
 {
-    ui->txtBookSearch_addloan->clear();
-    ui->txtReaderSearch_addloan->clear();
-    ui->txtBookSelected_addloan->clear();
-    ui->txtReaderSelected_addloan->clear();
-    ui->spnLoanDays_addloan->setValue(14);
+    ui->txtBookSearch_AddLoans->clear();
+    ui->txtReaderSearch_AddLoans->clear();
+    ui->txtBookSelected_AddLoans->clear();
+    ui->txtReaderSelected_AddLoans->clear();
+    ui->spnLoanDays_AddLoans->setValue(14);
+}
+
+// ============================ EDIT LOANS ======================================================
+
+// search loan for editing
+void MainWindow::on_btnSearchLoan_editloan_clicked()
+{
+    QString search_term = ui->txtLoanSearch_EditLoans->text();
+    if (search_term.trimmed().isEmpty())
+    {
+        QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Search term cannot be empty"));
+        return;
+    }
+
+    if (database_loans.isEmpty())
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No loan database selected"));
+        return;
+    }
+
+    QString filter = search_term.toLower();
+    QString field = ui->cboLoanSearchField_EditLoans->currentText().toLower();
+
+    ui->lstSearch_EditLoans->clear();
+
+    // In a full implementation, we'd query the database
+    // For now, we show a placeholder message
+    QMessageBox::information(this, tr("SEARCH"), tr("Loan search requires database implementation"));
+}
+
+// lst clicked in edit loans - populate edit fields
+void MainWindow::on_lstSearch_editloan_itemClicked(QListWidgetItem *item)
+{
+    QString text = item->text();
+    ui->txtLoanSelected_EditLoans->setText(text);
+
+    // Parse loan details from display text
+    // Format: "Loan ID: X | Book: Y | Reader: Z | Loan: ... | Due: ... | Return: ... | Status: ..."
+    QStringList parts = text.split(" | ");
+    if (parts.size() >= 7)
+    {
+        // Extract status
+        QString statusPart = parts[6];
+        if (statusPart.startsWith("Status: "))
+        {
+            QString status = statusPart.mid(8);
+            int idx = ui->cboStatus_EditLoans->findText(status);
+            if (idx >= 0)
+                ui->cboStatus_EditLoans->setCurrentIndex(idx);
+        }
+
+        // Extract due date
+        QString duePart = parts[4];
+        if (duePart.startsWith("Due: "))
+        {
+            ui->txtDueDate_EditLoans->setText(duePart.mid(5).trimmed());
+        }
+
+        // Extract return date
+        QString returnPart = parts[5];
+        if (returnPart.startsWith("Return: "))
+        {
+            QString ret = returnPart.mid(8).trimmed();
+            ui->txtReturnDate_EditLoans->setText(ret);
+        }
+    }
+}
+
+// update loan button
+void MainWindow::on_btnUpdateLoan_editloan_clicked()
+{
+    if (ui->txtLoanSelected_EditLoans->text().isEmpty())
+    {
+        QMessageBox::critical(this, tr("NO LOAN SELECTED"), tr("Please select a loan to update"));
+        return;
+    }
+
+    // Parse loan ID from selected loan text
+    QString loanText = ui->txtLoanSelected_EditLoans->text();
+    QStringList parts = loanText.split(" | ");
+    int loanId = 0;
+    if (parts.size() >= 1)
+    {
+        QString idPart = parts[0];
+        if (idPart.startsWith("Loan ID: "))
+            idPart = idPart.mid(9);
+        loanId = idPart.trimmed().toInt();
+    }
+
+    if (loanId <= 0)
+    {
+        QMessageBox::critical(this, tr("INVALID LOAN"), tr("Could not parse loan ID"));
+        return;
+    }
+
+    QString newStatus = ui->cboStatus_EditLoans->currentText();
+    QString dueDate = ui->txtDueDate_EditLoans->text();
+    QString returnDate = ui->txtReturnDate_EditLoans->text();
+
+    // Validate
+    if (newStatus == "returned" && returnDate.isEmpty())
+    {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Returned loan must have a return date"));
+        return;
+    }
+    if (newStatus == "active" && !returnDate.isEmpty())
+    {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Active loan cannot have a return date"));
+        return;
+    }
+
+    // In a full implementation, we'd call the business logic to update the loan
+    QMessageBox::information(this, tr("UPDATE"), tr("Loan update requires database implementation"));
+
+    // Store for undo
+    loan_selected.id = loanId;
+    loan_selected.status = toStd(newStatus);
+    loan_selected.dueDate = toStd(dueDate);
+    loan_selected.returnDate = toStd(returnDate);
+}
+
+// return loan button (mark as returned)
+void MainWindow::on_btnReturnLoan_editloan_clicked()
+{
+    if (ui->txtLoanSelected_EditLoans->text().isEmpty())
+    {
+        QMessageBox::critical(this, tr("NO LOAN SELECTED"), tr("Please select a loan to return"));
+        return;
+    }
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(tr("Return Loan"));
+    box.setText(tr("Mark the selected loan as returned?"));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+
+    if (box.exec() == QMessageBox::Yes)
+    {
+        ui->cboStatus_EditLoans->setCurrentText("returned");
+        ui->txtReturnDate_EditLoans->setText(QDateTime::currentDateTime().toString(Qt::ISODate));
+        on_btnUpdateLoan_editloan_clicked();
+    }
+}
+
+// clear edit loan form
+void MainWindow::on_btnClear_editloan_clicked()
+{
+    ui->txtLoanSearch_EditLoans->clear();
+    ui->txtLoanSelected_EditLoans->clear();
+    ui->txtDueDate_EditLoans->clear();
+    ui->txtReturnDate_EditLoans->clear();
+    ui->cboStatus_EditLoans->setCurrentIndex(0);
+    ui->lstSearch_EditLoans->clear();
+}
+
+// ============================ LOAN STATUSES ======================================================
+
+// filter loans by status
+void MainWindow::on_btnFilter_loanstatus_clicked()
+{
+    QString statusFilter = ui->cboStatusFilter_LoanStatuses->currentText();
+    ui->lstSearch_LoanStatuses->clear();
+
+    // In a full implementation, we'd query the database with the filter
+    QMessageBox::information(this, tr("FILTER"), tr("Loan filtering requires database implementation"));
+}
+
+// search loans
+void MainWindow::on_btnSearch_loanstatus_clicked()
+{
+    QString search_term = ui->txtSearch_LoanStatuses->text();
+    if (search_term.trimmed().isEmpty())
+    {
+        QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Search term cannot be empty"));
+        return;
+    }
+
+    if (database_loans.isEmpty())
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No loan database selected"));
+        return;
+    }
+
+    ui->lstSearch_LoanStatuses->clear();
+    QMessageBox::information(this, tr("SEARCH"), tr("Loan search requires database implementation"));
+}
+
+// refresh loan statuses
+void MainWindow::on_btnRefresh_loanstatus_clicked()
+{
+    ui->txtSearch_LoanStatuses->clear();
+    ui->cboStatusFilter_LoanStatuses->setCurrentIndex(0);
+    ui->lstSearch_LoanStatuses->clear();
+    QMessageBox::information(this, tr("REFRESH"), tr("Loan refresh requires database implementation"));
+}
+
+// overdue report
+void MainWindow::on_btnOverdueReport_loanstatus_clicked()
+{
+    if (database_loans.isEmpty())
+    {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), tr("No loan database selected"));
+        return;
+    }
+
+    ui->lstSearch_LoanStatuses->clear();
+    QMessageBox::information(this, tr("OVERDUE REPORT"), tr("Overdue report requires database implementation"));
+}
+
+// double-click loan in status list to edit
+void MainWindow::on_lstSearch_loanstatus_itemDoubleClicked(QListWidgetItem *item)
+{
+    QString text = item->text();
+    QMessageBox::information(this, tr("EDIT LOAN"), tr("Double-click to edit loan: %1").arg(text));
+    // In a full implementation, this would open the edit loan form with the selected loan
 }
 

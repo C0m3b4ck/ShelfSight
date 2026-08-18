@@ -1,27 +1,17 @@
 #include <SQLiteCpp/SQLiteCpp.h>
-#include <QString>
+#include <string>
 
-#include <iostream>
-
-bool does_id_exist(const std::string& db_name, const QString& id)
+bool does_id_exist(const std::string& db_name, const std::string& id)
 try
 {
-    // Open database file
     SQLite::Database db(db_name);
-
-    // Compile a SQL query with one named parameter
     SQLite::Statement query(db, "SELECT * FROM my_table WHERE ID = @id");
-
-    // Bind the id value to the named parameter "@id"
-    query.bind("@id", id.toStdString());
-
-    // executeStep() returns true if a row was found, false if none (EOF)
+    query.bind("@id", id);
     bool found = query.executeStep();
-
     return found;
 }
 catch (std::exception& e)
 {
-    std::cout << "exception: " << e.what() << "\n";
+    // MAKE THE APP RETURN A VISUAL EXCEPITON USING A QMESSAGEBOX::CRITICAL
     return false;
 }
