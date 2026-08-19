@@ -3,8 +3,12 @@
 #include "domain.h"
 #include "businesslogic.h"
 #include "crypto.h"
+#include "sqlite_dataaccess.h"
 #include <QMessageBox>
 #include <QListWidget>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QSettings>
 #include <vector>
 
 // ============== MAGIC NUMBERS ================
@@ -62,12 +66,12 @@ bool is_qstring_empty(QString stringtocheck);
 
 // Helper to check if BookDTO is empty
 bool is_book_dto_empty(const DTO::BookDTO& book) {
-    return book.title.empty() && book.author.empty() && book.id == 0;
+    return book.title.empty() && book.author.empty() && book.id.empty();
 }
 
 // Helper to check if ReaderDTO is empty
 bool is_reader_dto_empty(const DTO::ReaderDTO& reader) {
-    return reader.name.empty() && reader.surname.empty() && reader.id == 0;
+    return reader.name.empty() && reader.surname.empty() && reader.id.empty();
 }
 
 // Helper to check if CategoryDTO is empty
@@ -82,7 +86,7 @@ bool is_location_dto_empty(const DTO::LocationDTO& loc) {
 
 // Helper to check if LoanDTO is empty
 bool is_loan_dto_empty(const DTO::LoanDTO& loan) {
-    return loan.id == 0 && loan.bookId == 0 && loan.readerId == 0;
+    return loan.id.empty() && loan.bookId.empty() && loan.readerId.empty();
 }
 
 // Helper to convert QString to std::string
@@ -102,6 +106,13 @@ void MainWindow::setLoggedIn(bool loggedIn) {
 bool MainWindow::checkLoginRequired() {
     if (!m_isLoggedIn) {
         QMessageBox::warning(this, tr("LOGIN REQUIRED"), tr("Please log in to access this feature."));
+        return false;
+    }
+    
+    // Check if databases are selected
+    if (database_books.isEmpty() || database_readers.isEmpty() || database_loans.isEmpty()) {
+        QMessageBox::warning(this, tr("NO DATABASE SELECTED"), tr("Please select databases first."));
+        on_actionDatabase_Selection_triggered();
         return false;
     }
     return true;
@@ -211,49 +222,49 @@ void MainWindow::on_btnClear_password1_register_clicked()
 
 void MainWindow::on_btnClear_password2_register_clicked()
 {
-    ui->txtPwd2_register->setText("");
+    ui->txtPwd1_register->setText("");
 }
 
-void MainWindow::on_btnClear_title_addbooks_clicked()
+void MainWindow::on_btnClear_title_book_clicked()
 {
-    ui->txtTitle_addbooks->setText("");
+    ui->txtTitle_book->setText("");
 }
 
-void MainWindow::on_btnClear_author_addbooks_clicked()
+void MainWindow::on_btnClear_author_book_clicked()
 {
-    ui->txtAuthor_addbooks->setText("");
+    ui->txtAuthor_book->setText("");
 }
 
-void MainWindow::on_btnClear_id_addbooks_clicked()
+void MainWindow::on_btnClear_id_book_clicked()
 {
-    ui->txtID_addbooks->setText("");
+    ui->txtId_book->setText("");
 }
 
-void MainWindow::on_btnClear_title_editbooks_clicked()
+void MainWindow::on_btnClear_title_book_edit_clicked()
 {
-    ui->txtTitle_editbooks->setText("");
-}
-
-
-void MainWindow::on_btnClear_author_editbooks_clicked()
-{
-    ui->txtAuthor_editbooks->setText("");
+    ui->txtTitle_book_edit->setText("");
 }
 
 
-void MainWindow::on_btnClear_id_editbooks_clicked()
+void MainWindow::on_btnClear_author_book_edit_clicked()
 {
-    ui->txtID_editbooks->setText("");
+    ui->txtAuthor_book_edit->setText("");
 }
 
-void MainWindow::on_btnClear_name_managecategories_clicked()
+
+void MainWindow::on_btnClear_id_book_edit_clicked()
 {
-    ui->txtName_managecategories->setText("");
+    ui->txtId_book_edit->setText("");
 }
 
-void MainWindow::on_btnClear_name_managelocations_clicked()
+void MainWindow::on_btnClear_name_category_clicked()
 {
-    ui->txtName_managelocations->setText("");
+    ui->txtName_category->setText("");
+}
+
+void MainWindow::on_btnClear_name_location_clicked()
+{
+    ui->txtName_location->setText("");
 }
 
 void MainWindow::on_btnClear_name_addreaders_clicked()
@@ -301,9 +312,9 @@ void MainWindow::on_btnHelp_role_login_clicked()
 
 // =============== SEARCH BUTTONS ============
 // search edit books
-void MainWindow::on_btnSearch_editbooks_clicked()
+void MainWindow::on_btnSearch_book_edit_clicked()
 {
-    QString search_term = ui->txtSearch_editbooks->text();
+    QString search_term = ui->txtSearch_book_edit->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -319,9 +330,9 @@ void MainWindow::on_btnSearch_editbooks_clicked()
     QString filter = search_term.toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_editbooks->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_book_edit->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_editbooks->item(i);
+        QListWidgetItem *item = ui->lstSearch_book_edit->item(i);
         if (item->text().toLower().contains(filter))
         {
             item->setHidden(false);
@@ -333,16 +344,16 @@ void MainWindow::on_btnSearch_editbooks_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_editbooks->count() > 0)
+    if (!found && ui->lstSearch_book_edit->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching books found"));
     }
 }
 
 // search manage categories
-void MainWindow::on_btnSearch_managecategories_clicked()
+void MainWindow::on_btnSearch_category_clicked()
 {
-    QString search_term = ui->txtSearch_managecategories->text();
+    QString search_term = ui->txtSearch_category->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -352,9 +363,9 @@ void MainWindow::on_btnSearch_managecategories_clicked()
     QString filter = search_term.toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_managecategories->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_category->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
+        QListWidgetItem *item = ui->lstSearch_category->item(i);
         if (item->text().toLower().contains(filter))
         {
             item->setHidden(false);
@@ -366,7 +377,7 @@ void MainWindow::on_btnSearch_managecategories_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_managecategories->count() > 0)
+    if (!found && ui->lstSearch_category->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching categories found"));
     }
@@ -375,7 +386,7 @@ void MainWindow::on_btnSearch_managecategories_clicked()
 // search undo book removal
 void MainWindow::on_btnSearch_undoremovebooks_clicked()
 {
-    QString search_term = ui->txtSearch_undoremovebooks->text();
+    QString search_term = ui->txtSearch_undobooks->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -389,12 +400,12 @@ void MainWindow::on_btnSearch_undoremovebooks_clicked()
     }
 
     QString filter = search_term.toLower();
-    QString filter_field = ui->cboValue_undoremovebooks->currentText().toLower();
+    QString filter_field = ui->cboValue_undobooks->currentText().toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_undoremovebooks->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_undobooks->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_undoremovebooks->item(i);
+        QListWidgetItem *item = ui->lstSearch_undobooks->item(i);
         QString item_text = item->text().toLower();
 
         bool match = false;
@@ -422,7 +433,7 @@ void MainWindow::on_btnSearch_undoremovebooks_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_undoremovebooks->count() > 0)
+    if (!found && ui->lstSearch_undobooks->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching removed books found"));
     }
@@ -431,7 +442,7 @@ void MainWindow::on_btnSearch_undoremovebooks_clicked()
 // search manage locations
 void MainWindow::on_btnSearch_managelocations_clicked()
 {
-    QString search_term = ui->txtSearch_managelocations->text();
+    QString search_term = ui->txtSearch_location->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -441,9 +452,9 @@ void MainWindow::on_btnSearch_managelocations_clicked()
     QString filter = search_term.toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_managelocations->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_location->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
+        QListWidgetItem *item = ui->lstSearch_location->item(i);
         if (item->text().toLower().contains(filter))
         {
             item->setHidden(false);
@@ -455,7 +466,7 @@ void MainWindow::on_btnSearch_managelocations_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_managelocations->count() > 0)
+    if (!found && ui->lstSearch_location->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching locations found"));
     }
@@ -464,7 +475,7 @@ void MainWindow::on_btnSearch_managelocations_clicked()
 // search remove books
 void MainWindow::on_btnSearch_removebooks_clicked()
 {
-    QString search_term = ui->txtSearch_removebooks->text();
+    QString search_term = ui->txtSearch_book_remove->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -480,9 +491,9 @@ void MainWindow::on_btnSearch_removebooks_clicked()
     QString filter = search_term.toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_removebooks->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_book_remove->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_removebooks->item(i);
+        QListWidgetItem *item = ui->lstSearch_book_remove->item(i);
         if (item->text().toLower().contains(filter))
         {
             item->setHidden(false);
@@ -494,7 +505,7 @@ void MainWindow::on_btnSearch_removebooks_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_removebooks->count() > 0)
+    if (!found && ui->lstSearch_book_remove->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching books found"));
     }
@@ -503,7 +514,7 @@ void MainWindow::on_btnSearch_removebooks_clicked()
 // search edit readers
 void MainWindow::on_btnSearch_editreaders_clicked()
 {
-    QString search_term = ui->txtSearch_editreaders->text();
+    QString search_term = ui->txtSearch_reader_edit->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -519,9 +530,9 @@ void MainWindow::on_btnSearch_editreaders_clicked()
     QString filter = search_term.toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_editreaders->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_reader_edit->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_editreaders->item(i);
+        QListWidgetItem *item = ui->lstSearch_reader_edit->item(i);
         if (item->text().toLower().contains(filter))
         {
             item->setHidden(false);
@@ -533,7 +544,7 @@ void MainWindow::on_btnSearch_editreaders_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_editreaders->count() > 0)
+    if (!found && ui->lstSearch_reader_edit->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching readers found"));
     }
@@ -542,7 +553,7 @@ void MainWindow::on_btnSearch_editreaders_clicked()
 // search remove readers
 void MainWindow::on_btnSearch_removereaders_clicked()
 {
-    QString search_term = ui->txtSearch_removereaders->text();
+    QString search_term = ui->txtSearch_reader_remove->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -556,26 +567,15 @@ void MainWindow::on_btnSearch_removereaders_clicked()
     }
 
     QString filter = search_term.toLower();
-    QString filter_field = ui->cboFilter_removereaders->currentText().toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_removereaders->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_reader_remove->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_removereaders->item(i);
+        QListWidgetItem *item = ui->lstSearch_reader_remove->item(i);
         QString item_text = item->text().toLower();
 
-        bool match = false;
-        // Reader list format: "Name | Surname | Grade | Class | ID"
-        if (filter_field == "name" || filter_field.isEmpty())
-            match = item_text.split(" | ").value(0).contains(filter);
-        else if (filter_field == "surname")
-            match = item_text.split(" | ").value(1).contains(filter);
-        else if (filter_field == "id")
-            match = item_text.split(" | ").value(4).contains(filter);
-        else if (filter_field == "grade")
-            match = item_text.split(" | ").value(2).contains(filter);
-        else if (filter_field == "class")
-            match = item_text.split(" | ").value(3).contains(filter);
+        // Search across all fields (simple contains match)
+        bool match = item_text.contains(filter);
 
         if (match)
         {
@@ -588,7 +588,7 @@ void MainWindow::on_btnSearch_removereaders_clicked()
         }
     }
 
-if (!found && ui->lstSearch_removereaders->count() > 0)
+    if (!found && ui->lstSearch_reader_remove->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching readers found"));
     }
@@ -601,11 +601,11 @@ void MainWindow::on_lstSearch_removereaders_itemClicked(QListWidgetItem *item)
     QStringList parts = text.split(" | ");
     if (parts.size() >= 5)
     {
-        ui->txtName_removereaders->setText(parts[0].trimmed());
-        ui->txtSurname_removereaders->setText(parts[1].trimmed());
-        ui->txtGrade_removereaders->setText(parts[2].trimmed());
-        ui->txtClass_removereaders->setText(parts[3].trimmed());
-        ui->txtID_removereaders->setText(parts[4].trimmed());
+        ui->txtName_reader_remove->setText(parts[0].trimmed());
+        ui->txtSurname_reader_remove->setText(parts[1].trimmed());
+        ui->txtGrade_reader_remove->setText(parts[2].trimmed());
+        ui->txtClass_reader_remove->setText(parts[3].trimmed());
+        ui->txtId_reader_remove->setText(parts[4].trimmed());
 
         // Populate reader_selected DTO
         reader_selected.name = toStd(parts[0].trimmed());
@@ -627,7 +627,7 @@ void MainWindow::on_btnRemove_removereaders_clicked()
         return;
     }
     // check if reader is selected (name field not empty)
-    if (is_qstring_empty(ui->txtName_removereaders->text()))
+    if (is_qstring_empty(ui->txtName_reader_remove->text()))
     {
         QMessageBox::critical(this, tr("NAME EMPTY"), tr("Please select a reader to remove"));
         return;
@@ -639,22 +639,22 @@ void MainWindow::on_btnRemove_removereaders_clicked()
     box.setWindowTitle(tr("Remove Reader?"));
     box.setText(tr("Are you sure you want to remove reader:\n"
                    "Name: %1\nSurname: %2\nGrade: %3\nClass: %4\nID: %5")
-                      .arg(ui->txtName_removereaders->text())
-                      .arg(ui->txtSurname_removereaders->text())
-                      .arg(ui->txtGrade_removereaders->text())
-                      .arg(ui->txtClass_removereaders->text())
-                      .arg(ui->txtID_removereaders->text()));
+                      .arg(ui->txtName_reader_remove->text())
+                      .arg(ui->txtSurname_reader_remove->text())
+                      .arg(ui->txtGrade_reader_remove->text())
+                      .arg(ui->txtClass_reader_remove->text())
+                      .arg(ui->txtId_reader_remove->text()));
     box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() == QMessageBox::Yes) {
         // remove from reader DB
         // store for undo
-        reader_selected.name = toStd(ui->txtName_removereaders->text());
-        reader_selected.surname = toStd(ui->txtSurname_removereaders->text());
-        reader_selected.grade = ui->txtGrade_removereaders->text().toShort();
-        reader_selected.classGroup = ui->txtClass_removereaders->text().at(0).toLatin1();
-        reader_selected.studentId = toStd(ui->txtID_removereaders->text());
+        reader_selected.name = toStd(ui->txtName_reader_remove->text());
+        reader_selected.surname = toStd(ui->txtSurname_reader_remove->text());
+        reader_selected.grade = ui->txtGrade_reader_remove->text().toShort();
+        reader_selected.classGroup = ui->txtClass_reader_remove->text().at(0).toLatin1();
+        reader_selected.studentId = toStd(ui->txtId_reader_remove->text());
         reader_selected.id = std::stoi(reader_selected.studentId);
     }
 }
@@ -719,27 +719,27 @@ void MainWindow::on_btnUndoLast_removereaders_clicked()
 
 void MainWindow::on_btnClear_name_removereaders_clicked()
 {
-    ui->txtName_removereaders->setText("");
+    ui->txtName_reader_remove->setText("");
 }
 
 void MainWindow::on_btnClear_surname_removereaders_clicked()
 {
-    ui->txtSurname_removereaders->setText("");
+    ui->txtSurname_reader_remove->setText("");
 }
 
 void MainWindow::on_btnClear_grade_removereaders_clicked()
 {
-    ui->txtGrade_removereaders->setText("");
+    ui->txtGrade_reader_remove->setText("");
 }
 
 void MainWindow::on_btnClear_class_removereaders_clicked()
 {
-    ui->txtClass_removereaders->setText("");
+    ui->txtClass_reader_remove->setText("");
 }
 
 void MainWindow::on_btnClear_id_removereaders_clicked()
 {
-    ui->txtID_removereaders->setText("");
+    ui->txtId_reader_remove->setText("");
 }
 
 // menu action: navigate to remove readers page
@@ -756,14 +756,13 @@ void MainWindow::on_actionRemoveReaders_triggered()
 
     // ==== BEFORE SHOWING ====
     // clear text fields
-    ui->txtName_removereaders->clear();
-    ui->txtSurname_removereaders->clear();
-    ui->txtGrade_removereaders->clear();
-    ui->txtClass_removereaders->clear();
-    ui->txtID_removereaders->clear();
-    ui->txtSearch_removereaders->clear();
-    ui->lstSearch_removereaders->clear();
-    ui->cboFilter_removereaders->setCurrentIndex(0);
+    ui->txtName_reader_remove->clear();
+    ui->txtSurname_reader_remove->clear();
+    ui->txtGrade_reader_remove->clear();
+    ui->txtClass_reader_remove->clear();
+    ui->txtId_reader_remove->clear();
+    ui->txtSearch_reader_remove->clear();
+    ui->lstSearch_reader_remove->clear();
 
     ui->workspaces->setCurrentIndex(8); // page_12 (Remove Readers)
 }
@@ -794,8 +793,8 @@ void MainWindow::on_actionLog_out_triggered()
 void MainWindow::on_actionLog_in_triggered()
 {
     // clear text fields
-    ui->txtUsr_register_3->clear();
-    ui->txtPwd1_register_3->clear();
+    ui->txtUsr_register->clear();
+    ui->txtPwd1_register->clear();
     // navigate to login workspace (magic numbers)
     ui->workspaces->setCurrentIndex(1);
 }
@@ -805,7 +804,7 @@ void MainWindow::on_actionRegister_triggered()
     // clear text fields
     ui->txtUsr_register->clear();
     ui->txtPwd1_register->clear();
-    ui->txtPwd2_register->clear();
+    ui->txtPwd1_register->clear();
     ui->cboRole_register->setCurrentIndex(0);
     // navigate to register workspace (magic numbers)
     ui->workspaces->setCurrentIndex(0);
@@ -961,11 +960,11 @@ void MainWindow::on_actionAddLoans_triggered()
 
     // ==== BEFORE SHOWING ====
     // clear text fields
-    ui->txtBookSearch_AddLoans->clear();
-    ui->txtReaderSearch_AddLoans->clear();
-    ui->txtBookSelected_AddLoans->clear();
-    ui->txtReaderSelected_AddLoans->clear();
-    ui->spnLoanDays_AddLoans->setValue(14);
+    ui->txtSearch_book->clear();
+    ui->txtSearch_reader->clear();
+    ui->txtSelected_book->clear();
+    ui->txtSelected_reader->clear();
+    ui->spnLoanDays_loan->setValue(14);
 
     ui->workspaces->setCurrentIndex(12); // page_14 (Add Loan)
 }
@@ -986,15 +985,15 @@ void MainWindow::on_actionEditLoans_triggered()
 
     // ==== BEFORE SHOWING ====
     // clear text fields
-    ui->txtLoanSearch_EditLoans->clear();
-    ui->txtLoanSelected_EditLoans->clear();
-    ui->txtDueDate_EditLoans->clear();
-    ui->txtReturnDate_EditLoans->clear();
-    ui->cboStatus_EditLoans->setCurrentIndex(0);
+    ui->txtSearch_loan->clear();
+    ui->txtSelected_loan->clear();
+    ui->txtDueDate_loan->clear();
+    ui->txtReturnDate_loan->clear();
+    ui->cboStatus_loan->setCurrentIndex(0);
 
     // populate search field combo box
-    ui->cboLoanSearchField_EditLoans->clear();
-    ui->cboLoanSearchField_EditLoans->addItems({"ID", "Book ID", "Reader ID", "Status"});
+    ui->cboSearchField_loan->clear();
+    ui->cboSearchField_loan->addItems({"ID", "Book ID", "Reader ID", "Status"});
 
     ui->workspaces->setCurrentIndex(13); // page_15 (Edit Loans)
 }
@@ -1015,11 +1014,263 @@ void MainWindow::on_actionSearchLoans_triggered()
 
     // ==== BEFORE SHOWING ====
     // clear text fields
-    ui->txtSearch_LoanStatuses->clear();
-    ui->cboStatusFilter_LoanStatuses->setCurrentIndex(0);
-    ui->lstSearch_LoanStatuses->clear();
+    ui->txtSearch_loanstatus->clear();
+    ui->cboStatusFilter_loanstatus->setCurrentIndex(0);
+    ui->lstSearch_loanstatus->clear();
 
     ui->workspaces->setCurrentIndex(14); // page_16 (Loan Statuses)
+}
+
+void MainWindow::on_actionDatabase_Selection_triggered()
+{
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
+    // Load saved configurations
+    loadDbConfigs();
+
+    ui->workspaces->setCurrentIndex(16); // page_17 (Database Selection)
+}
+
+void MainWindow::loadDbConfigs()
+{
+    ui->cboDbConfigs->clear();
+    ui->lstSavedConfigs->clear();
+
+    // Load from QSettings
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QStringList configs = settings.value("configs").toStringList();
+
+    for (const QString& config : configs) {
+        ui->cboDbConfigs->addItem(config);
+        ui->lstSavedConfigs->addItem(config);
+    }
+}
+
+void MainWindow::on_cboDbConfigs_currentIndexChanged(int index)
+{
+    if (index < 0) return;
+
+    QString configName = ui->cboDbConfigs->itemText(index);
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QString configKey = "config_" + configName;
+
+    ui->txtBooksDb->setText(settings.value(configKey + "/books").toString());
+    ui->txtReadersDb->setText(settings.value(configKey + "/readers").toString());
+    ui->txtLoansDb->setText(settings.value(configKey + "/loans").toString());
+}
+
+void MainWindow::on_btnLoadDbConfig_clicked()
+{
+    int index = ui->cboDbConfigs->currentIndex();
+    if (index < 0) {
+        QMessageBox::critical(this, tr("NO CONFIG SELECTED"), tr("Please select a configuration to load"));
+        return;
+    }
+
+    on_cboDbConfigs_currentIndexChanged(index);
+
+    // Apply the configuration
+    database_books = ui->txtBooksDb->text();
+    database_readers = ui->txtReadersDb->text();
+    database_loans = ui->txtLoansDb->text();
+
+    // Initialize data access with new databases
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    if (facade.db) {
+        try {
+            facade.db->initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString());
+            QMessageBox::information(this, tr("SUCCESS"), tr("Database configuration loaded successfully"));
+        } catch (const std::exception& e) {
+            QMessageBox::critical(this, tr("ERROR"), tr("Failed to initialize databases: %1").arg(e.what()));
+        }
+    }
+}
+
+void MainWindow::on_btnBrowseBooksDb_clicked()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Select Books Database"), "", tr("SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)"));
+    if (!file.isEmpty()) {
+        ui->txtBooksDb->setText(file);
+    }
+}
+
+void MainWindow::on_btnBrowseReadersDb_clicked()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Select Readers Database"), "", tr("SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)"));
+    if (!file.isEmpty()) {
+        ui->txtReadersDb->setText(file);
+    }
+}
+
+void MainWindow::on_btnBrowseLoansDb_clicked()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Select Loans Database"), "", tr("SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)"));
+    if (!file.isEmpty()) {
+        ui->txtLoansDb->setText(file);
+    }
+}
+
+void MainWindow::on_btnSaveAsDefault_clicked()
+{
+    QString booksDb = ui->txtBooksDb->text();
+    QString readersDb = ui->txtReadersDb->text();
+    QString loansDb = ui->txtLoansDb->text();
+
+    if (booksDb.isEmpty() || readersDb.isEmpty() || loansDb.isEmpty()) {
+        QMessageBox::critical(this, tr("MISSING PATHS"), tr("All database paths must be filled"));
+        return;
+    }
+
+    // Save as default configuration
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    settings.setValue("default/books", booksDb);
+    settings.setValue("default/readers", readersDb);
+    settings.setValue("default/loans", loansDb);
+    settings.setValue("default_is_valid", true);
+
+    QMessageBox::information(this, tr("SUCCESS"), tr("Default configuration saved"));
+}
+
+void MainWindow::on_btnSaveCustomConfig_clicked()
+{
+    QString booksDb = ui->txtBooksDb->text();
+    QString readersDb = ui->txtReadersDb->text();
+    QString loansDb = ui->txtLoansDb->text();
+
+    if (booksDb.isEmpty() || readersDb.isEmpty() || loansDb.isEmpty()) {
+        QMessageBox::critical(this, tr("MISSING PATHS"), tr("All database paths must be filled"));
+        return;
+    }
+
+    bool ok;
+    QString configName = QInputDialog::getText(this, tr("Save Configuration"), tr("Configuration name:"), QLineEdit::Normal, "", &ok);
+    if (!ok || configName.isEmpty()) return;
+
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QString configKey = "config_" + configName;
+
+    settings.setValue(configKey + "/books", booksDb);
+    settings.setValue(configKey + "/readers", readersDb);
+    settings.setValue(configKey + "/loans", loansDb);
+
+    // Add to config list
+    QStringList configs = settings.value("configs").toStringList();
+    if (!configs.contains(configName)) {
+        configs.append(configName);
+        settings.setValue("configs", configs);
+    }
+
+    // Refresh UI
+    loadDbConfigs();
+
+    // Select the new config
+    int index = ui->cboDbConfigs->findText(configName);
+    if (index >= 0) {
+        ui->cboDbConfigs->setCurrentIndex(index);
+    }
+
+    QMessageBox::information(this, tr("SUCCESS"), tr("Configuration saved as '%1'").arg(configName));
+}
+
+void MainWindow::on_btnTestConnection_clicked()
+{
+    QString booksDb = ui->txtBooksDb->text();
+    QString readersDb = ui->txtReadersDb->text();
+    QString loansDb = ui->txtLoansDb->text();
+
+    if (booksDb.isEmpty() || readersDb.isEmpty() || loansDb.isEmpty()) {
+        QMessageBox::critical(this, tr("MISSING PATHS"), tr("All database paths must be filled"));
+        return;
+    }
+
+    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
+    if (facade.db) {
+        try {
+            facade.db->initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
+            if (facade.db->isConnected()) {
+                QMessageBox::information(this, tr("SUCCESS"), tr("Connection test successful! All databases are accessible."));
+            } else {
+                QMessageBox::critical(this, tr("FAILED"), tr("Failed to connect to databases"));
+            }
+        } catch (const std::exception& e) {
+            QMessageBox::critical(this, tr("ERROR"), tr("Connection failed: %1").arg(e.what()));
+        }
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Database manager not initialized"));
+    }
+}
+
+void MainWindow::on_btnCreateNewDb_clicked()
+{
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory for New Databases"));
+    if (dir.isEmpty()) return;
+
+    QString booksDb = dir + "/books.db";
+    QString readersDb = dir + "/readers.db";
+    QString loansDb = dir + "/loans.db";
+
+    // Create new databases
+    try {
+        DataAccess::SQLiteDataAccess tempDb;
+        tempDb.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
+        tempDb.shutdown();
+
+        ui->txtBooksDb->setText(booksDb);
+        ui->txtReadersDb->setText(readersDb);
+        ui->txtLoansDb->setText(loansDb);
+
+        QMessageBox::information(this, tr("SUCCESS"), tr("New databases created at:\n%1").arg(dir));
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to create databases: %1").arg(e.what()));
+    }
+}
+
+void MainWindow::on_btnDeleteConfig_clicked()
+{
+    QListWidgetItem *item = ui->lstSavedConfigs->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO CONFIG SELECTED"), tr("Please select a configuration to delete"));
+        return;
+    }
+
+    QString configName = item->text();
+    if (configName == "default") {
+        QMessageBox::critical(this, tr("CANNOT DELETE"), tr("Cannot delete the default configuration"));
+        return;
+    }
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("DELETE CONFIGURATION"));
+    box.setText(tr("Are you sure you want to delete configuration '%1'?").arg(configName));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+
+    if (box.exec() == QMessageBox::Yes) {
+        QString configKey = "config_" + configName;
+        QSettings settings("ShelfSight", "DatabaseConfigs");
+
+        settings.remove(configKey + "/books");
+        settings.remove(configKey + "/readers");
+        settings.remove(configKey + "/loans");
+
+        QStringList configs = settings.value("configs").toStringList();
+        configs.removeAll(configName);
+        settings.setValue("configs", configs);
+
+        loadDbConfigs();
+
+        QMessageBox::information(this, tr("SUCCESS"), tr("Configuration '%1' deleted").arg(configName));
+    }
+}
+
+void MainWindow::on_lstSavedConfigs_itemDoubleClicked(QListWidgetItem *item)
+{
+    QString configName = item->text();
+    int index = ui->cboDbConfigs->findText(configName);
+    if (index >= 0) {
+        ui->cboDbConfigs->setCurrentIndex(index);
+    }
 }
 
 ///// =========== HELPERS ============
@@ -1034,7 +1285,7 @@ void MainWindow::on_btnRegister_clicked()
 {
     QString username = ui->txtUsr_register->text().trimmed();
     QString password1 = ui->txtPwd1_register->text();
-    QString password2 = ui->txtPwd2_register->text();
+    QString password2 = ui->txtPwd1_register->text();
 
     if (username.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
         QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("All fields are required"));
@@ -1092,14 +1343,14 @@ void MainWindow::on_btnRegister_clicked()
     // Clear form
     ui->txtUsr_register->clear();
     ui->txtPwd1_register->clear();
-    ui->txtPwd2_register->clear();
+    ui->txtPwd1_register->clear();
     ui->cboRole_register->setCurrentIndex(0);
 }
 
 void MainWindow::on_btnLogin_clicked()
 {
-    QString username = ui->txtUsr_register_3->text().trimmed();
-    QString password = ui->txtPwd1_register_3->text();
+    QString username = ui->txtUsr_register->text().trimmed();
+    QString password = ui->txtPwd1_register->text();
     QString roleStr = ui->cboRole_login->currentText();
 
     if (username.isEmpty() || password.isEmpty()) {
@@ -1131,12 +1382,23 @@ void MainWindow::on_btnLogin_clicked()
         set_to_backdrop();
 
         // Clear form
-        ui->txtUsr_register_3->clear();
-        ui->txtPwd1_register_3->clear();
+        ui->txtUsr_register->clear();
+        ui->txtPwd1_register->clear();
         ui->cboRole_login->setCurrentIndex(0);
     } else {
         QMessageBox::critical(this, tr("LOGIN FAILED"), tr("Invalid username or password"));
     }
+}
+
+void MainWindow::on_chkHide_register_toggled(bool checked)
+{
+    ui->txtPwd1_register->setEchoMode(checked ? QLineEdit::Password : QLineEdit::Normal);
+    ui->txtPassword2_register->setEchoMode(checked ? QLineEdit::Password : QLineEdit::Normal);
+}
+
+void MainWindow::on_chkHide_login_toggled(bool checked)
+{
+    ui->txtPassword_login->setEchoMode(checked ? QLineEdit::Password : QLineEdit::Normal);
 }
 
 void MainWindow::on_actionClose_Application_triggered()
@@ -1227,12 +1489,12 @@ void MainWindow::on_btnUndoAdd_addbooks_clicked()
 
     if (box.exec() == QMessageBox::Yes) {
         // remove the added book from list (frontend only)
-        for (int i = 0; i < ui->lstSearch_editbooks->count(); ++i)
+        for (int i = 0; i < ui->lstSearch_book_edit->count(); ++i)
         {
-            QListWidgetItem *item = ui->lstSearch_editbooks->item(i);
+            QListWidgetItem *item = ui->lstSearch_book_edit->item(i);
             if (item->text().contains(QString::fromStdString(last_book_added.title)) && item->text().contains(QString::fromStdString(last_book_added.author)))
             {
-                delete ui->lstSearch_editbooks->takeItem(i);
+                delete ui->lstSearch_book_edit->takeItem(i);
                 break;
             }
         }
@@ -1253,12 +1515,12 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
     }
 
     DTO::BookDTO book;
-    book.title = toStd(ui->txtTitle_addbooks->text());
-    book.author = toStd(ui->txtAuthor_addbooks->text());
-    book.id = ui->txtID_addbooks->text().toInt();
-    book.location = toStd(ui->cboLocation_addbooks->currentText());
-    book.category = toStd(ui->cboCategory_addbooks->currentText());
-    book.status = toStd(ui->cboStatus_addbooks->currentText());
+    book.title = toStd(ui->txtTitle_book->text());
+    book.author = toStd(ui->txtAuthor_book->text());
+    book.id = ui->txtId_book->text().toInt();
+    book.location = toStd(ui->cboLocation_book->currentText());
+    book.category = toStd(ui->cboCategory_book->currentText());
+    book.status = toStd(ui->cboStatus_book->currentText());
     book.createdAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
     book.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
@@ -1275,7 +1537,7 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
     QString display = QString::fromStdString(book.toDisplayString());
 
     // add to list widget for immediate feedback
-    ui->lstSearch_editbooks->addItem(display);
+    ui->lstSearch_book_edit->addItem(display);
 
     // store for undo
     last_book_added = book;
@@ -1283,9 +1545,9 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
     QMessageBox::information(this, tr("SUCCESS"), tr("Book added"));
 
     // clear input fields
-    ui->txtTitle_addbooks->clear();
-    ui->txtAuthor_addbooks->clear();
-    ui->txtID_addbooks->clear();
+    ui->txtTitle_book->clear();
+    ui->txtAuthor_book->clear();
+    ui->txtId_book->clear();
 }
 
 // edit book button
@@ -1305,12 +1567,12 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
     }
 
     DTO::BookDTO newBook;
-    newBook.title = toStd(ui->txtTitle_editbooks->text());
-    newBook.author = toStd(ui->txtAuthor_editbooks->text());
-    newBook.id = ui->txtID_editbooks->text().toInt();
-    newBook.location = toStd(ui->cboLocation_editbooks->currentText());
-    newBook.category = toStd(ui->cboCategory_editbooks->currentText());
-    newBook.status = toStd(ui->cboStatus_editbooks->currentText());
+    newBook.title = toStd(ui->txtTitle_book_edit->text());
+    newBook.author = toStd(ui->txtAuthor_book_edit->text());
+    newBook.id = ui->txtId_book_edit->text().toInt();
+    newBook.location = toStd(ui->cboLocation_book_edit->currentText());
+    newBook.category = toStd(ui->cboCategory_book_edit->currentText());
+    newBook.status = toStd(ui->cboStatus_book_edit->currentText());
     newBook.createdAt = book_selected.createdAt;
     newBook.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
@@ -1327,9 +1589,9 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
     QString display = QString::fromStdString(newBook.toDisplayString());
 
     // find and replace the selected item in the list
-    for (int i = 0; i < ui->lstSearch_editbooks->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_book_edit->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_editbooks->item(i);
+        QListWidgetItem *item = ui->lstSearch_book_edit->item(i);
         if (item->text().contains(QString::fromStdString(book_selected.title)) && item->text().contains(QString::fromStdString(book_selected.author)))
         {
             item->setText(display);
@@ -1349,26 +1611,26 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
 // lst clicked in manage categories
 void MainWindow::on_lstSearch_managecategories_itemClicked(QListWidgetItem *item)
 {
-    ui->txtName_managecategories->setText(item->text());
+    ui->txtName_category->setText(item->text());
     category_selected.name = toStd(item->text());
 }
 
 // lst clicked in edit books - populate edit fields
-void MainWindow::on_lstSearch_editbooks_itemClicked(QListWidgetItem *item)
+void MainWindow::on_lstSearch_book_edit_itemClicked(QListWidgetItem *item)
 {
     QString text = item->text();
     QStringList parts = text.split(" | ");
     if (parts.size() >= 6)
     {
-        ui->txtTitle_editbooks->setText(parts[0].trimmed());
-        ui->txtAuthor_editbooks->setText(parts[1].trimmed());
-        ui->cboLocation_editbooks->setCurrentText(parts[2].trimmed());
-        ui->cboCategory_editbooks->setCurrentText(parts[3].trimmed());
-        ui->cboStatus_editbooks->setCurrentText(parts[4].trimmed());
+        ui->txtTitle_book_edit->setText(parts[0].trimmed());
+        ui->txtAuthor_book_edit->setText(parts[1].trimmed());
+        ui->cboLocation_book_edit->setCurrentText(parts[2].trimmed());
+        ui->cboCategory_book_edit->setCurrentText(parts[3].trimmed());
+        ui->cboStatus_book_edit->setCurrentText(parts[4].trimmed());
         QString id_part = parts[5];
         if (id_part.startsWith("ID: "))
             id_part = id_part.mid(4);
-        ui->txtID_editbooks->setText(id_part.trimmed());
+        ui->txtId_book_edit->setText(id_part.trimmed());
 
         // Populate book_selected DTO
         book_selected.title = toStd(parts[0].trimmed());
@@ -1379,7 +1641,7 @@ void MainWindow::on_lstSearch_editbooks_itemClicked(QListWidgetItem *item)
         book_selected.id = id_part.trimmed().toInt();
 
         // Also populate loan form if visible
-        ui->txtBookSelected_AddLoans->setText(text);
+        ui->txtSelected_book->setText(text);
     }
 }
 
@@ -1390,11 +1652,11 @@ void MainWindow::on_lstSearch_undoremovebooks_itemClicked(QListWidgetItem *item)
     QStringList parts = text.split(" | ");
     if (parts.size() >= 2)
     {
-        ui->txtValue_undoremovebooks->setText(parts[0].trimmed());
+        ui->txtValue_undobooks->setText(parts[0].trimmed());
         QString filter_field = parts[1].trimmed();
-        int idx = ui->cboValue_undoremovebooks->findText(filter_field);
+        int idx = ui->cboValue_undobooks->findText(filter_field);
         if (idx >= 0)
-            ui->cboValue_undoremovebooks->setCurrentIndex(idx);
+            ui->cboValue_undobooks->setCurrentIndex(idx);
     }
 }
 
@@ -1420,22 +1682,22 @@ void MainWindow::on_lstSearch_removebooks_itemClicked(QListWidgetItem *item)
 // lst clicked in manage locations - populate location name
 void MainWindow::on_lstSearch_managelocations_itemClicked(QListWidgetItem *item)
 {
-    ui->txtName_managelocations->setText(item->text());
+    ui->txtName_location->setText(item->text());
     location_selected.name = toStd(item->text());
 }
 
 // lst clicked in edit readers - populate edit fields
-void MainWindow::on_lstSearch_editreaders_itemClicked(QListWidgetItem *item)
+void MainWindow::on_lstSearch_reader_edit_itemClicked(QListWidgetItem *item)
 {
     QString text = item->text();
     QStringList parts = text.split(" | ");
     if (parts.size() >= 5)
     {
-        ui->txtName_editreaders->setText(parts[0].trimmed());
-        ui->txtSurname_editreaders->setText(parts[1].trimmed());
-        ui->txtGrade_editreaders->setText(parts[2].trimmed());
-        ui->txtClass_editreaders->setText(parts[3].trimmed());
-        ui->txtID_editreaders->setText(parts[4].trimmed());
+        ui->txtName_reader_edit->setText(parts[0].trimmed());
+        ui->txtSurname_reader_edit->setText(parts[1].trimmed());
+        ui->txtGrade_reader_edit->setText(parts[2].trimmed());
+        ui->txtClass_reader_edit->setText(parts[3].trimmed());
+        ui->txtId_reader_edit->setText(parts[4].trimmed());
 
         // Populate reader_selected DTO
         reader_selected.name = toStd(parts[0].trimmed());
@@ -1446,13 +1708,13 @@ void MainWindow::on_lstSearch_editreaders_itemClicked(QListWidgetItem *item)
         reader_selected.id = std::stoi(reader_selected.studentId);
 
         // Also populate loan form if visible
-        ui->txtReaderSelected_AddLoans->setText(text);
+        ui->txtSelected_reader->setText(text);
     }
 }
 
 void MainWindow::on_btnUndoAll_undoremovebooks_clicked()
 {
-    QString undo_term = ui->txtValue_undoremovebooks->text();
+    QString undo_term = ui->txtValue_undobooks->text();
     if (is_qstring_empty(undo_term) == true)
     {
         QMessageBox::critical(this, tr("Empty term!"), tr("Please input term before proceeding to undo!"));
@@ -1465,7 +1727,7 @@ void MainWindow::on_btnUndoAll_undoremovebooks_clicked()
         return;
     }
 
-    QString filter_field = ui->cboValue_undoremovebooks->currentText();
+    QString filter_field = ui->cboValue_undobooks->currentText();
     if (filter_field.isEmpty())
     {
         QMessageBox::critical(this, tr("NO FILTER SELECTED"), tr("Please select a filter field (Title, Author, ID, Location, Category, Status)"));
@@ -1486,15 +1748,15 @@ void MainWindow::on_btnUndoAll_undoremovebooks_clicked()
         // Note: bulk undo requires storing all matching item details
         // For frontend-only, we can only show the count of matching items
         int match_count = 0;
-        for (int i = 0; i < ui->lstSearch_undoremovebooks->count(); ++i)
+        for (int i = 0; i < ui->lstSearch_undobooks->count(); ++i)
         {
-            if (!ui->lstSearch_undoremovebooks->item(i)->isHidden())
+            if (!ui->lstSearch_undobooks->item(i)->isHidden())
                 match_count++;
         }
         QMessageBox::information(this, tr("UNDO ALL (FRONTEND)"),
             tr("Would restore %1 matching books (requires DB for full implementation)").arg(match_count));
         undo_term = "";
-        ui->txtValue_undoremovebooks->clear();
+        ui->txtValue_undobooks->clear();
     }
 }
 
@@ -1539,12 +1801,12 @@ void MainWindow::on_btnRemove_removebooks_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // remove from list widget (frontend only)
-            for (int i = 0; i < ui->lstSearch_removebooks->count(); ++i)
+            for (int i = 0; i < ui->lstSearch_book_remove->count(); ++i)
             {
-                QListWidgetItem *item = ui->lstSearch_removebooks->item(i);
+                QListWidgetItem *item = ui->lstSearch_book_remove->item(i);
                 if (item->text().contains(QString::fromStdString(book_selected.title)) && item->text().contains(QString::fromStdString(book_selected.author)))
                 {
-                    delete ui->lstSearch_removebooks->takeItem(i);
+                    delete ui->lstSearch_book_remove->takeItem(i);
                     break;
                 }
             }
@@ -1556,9 +1818,9 @@ void MainWindow::on_btnRemove_removebooks_clicked()
             book_selected = DTO::BookDTO{};
 
             // clear input fields
-            ui->txtTitle_removebooks->clear();
-            ui->txtAuthor_removebooks->clear();
-            ui->txtID_removebooks->clear();
+            ui->txtTitle_book_remove->clear();
+            ui->txtAuthor_book_remove->clear();
+            ui->txtId_book_remove->clear();
 
             QMessageBox::information(this, tr("SUCCESS"), tr("Book removed (frontend only - requires DB implementation)"));
         }
@@ -1589,7 +1851,7 @@ void MainWindow::on_btnUndoRemove_managecategories_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // re-add category to list widget (frontend only)
-            ui->lstSearch_managecategories->addItem(QString::fromStdString(last_category_removed.name));
+            ui->lstSearch_category->addItem(QString::fromStdString(last_category_removed.name));
             last_category_removed = DTO::CategoryDTO{};
             QMessageBox::information(this, tr("SUCCESS"), tr("Category restored (frontend only - requires DB implementation)"));
         }
@@ -1618,9 +1880,9 @@ void MainWindow::on_btnUndoEdit_managecategories_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // revert category name in list widget (frontend only)
-            for (int i = 0; i < ui->lstSearch_managecategories->count(); ++i)
+            for (int i = 0; i < ui->lstSearch_category->count(); ++i)
             {
-                QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
+                QListWidgetItem *item = ui->lstSearch_category->item(i);
                 if (item->text() == category_selected.name) // current name
                 {
                     item->setText(QString::fromStdString(last_category_edited.name));
@@ -1656,12 +1918,12 @@ void MainWindow::on_btnUndoAdd_managecategories_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // remove category from list widget (frontend only)
-            for (int i = 0; i < ui->lstSearch_managecategories->count(); ++i)
+            for (int i = 0; i < ui->lstSearch_category->count(); ++i)
             {
-                QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
+                QListWidgetItem *item = ui->lstSearch_category->item(i);
                 if (item->text() == last_category_added.name)
                 {
-                    delete ui->lstSearch_managecategories->takeItem(i);
+                    delete ui->lstSearch_category->takeItem(i);
                     break;
                 }
             }
@@ -1674,7 +1936,7 @@ void MainWindow::on_btnUndoAdd_managecategories_clicked()
 // add category button
 void MainWindow::on_btnAddCategory_managecategories_clicked()
 {
-    QString category_toadd = ui->txtName_managecategories->text();
+    QString category_toadd = ui->txtName_category->text();
 
     DTO::CategoryDTO category;
     category.name = toStd(category_toadd);
@@ -1690,7 +1952,7 @@ void MainWindow::on_btnAddCategory_managecategories_clicked()
     }
 
     // add to list widget (frontend only)
-    ui->lstSearch_managecategories->addItem(category_toadd);
+    ui->lstSearch_category->addItem(category_toadd);
 
     // inform user if it worked
     // -> if worked, set last_category_added to category_toadd
@@ -1698,7 +1960,7 @@ void MainWindow::on_btnAddCategory_managecategories_clicked()
     category_toadd = "";
 
     // clear input field
-    ui->txtName_managecategories->clear();
+    ui->txtName_category->clear();
 
     QMessageBox::information(this, tr("SUCCESS"), tr("Category added"));
 }
@@ -1706,7 +1968,7 @@ void MainWindow::on_btnAddCategory_managecategories_clicked()
 // edit category button
 void MainWindow::on_btnEditCategory_managecategories_clicked()
 {
-    QString category_toadd = ui->txtName_managecategories->text();
+    QString category_toadd = ui->txtName_category->text();
     if(is_qstring_empty(category_toadd) == true)
     {
         QMessageBox::critical(this, tr("Empty category!"), tr("Category cannot be empty! Please input category before editing!"));
@@ -1738,9 +2000,9 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
     }
 
     // edit in list widget (frontend only)
-    for (int i = 0; i < ui->lstSearch_managecategories->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_category->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
+        QListWidgetItem *item = ui->lstSearch_category->item(i);
         if (item->text() == QString::fromStdString(category_selected.name))
         {
             item->setText(category_toadd);
@@ -1757,7 +2019,7 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
     category_toadd = "";
 
     // clear input field
-    ui->txtName_managecategories->clear();
+    ui->txtName_category->clear();
 
     QMessageBox::information(this, tr("SUCCESS"), tr("Category edited"));
 }
@@ -1772,12 +2034,12 @@ void MainWindow::on_btnRemoveCategory_managecategories_clicked()
     else
     {
         // remove from list widget (frontend only)
-        for (int i = 0; i < ui->lstSearch_managecategories->count(); ++i)
+        for (int i = 0; i < ui->lstSearch_category->count(); ++i)
         {
-            QListWidgetItem *item = ui->lstSearch_managecategories->item(i);
+            QListWidgetItem *item = ui->lstSearch_category->item(i);
             if (item->text() == category_selected.name)
             {
-                delete ui->lstSearch_managecategories->takeItem(i);
+                delete ui->lstSearch_category->takeItem(i);
                 break;
             }
         }
@@ -1790,7 +2052,7 @@ void MainWindow::on_btnRemoveCategory_managecategories_clicked()
         category_selected = DTO::CategoryDTO{};
 
         // clear input field
-        ui->txtName_managecategories->clear();
+        ui->txtName_category->clear();
 
         QMessageBox::information(this, tr("SUCCESS"), tr("Category removed (frontend only - requires DB implementation)"));
     }
@@ -1799,7 +2061,7 @@ void MainWindow::on_btnRemoveCategory_managecategories_clicked()
 // edit location button
 void MainWindow::on_btnEditLocation_managelocations_clicked()
 {
-    QString location_toadd = ui->txtName_managelocations->text();
+    QString location_toadd = ui->txtName_location->text();
     if(is_qstring_empty(location_toadd) == true)
     {
         QMessageBox::critical(this, tr("Empty location!"), tr("Location cannot be empty! Please input location before editing!"));
@@ -1831,9 +2093,9 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
     }
 
     // edit in list widget (frontend only)
-    for (int i = 0; i < ui->lstSearch_managelocations->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_location->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
+        QListWidgetItem *item = ui->lstSearch_location->item(i);
         if (item->text() == QString::fromStdString(location_selected.name))
         {
             item->setText(location_toadd);
@@ -1850,7 +2112,7 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
     location_toadd = "";
 
     // clear input field
-    ui->txtName_managelocations->clear();
+    ui->txtName_location->clear();
 
     QMessageBox::information(this, tr("SUCCESS"), tr("Location edited"));
 }
@@ -1865,12 +2127,12 @@ void MainWindow::on_btnRemoveLocation_managelocations_clicked()
     else
     {
         // remove from list widget (frontend only)
-        for (int i = 0; i < ui->lstSearch_managelocations->count(); ++i)
+        for (int i = 0; i < ui->lstSearch_location->count(); ++i)
         {
-            QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
+            QListWidgetItem *item = ui->lstSearch_location->item(i);
             if (item->text() == location_selected.name)
             {
-                delete ui->lstSearch_managelocations->takeItem(i);
+                delete ui->lstSearch_location->takeItem(i);
                 break;
             }
         }
@@ -1883,7 +2145,7 @@ void MainWindow::on_btnRemoveLocation_managelocations_clicked()
         location_selected = DTO::LocationDTO{};
 
         // clear input field
-        ui->txtName_managelocations->clear();
+        ui->txtName_location->clear();
 
         QMessageBox::information(this, tr("SUCCESS"), tr("Location removed (frontend only - requires DB implementation)"));
     }
@@ -1892,7 +2154,7 @@ void MainWindow::on_btnRemoveLocation_managelocations_clicked()
 // add location button
 void MainWindow::on_btnAddLocation_managelocations_clicked()
 {
-    QString location_toadd = ui->txtName_managelocations->text();
+    QString location_toadd = ui->txtName_location->text();
 
     DTO::LocationDTO location;
     location.name = toStd(location_toadd);
@@ -1908,7 +2170,7 @@ void MainWindow::on_btnAddLocation_managelocations_clicked()
     }
 
     // add to list widget (frontend only)
-    ui->lstSearch_managelocations->addItem(location_toadd);
+    ui->lstSearch_location->addItem(location_toadd);
 
     // inform user if it worked
     // -> if worked, set last_location_added to location_toadd
@@ -1916,7 +2178,7 @@ void MainWindow::on_btnAddLocation_managelocations_clicked()
     location_toadd = "";
 
     // clear input field
-    ui->txtName_managelocations->clear();
+    ui->txtName_location->clear();
 
     QMessageBox::information(this, tr("SUCCESS"), tr("Location added"));
 }
@@ -1945,7 +2207,7 @@ void MainWindow::on_btnUndoRemove_managelocations_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // re-add location to list widget (frontend only)
-            ui->lstSearch_managelocations->addItem(QString::fromStdString(last_location_removed.name));
+            ui->lstSearch_location->addItem(QString::fromStdString(last_location_removed.name));
             last_location_removed = DTO::LocationDTO{};
             QMessageBox::information(this, tr("SUCCESS"), tr("Location restored (frontend only - requires DB implementation)"));
         }
@@ -1975,12 +2237,12 @@ void MainWindow::on_btnUndoAdd_managelocations_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // remove location from list widget (frontend only)
-            for (int i = 0; i < ui->lstSearch_managelocations->count(); ++i)
+            for (int i = 0; i < ui->lstSearch_location->count(); ++i)
             {
-                QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
+                QListWidgetItem *item = ui->lstSearch_location->item(i);
                 if (item->text() == last_location_added.name)
                 {
-                    delete ui->lstSearch_managelocations->takeItem(i);
+                    delete ui->lstSearch_location->takeItem(i);
                     break;
                 }
             }
@@ -2012,9 +2274,9 @@ void MainWindow::on_btnUndoEdit_managelocations_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // revert location name in list widget (frontend only)
-            for (int i = 0; i < ui->lstSearch_managelocations->count(); ++i)
+            for (int i = 0; i < ui->lstSearch_location->count(); ++i)
             {
-                QListWidgetItem *item = ui->lstSearch_managelocations->item(i);
+                QListWidgetItem *item = ui->lstSearch_location->item(i);
                 if (item->text() == location_selected.name) // current name
                 {
                     item->setText(QString::fromStdString(last_location_edited.name));
@@ -2063,7 +2325,7 @@ void MainWindow::on_btnUndoSelected_undoremovebooks_clicked()
     if (box.exec() == QMessageBox::Yes) {
         // add the book back to list widget (frontend only)
         QString display = QString::fromStdString(last_book_removed.toDisplayString());
-        ui->lstSearch_undoremovebooks->addItem(display);
+        ui->lstSearch_undobooks->addItem(display);
 
         // store for redo
         last_book_undone = last_book_removed;
@@ -2110,12 +2372,12 @@ void MainWindow::on_btnRedoRemove_undoremovebooks_clicked()
 
         if (box.exec() == QMessageBox::Yes) {
             // remove the book from list widget (frontend only)
-            for (int i = 0; i < ui->lstSearch_undoremovebooks->count(); ++i)
+            for (int i = 0; i < ui->lstSearch_undobooks->count(); ++i)
             {
-                QListWidgetItem *item = ui->lstSearch_undoremovebooks->item(i);
+                QListWidgetItem *item = ui->lstSearch_undobooks->item(i);
                 if (item->text().contains(QString::fromStdString(last_book_undone.title)) && item->text().contains(QString::fromStdString(last_book_undone.author)))
                 {
-                    delete ui->lstSearch_undoremovebooks->takeItem(i);
+                    delete ui->lstSearch_undobooks->takeItem(i);
                     break;
                 }
             }
@@ -2168,7 +2430,7 @@ void MainWindow::on_btnRedoAllSelected_undoremovebooks_clicked()
 // search undo removed readers
 void MainWindow::on_btnSearch_undoremovereaders_clicked()
 {
-    QString search_term = ui->txtSearch_undoremovereaders->text();
+    QString search_term = ui->txtSearch_undoreaders->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("SEARCH CANNOT BE EMPTY!!!"));
@@ -2182,12 +2444,12 @@ void MainWindow::on_btnSearch_undoremovereaders_clicked()
     }
 
     QString filter = search_term.toLower();
-    QString filter_field = ui->cboValue_undoremovereaders->currentText().toLower();
+    QString filter_field = ui->cboValue_undoreaders->currentText().toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_undoremovereaders->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_undoreaders->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_undoremovereaders->item(i);
+        QListWidgetItem *item = ui->lstSearch_undoreaders->item(i);
         QString item_text = item->text().toLower();
 
         bool match = false;
@@ -2214,7 +2476,7 @@ void MainWindow::on_btnSearch_undoremovereaders_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_undoremovereaders->count() > 0)
+    if (!found && ui->lstSearch_undoreaders->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching removed readers found"));
     }
@@ -2227,18 +2489,18 @@ void MainWindow::on_lstSearch_undoremovereaders_itemClicked(QListWidgetItem *ite
     QStringList parts = text.split(" | ");
     if (parts.size() >= 2)
     {
-        ui->txtValue_undoremovereaders->setText(parts[0].trimmed());
+        ui->txtValue_undoreaders->setText(parts[0].trimmed());
         QString filter_field = parts[1].trimmed();
-        int idx = ui->cboValue_undoremovereaders->findText(filter_field);
+        int idx = ui->cboValue_undoreaders->findText(filter_field);
         if (idx >= 0)
-            ui->cboValue_undoremovereaders->setCurrentIndex(idx);
+            ui->cboValue_undoreaders->setCurrentIndex(idx);
     }
 }
 
 // undo all removed readers
 void MainWindow::on_btnUndoAll_undoremovereaders_clicked()
 {
-    QString undo_term = ui->txtValue_undoremovereaders->text();
+    QString undo_term = ui->txtValue_undoreaders->text();
     if (is_qstring_empty(undo_term) == true)
     {
         QMessageBox::critical(this, tr("Empty term!"), tr("Please input term before proceeding to undo!"));
@@ -2251,7 +2513,7 @@ void MainWindow::on_btnUndoAll_undoremovereaders_clicked()
         return;
     }
 
-    QString filter_field = ui->cboValue_undoremovereaders->currentText();
+    QString filter_field = ui->cboValue_undoreaders->currentText();
     if (filter_field.isEmpty())
     {
         QMessageBox::critical(this, tr("NO FILTER SELECTED"), tr("Please select a filter field (Name, Surname, ID, Grade, Class)"));
@@ -2272,15 +2534,15 @@ void MainWindow::on_btnUndoAll_undoremovereaders_clicked()
         // Note: bulk undo requires storing all matching item details
         // For frontend-only, we can only show the count of matching items
         int match_count = 0;
-        for (int i = 0; i < ui->lstSearch_undoremovereaders->count(); ++i)
+        for (int i = 0; i < ui->lstSearch_undoreaders->count(); ++i)
         {
-            if (!ui->lstSearch_undoremovereaders->item(i)->isHidden())
+            if (!ui->lstSearch_undoreaders->item(i)->isHidden())
                 match_count++;
         }
         QMessageBox::information(this, tr("UNDO ALL (FRONTEND)"),
             tr("Would restore %1 matching readers (requires DB for full implementation)").arg(match_count));
         undo_term = "";
-        ui->txtValue_undoremovereaders->clear();
+        ui->txtValue_undoreaders->clear();
     }
 }
 
@@ -2317,7 +2579,7 @@ void MainWindow::on_btnUndoSelected_undoremovereaders_clicked()
     if (box.exec() == QMessageBox::Yes) {
         // add the reader back to list widget (frontend only)
         QString display = QString::fromStdString(reader_selected.toDisplayString());
-        ui->lstSearch_undoremovereaders->addItem(display);
+        ui->lstSearch_undoreaders->addItem(display);
 
         // store for redo
         last_reader_undone = reader_selected;
@@ -2361,12 +2623,12 @@ void MainWindow::on_btnRedoRemove_undoremovereaders_clicked()
 
     if (box.exec() == QMessageBox::Yes) {
         // remove the reader from list widget (frontend only)
-        for (int i = 0; i < ui->lstSearch_undoremovereaders->count(); ++i)
+        for (int i = 0; i < ui->lstSearch_undoreaders->count(); ++i)
         {
-            QListWidgetItem *item = ui->lstSearch_undoremovereaders->item(i);
+            QListWidgetItem *item = ui->lstSearch_undoreaders->item(i);
             if (item->text().contains(QString::fromStdString(last_reader_undone.name)) && item->text().contains(QString::fromStdString(last_reader_undone.surname)))
             {
-                delete ui->lstSearch_undoremovereaders->takeItem(i);
+                delete ui->lstSearch_undoreaders->takeItem(i);
                 break;
             }
         }
@@ -2446,7 +2708,7 @@ void MainWindow::on_btnAddBook_addreaders_clicked()
     QString display = QString::fromStdString(reader.toDisplayString());
 
     // add to list widget for immediate feedback
-    ui->lstSearch_editreaders->addItem(display);
+    ui->lstSearch_reader_edit->addItem(display);
 
     // store for undo
     last_reader_added = reader;
@@ -2478,11 +2740,11 @@ void MainWindow::on_btnEditBook_editreaders_clicked()
     }
 
     DTO::ReaderDTO newReader;
-    newReader.name = toStd(ui->txtName_editreaders->text());
-    newReader.surname = toStd(ui->txtSurname_editreaders->text());
-    newReader.grade = ui->txtGrade_editreaders->text().toShort();
-    newReader.classGroup = ui->txtClass_editreaders->text().at(0).toLatin1();
-    newReader.studentId = toStd(ui->txtID_editreaders->text());
+    newReader.name = toStd(ui->txtName_reader_edit->text());
+    newReader.surname = toStd(ui->txtSurname_reader_edit->text());
+    newReader.grade = ui->txtGrade_reader_edit->text().toShort();
+    newReader.classGroup = ui->txtClass_reader_edit->text().at(0).toLatin1();
+    newReader.studentId = toStd(ui->txtId_reader_edit->text());
     newReader.id = std::stoi(newReader.studentId);
     newReader.createdAt = reader_selected.createdAt;
     newReader.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
@@ -2500,9 +2762,9 @@ void MainWindow::on_btnEditBook_editreaders_clicked()
     QString display = QString::fromStdString(newReader.toDisplayString());
 
     // find and replace the selected item in the list
-    for (int i = 0; i < ui->lstSearch_editreaders->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_reader_edit->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_editreaders->item(i);
+        QListWidgetItem *item = ui->lstSearch_reader_edit->item(i);
         if (item->text().contains(QString::fromStdString(reader_selected.name)) && item->text().contains(QString::fromStdString(reader_selected.surname)))
         {
             item->setText(display);
@@ -2560,7 +2822,7 @@ void MainWindow::on_btnUndoEdit_editreaders_clicked()
 // search book for loan
 void MainWindow::on_btnSearchBook_addloan_clicked()
 {
-    QString search_term = ui->txtBookSearch_AddLoans->text();
+    QString search_term = ui->txtSearch_book->text();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Please enter a book title or author to search"));
@@ -2576,9 +2838,9 @@ void MainWindow::on_btnSearchBook_addloan_clicked()
     QString filter = search_term.toLower();
     bool found = false;
 
-    for (int i = 0; i < ui->lstSearch_editbooks->count(); ++i)
+    for (int i = 0; i < ui->lstSearch_book->count(); ++i)
     {
-        QListWidgetItem *item = ui->lstSearch_editbooks->item(i);
+        QListWidgetItem *item = ui->lstSearch_book->item(i);
         if (item->text().toLower().contains(filter))
         {
             item->setHidden(false);
@@ -2590,7 +2852,7 @@ void MainWindow::on_btnSearchBook_addloan_clicked()
         }
     }
 
-    if (!found && ui->lstSearch_editbooks->count() > 0)
+    if (!found && ui->lstSearch_book->count() > 0)
     {
         QMessageBox::information(this, tr("NO RESULTS"), tr("No matching books found"));
     }
@@ -2605,8 +2867,8 @@ void MainWindow::on_btnSearchBook_addloan_clicked()
 // search reader for loan
 void MainWindow::on_btnSearchReader_clicked()
 {
-    QString search_term = ui->txtReaderSearch_AddLoans->text();
-    QString searchField = ui->cboReaderSearchField_AddLoans->currentText();
+    QString search_term = ui->txtSearch_reader->text();
+    QString searchField = ui->cboSearchField_reader->currentText();
     if (sanitize_string(search_term).isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Please enter a search term"));
@@ -2621,9 +2883,9 @@ void MainWindow::on_btnSearchReader_clicked()
 
     // Use business logic to populate the list
     auto items = BusinessLogic::populateList("readers", search_term.toStdString(), searchField.toStdString());
-    ui->lstSearchReaders_AddLoans->clear();
+    ui->lstSearch_reader->clear();
     for (const auto& item : items) {
-        ui->lstSearchReaders_AddLoans->addItem(QString::fromStdString(item.displayText));
+        ui->lstSearch_reader->addItem(QString::fromStdString(item.displayText));
     }
 }
 
@@ -2641,23 +2903,23 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     }
 
     // check if book is selected
-    if (ui->txtBookSelected_AddLoans->text().isEmpty())
+    if (ui->txtSelected_book->text().isEmpty())
     {
         QMessageBox::critical(this, tr("NO BOOK SELECTED"), tr("Please select a book for the loan"));
         return;
     }
 
     // check if reader is selected
-    if (ui->txtReaderSelected_AddLoans->text().isEmpty())
+    if (ui->txtSelected_reader->text().isEmpty())
     {
         QMessageBox::critical(this, tr("NO READER SELECTED"), tr("Please select a reader for the loan"));
         return;
     }
 
-    int loanDays = ui->spnLoanDays_AddLoans->value();
+    int loanDays = ui->spnLoanDays_loan->value();
 
     // Parse book ID from selected book text
-    QString bookText = ui->txtBookSelected_AddLoans->text();
+    QString bookText = ui->txtSelected_book->text();
     QStringList bookParts = bookText.split(" | ");
     int bookId = 0;
     if (bookParts.size() >= 6)
@@ -2669,7 +2931,7 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     }
 
     // Parse reader ID from selected reader text
-    QString readerText = ui->txtReaderSelected_AddLoans->text();
+    QString readerText = ui->txtSelected_reader->text();
     QStringList readerParts = readerText.split(" | ");
     int readerId = 0;
     if (readerParts.size() >= 5)
@@ -2704,21 +2966,21 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     QMessageBox::information(this, tr("SUCCESS"), tr("Loan created successfully"));
 
     // Clear form
-    ui->txtBookSearch_AddLoans->clear();
-    ui->txtReaderSearch_AddLoans->clear();
-    ui->txtBookSelected_AddLoans->clear();
-    ui->txtReaderSelected_AddLoans->clear();
-    ui->spnLoanDays_AddLoans->setValue(14);
+    ui->txtSearch_book->clear();
+    ui->txtSearch_reader->clear();
+    ui->txtSelected_book->clear();
+    ui->txtSelected_reader->clear();
+    ui->spnLoanDays_loan->setValue(14);
 }
 
 // clear loan form
 void MainWindow::on_btnClear_addloan_clicked()
 {
-    ui->txtBookSearch_AddLoans->clear();
-    ui->txtReaderSearch_AddLoans->clear();
-    ui->txtBookSelected_AddLoans->clear();
-    ui->txtReaderSelected_AddLoans->clear();
-    ui->spnLoanDays_AddLoans->setValue(14);
+    ui->txtSearch_book->clear();
+    ui->txtSearch_reader->clear();
+    ui->txtSelected_book->clear();
+    ui->txtSelected_reader->clear();
+    ui->spnLoanDays_loan->setValue(14);
 }
 
 // ============================ EDIT LOANS ======================================================
@@ -2726,7 +2988,7 @@ void MainWindow::on_btnClear_addloan_clicked()
 // search loan for editing
 void MainWindow::on_btnSearchLoan_editloan_clicked()
 {
-    QString search_term = ui->txtLoanSearch_EditLoans->text();
+    QString search_term = ui->txtSearch_loan->text();
     if (search_term.trimmed().isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Search term cannot be empty"));
@@ -2740,9 +3002,9 @@ void MainWindow::on_btnSearchLoan_editloan_clicked()
     }
 
     QString filter = search_term.toLower();
-    QString field = ui->cboLoanSearchField_EditLoans->currentText().toLower();
+    QString field = ui->cboSearchField_loan->currentText().toLower();
 
-    ui->lstSearch_EditLoans->clear();
+    ui->lstSearch_loan->clear();
 
     // In a full implementation, we'd query the database
     // For now, we show a placeholder message
@@ -2753,7 +3015,7 @@ void MainWindow::on_btnSearchLoan_editloan_clicked()
 void MainWindow::on_lstSearch_editloan_itemClicked(QListWidgetItem *item)
 {
     QString text = item->text();
-    ui->txtLoanSelected_EditLoans->setText(text);
+    ui->txtSelected_loan->setText(text);
 
     // Parse loan details from display text
     // Format: "Loan ID: X | Book: Y | Reader: Z | Loan: ... | Due: ... | Return: ... | Status: ..."
@@ -2765,16 +3027,16 @@ void MainWindow::on_lstSearch_editloan_itemClicked(QListWidgetItem *item)
         if (statusPart.startsWith("Status: "))
         {
             QString status = statusPart.mid(8);
-            int idx = ui->cboStatus_EditLoans->findText(status);
+            int idx = ui->cboStatus_loan->findText(status);
             if (idx >= 0)
-                ui->cboStatus_EditLoans->setCurrentIndex(idx);
+                ui->cboStatus_loan->setCurrentIndex(idx);
         }
 
         // Extract due date
         QString duePart = parts[4];
         if (duePart.startsWith("Due: "))
         {
-            ui->txtDueDate_EditLoans->setText(duePart.mid(5).trimmed());
+            ui->txtDueDate_loan->setText(duePart.mid(5).trimmed());
         }
 
         // Extract return date
@@ -2782,7 +3044,7 @@ void MainWindow::on_lstSearch_editloan_itemClicked(QListWidgetItem *item)
         if (returnPart.startsWith("Return: "))
         {
             QString ret = returnPart.mid(8).trimmed();
-            ui->txtReturnDate_EditLoans->setText(ret);
+            ui->txtReturnDate_loan->setText(ret);
         }
     }
 }
@@ -2790,14 +3052,14 @@ void MainWindow::on_lstSearch_editloan_itemClicked(QListWidgetItem *item)
 // update loan button
 void MainWindow::on_btnUpdateLoan_editloan_clicked()
 {
-    if (ui->txtLoanSelected_EditLoans->text().isEmpty())
+    if (ui->txtSelected_loan->text().isEmpty())
     {
         QMessageBox::critical(this, tr("NO LOAN SELECTED"), tr("Please select a loan to update"));
         return;
     }
 
     // Parse loan ID from selected loan text
-    QString loanText = ui->txtLoanSelected_EditLoans->text();
+    QString loanText = ui->txtSelected_loan->text();
     QStringList parts = loanText.split(" | ");
     int loanId = 0;
     if (parts.size() >= 1)
@@ -2814,9 +3076,9 @@ void MainWindow::on_btnUpdateLoan_editloan_clicked()
         return;
     }
 
-    QString newStatus = ui->cboStatus_EditLoans->currentText();
-    QString dueDate = ui->txtDueDate_EditLoans->text();
-    QString returnDate = ui->txtReturnDate_EditLoans->text();
+    QString newStatus = ui->cboStatus_loan->currentText();
+    QString dueDate = ui->txtDueDate_loan->text();
+    QString returnDate = ui->txtReturnDate_loan->text();
 
     // Validate
     if (newStatus == "returned" && returnDate.isEmpty())
@@ -2843,7 +3105,7 @@ void MainWindow::on_btnUpdateLoan_editloan_clicked()
 // return loan button (mark as returned)
 void MainWindow::on_btnReturnLoan_editloan_clicked()
 {
-    if (ui->txtLoanSelected_EditLoans->text().isEmpty())
+    if (ui->txtSelected_loan->text().isEmpty())
     {
         QMessageBox::critical(this, tr("NO LOAN SELECTED"), tr("Please select a loan to return"));
         return;
@@ -2858,8 +3120,8 @@ void MainWindow::on_btnReturnLoan_editloan_clicked()
 
     if (box.exec() == QMessageBox::Yes)
     {
-        ui->cboStatus_EditLoans->setCurrentText("returned");
-        ui->txtReturnDate_EditLoans->setText(QDateTime::currentDateTime().toString(Qt::ISODate));
+        ui->cboStatus_loan->setCurrentText("returned");
+        ui->txtReturnDate_loan->setText(QDateTime::currentDateTime().toString(Qt::ISODate));
         on_btnUpdateLoan_editloan_clicked();
     }
 }
@@ -2867,12 +3129,12 @@ void MainWindow::on_btnReturnLoan_editloan_clicked()
 // clear edit loan form
 void MainWindow::on_btnClear_editloan_clicked()
 {
-    ui->txtLoanSearch_EditLoans->clear();
-    ui->txtLoanSelected_EditLoans->clear();
-    ui->txtDueDate_EditLoans->clear();
-    ui->txtReturnDate_EditLoans->clear();
-    ui->cboStatus_EditLoans->setCurrentIndex(0);
-    ui->lstSearch_EditLoans->clear();
+    ui->txtSearch_loan->clear();
+    ui->txtSelected_loan->clear();
+    ui->txtDueDate_loan->clear();
+    ui->txtReturnDate_loan->clear();
+    ui->cboStatus_loan->setCurrentIndex(0);
+    ui->lstSearch_loan->clear();
 }
 
 // ============================ LOAN STATUSES ======================================================
@@ -2880,8 +3142,8 @@ void MainWindow::on_btnClear_editloan_clicked()
 // filter loans by status
 void MainWindow::on_btnFilter_loanstatus_clicked()
 {
-    QString statusFilter = ui->cboStatusFilter_LoanStatuses->currentText();
-    ui->lstSearch_LoanStatuses->clear();
+    QString statusFilter = ui->cboStatusFilter_loanstatus->currentText();
+    ui->lstSearch_loanstatus->clear();
 
     // In a full implementation, we'd query the database with the filter
     QMessageBox::information(this, tr("FILTER"), tr("Loan filtering requires database implementation"));
@@ -2890,7 +3152,7 @@ void MainWindow::on_btnFilter_loanstatus_clicked()
 // search loans
 void MainWindow::on_btnSearch_loanstatus_clicked()
 {
-    QString search_term = ui->txtSearch_LoanStatuses->text();
+    QString search_term = ui->txtSearch_loanstatus->text();
     if (search_term.trimmed().isEmpty())
     {
         QMessageBox::critical(this, tr("SEARCH CANNOT BE EMPTY"), tr("Search term cannot be empty"));
@@ -2903,16 +3165,16 @@ void MainWindow::on_btnSearch_loanstatus_clicked()
         return;
     }
 
-    ui->lstSearch_LoanStatuses->clear();
+    ui->lstSearch_loanstatus->clear();
     QMessageBox::information(this, tr("SEARCH"), tr("Loan search requires database implementation"));
 }
 
 // refresh loan statuses
 void MainWindow::on_btnRefresh_loanstatus_clicked()
 {
-    ui->txtSearch_LoanStatuses->clear();
-    ui->cboStatusFilter_LoanStatuses->setCurrentIndex(0);
-    ui->lstSearch_LoanStatuses->clear();
+    ui->txtSearch_loanstatus->clear();
+    ui->cboStatusFilter_loanstatus->setCurrentIndex(0);
+    ui->lstSearch_loanstatus->clear();
     QMessageBox::information(this, tr("REFRESH"), tr("Loan refresh requires database implementation"));
 }
 
@@ -2925,7 +3187,7 @@ void MainWindow::on_btnOverdueReport_loanstatus_clicked()
         return;
     }
 
-    ui->lstSearch_LoanStatuses->clear();
+    ui->lstSearch_loanstatus->clear();
     QMessageBox::information(this, tr("OVERDUE REPORT"), tr("Overdue report requires database implementation"));
 }
 
@@ -2935,5 +3197,278 @@ void MainWindow::on_lstSearch_loanstatus_itemDoubleClicked(QListWidgetItem *item
     QString text = item->text();
     QMessageBox::information(this, tr("EDIT LOAN"), tr("Double-click to edit loan: %1").arg(text));
     // In a full implementation, this would open the edit loan form with the selected loan
+}
+
+// ==================== STUB IMPLEMENTATIONS FOR MISSING SLOTS ====================
+// These are minimal stubs to allow compilation. Full implementations needed for functionality.
+
+void MainWindow::on_btnClear_loan_edit_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnReturn_loan_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUpdate_loan_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_lstSearch_loan_itemClicked(QListWidgetItem *item)
+{
+    Q_UNUSED(item);
+}
+
+void MainWindow::on_btnSearch_loan_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnClear_loan_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnAdd_loan_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_reader_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_book_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnClear_id_reader_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnClear_class_reader_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnClear_grade_reader_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnClear_surname_reader_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnClear_name_reader_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoLast_reader_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoRemoval_reader_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRemove_reader_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_reader_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_reader_edit_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRemove_book_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoAdd_addreaders_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRedoAllSelected_undoreaders_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRedoRemove_undoreaders_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoSelected_undoreaders_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoAll_undoreaders_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_lstSearch_undoreaders_itemClicked(QListWidgetItem *item)
+{
+    Q_UNUSED(item);
+}
+
+void MainWindow::on_btnSearch_undoreaders_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRedoAllSelected_undobooks_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRedoRemove_undobooks_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoSelected_undobooks_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoEdit_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoAdd_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoRemove_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnAdd_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnEdit_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRemove_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_location_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoAll_undobooks_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_book_remove_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnSearch_undobooks_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnRemove_category_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnEdit_category_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnAdd_category_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoAdd_category_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoEdit_category_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoRemove_category_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoAdd_book_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_lstSearch_book_remove_itemClicked(QListWidgetItem *item)
+{
+    Q_UNUSED(item);
+}
+
+void MainWindow::on_lstSearch_undobooks_itemClicked(QListWidgetItem *item)
+{
+    Q_UNUSED(item);
+}
+
+void MainWindow::on_lstSearch_category_itemClicked(QListWidgetItem *item)
+{
+    Q_UNUSED(item);
+}
+
+void MainWindow::on_btnEdit_book_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnUndoEdit_book_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_btnAdd_book_clicked()
+{
+    QMessageBox::information(this, tr("NOT IMPLEMENTED"), tr("This feature is not yet implemented"));
+}
+
+void MainWindow::on_txtPwd1_register_textChanged(const QString &text)
+{
+    Q_UNUSED(text);
 }
 

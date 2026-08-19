@@ -26,26 +26,26 @@ class IBookService {
 public:
     virtual ~IBookService() = default;
     virtual std::vector<Domain::Book> getAllBooks() = 0;
-    virtual std::optional<Domain::Book> getBookById(int id) = 0;
+    virtual std::optional<Domain::Book> getBookById(const std::string& id) = 0;
     virtual std::vector<Domain::Book> searchBooks(const std::string& term, const std::string& field) = 0;
     virtual bool addBook(const Domain::Book& book) = 0;
     virtual bool updateBook(const Domain::Book& book) = 0;
-    virtual bool removeBook(int id) = 0;
+    virtual bool removeBook(const std::string& id) = 0;
     virtual std::vector<Domain::Book> getRemovedBooks() = 0;
-    virtual bool restoreBook(int id) = 0;
+    virtual bool restoreBook(const std::string& id) = 0;
 };
 
 class IReaderService {
 public:
     virtual ~IReaderService() = default;
     virtual std::vector<Domain::Reader> getAllReaders() = 0;
-    virtual std::optional<Domain::Reader> getReaderById(int id) = 0;
+    virtual std::optional<Domain::Reader> getReaderById(const std::string& id) = 0;
     virtual std::vector<Domain::Reader> searchReaders(const std::string& term, const std::string& field) = 0;
     virtual bool addReader(const Domain::Reader& reader) = 0;
     virtual bool updateReader(const Domain::Reader& reader) = 0;
-    virtual bool removeReader(int id) = 0;
+    virtual bool removeReader(const std::string& id) = 0;
     virtual std::vector<Domain::Reader> getRemovedReaders() = 0;
-    virtual bool restoreReader(int id) = 0;
+    virtual bool restoreReader(const std::string& id) = 0;
 };
 
 class ICategoryService {
@@ -54,7 +54,7 @@ public:
     virtual std::vector<Domain::Category> getAllCategories() = 0;
     virtual bool addCategory(const Domain::Category& category) = 0;
     virtual bool updateCategory(const Domain::Category& category) = 0;
-    virtual bool removeCategory(int id) = 0;
+    virtual bool removeCategory(const std::string& id) = 0;
 };
 
 class ILocationService {
@@ -63,18 +63,18 @@ public:
     virtual std::vector<Domain::Location> getAllLocations() = 0;
     virtual bool addLocation(const Domain::Location& location) = 0;
     virtual bool updateLocation(const Domain::Location& location) = 0;
-    virtual bool removeLocation(int id) = 0;
+    virtual bool removeLocation(const std::string& id) = 0;
 };
 
 class ILoanService {
 public:
     virtual ~ILoanService() = default;
-    virtual bool loanBook(int bookId, int readerId, int days) = 0;
-    virtual bool returnBook(int loanId) = 0;
+    virtual bool loanBook(const std::string& bookId, const std::string& readerId, int days) = 0;
+    virtual bool returnBook(const std::string& loanId) = 0;
     virtual std::vector<Domain::Loan> getActiveLoans() = 0;
     virtual std::vector<Domain::Loan> getOverdueLoans() = 0;
-    virtual std::vector<Domain::Loan> getLoansForReader(int readerId) = 0;
-    virtual std::vector<Domain::Loan> getLoansForBook(int bookId) = 0;
+    virtual std::vector<Domain::Loan> getLoansForReader(const std::string& readerId) = 0;
+    virtual std::vector<Domain::Loan> getLoansForBook(const std::string& bookId) = 0;
 };
 
 class IUserService {
@@ -82,7 +82,7 @@ public:
     virtual ~IUserService() = default;
     virtual bool registerUser(const DTO::UserDTO& user) = 0;
     virtual std::optional<Domain::User> login(const std::string& username, const std::string& password) = 0;
-    virtual bool changePassword(int userId, const std::string& oldPassword, const std::string& newPassword) = 0;
+    virtual bool changePassword(const std::string& userId, const std::string& oldPassword, const std::string& newPassword) = 0;
     virtual std::vector<Domain::User> getAllUsers() = 0;
 };
 
@@ -141,12 +141,12 @@ RoleCheckResult checkUserRole(const std::optional<Domain::User>& currentUser, Re
 RoleCheckResult checkUserRole(int userRoleInt, RequiredRole required);
 
 // ID checking
-ValidationResult checkIdExists(const std::string& dbType, int id);
-ValidationResult checkIdNotExists(const std::string& dbType, int id);
+ValidationResult checkIdExists(const std::string& dbType, const std::string& id);
+ValidationResult checkIdNotExists(const std::string& dbType, const std::string& id);
 
 // Listbox population
 struct ListItem {
-    int id = 0;
+    std::string id;
     std::string displayText;
     std::string searchField;
 };

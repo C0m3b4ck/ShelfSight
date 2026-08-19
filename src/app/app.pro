@@ -17,14 +17,18 @@ SOURCES += \
     dataaccesslayer.cpp \
     main.cpp \
     mainwindow.cpp \
-    sanitize_string.cpp
+    sanitize_string.cpp \
+    sqlite_dataaccess.cpp \
+    services.cpp
 
 HEADERS += \
     businesslogic.h \
     crypto.h \
     dataaccesslayer.h \
     domain.h \
-    mainwindow.h
+    mainwindow.h \
+    sqlite_dataaccess.h \
+    services.h
 
 FORMS += \
     mainwindow.ui

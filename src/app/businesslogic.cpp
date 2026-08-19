@@ -20,8 +20,8 @@ ValidationResult validateBookDTO(const DTO::BookDTO& book) {
     if (trim(book.author).empty()) {
         return ValidationResult::failure("Book author cannot be empty");
     }
-    if (book.id <= 0) {
-        return ValidationResult::failure("Book ID must be greater than 0");
+    if (!Domain::isValidId(book.id)) {
+        return ValidationResult::failure("Book ID cannot be empty");
     }
     if (trim(book.location).empty()) {
         return ValidationResult::failure("Book location cannot be empty");
@@ -42,8 +42,8 @@ ValidationResult validateReaderDTO(const DTO::ReaderDTO& reader) {
     if (trim(reader.surname).empty()) {
         return ValidationResult::failure("Reader surname cannot be empty");
     }
-    if (reader.id <= 0) {
-        return ValidationResult::failure("Reader ID must be greater than 0");
+    if (!Domain::isValidId(reader.id)) {
+        return ValidationResult::failure("Reader ID cannot be empty");
     }
     if (reader.grade < 0) {
         return ValidationResult::failure("Reader grade cannot be negative");
@@ -55,14 +55,14 @@ ValidationResult validateReaderDTO(const DTO::ReaderDTO& reader) {
 }
 
 ValidationResult validateLoanDTO(const DTO::LoanDTO& loan) {
-    if (loan.id <= 0) {
-        return ValidationResult::failure("Loan ID must be greater than 0");
+    if (!Domain::isValidId(loan.id)) {
+        return ValidationResult::failure("Loan ID cannot be empty");
     }
-    if (loan.bookId <= 0) {
-        return ValidationResult::failure("Loan book ID must be greater than 0");
+    if (!Domain::isValidId(loan.bookId)) {
+        return ValidationResult::failure("Loan book ID cannot be empty");
     }
-    if (loan.readerId <= 0) {
-        return ValidationResult::failure("Loan reader ID must be greater than 0");
+    if (!Domain::isValidId(loan.readerId)) {
+        return ValidationResult::failure("Loan reader ID cannot be empty");
     }
     if (trim(loan.loanDate).empty()) {
         return ValidationResult::failure("Loan date cannot be empty");
@@ -89,12 +89,18 @@ ValidationResult validateCategoryDTO(const DTO::CategoryDTO& category) {
     if (trim(category.name).empty()) {
         return ValidationResult::failure("Category name cannot be empty");
     }
+    if (!Domain::isValidId(category.id)) {
+        return ValidationResult::failure("Category ID cannot be empty");
+    }
     return ValidationResult::success();
 }
 
 ValidationResult validateLocationDTO(const DTO::LocationDTO& location) {
     if (trim(location.name).empty()) {
         return ValidationResult::failure("Location name cannot be empty");
+    }
+    if (!Domain::isValidId(location.id)) {
+        return ValidationResult::failure("Location ID cannot be empty");
     }
     return ValidationResult::success();
 }
@@ -288,7 +294,7 @@ RoleCheckResult checkUserRole(int userRoleInt, RequiredRole required) {
 }
 
 // ID checking
-ValidationResult checkIdExists(const std::string& dbType, int id) {
+ValidationResult checkIdExists(const std::string& dbType, const std::string& id) {
     auto& facade = BusinessLogicFacade::instance();
     if (!facade.db || !facade.db->isConnected()) {
         return ValidationResult::failure("Database not connected");
@@ -303,13 +309,13 @@ ValidationResult checkIdExists(const std::string& dbType, int id) {
         exists = reader.has_value();
     } else if (dbType == "categories" && facade.categories) {
         auto categories = facade.categories->getAllCategories();
-        exists = std::any_of(categories.begin(), categories.end(), [id](const Domain::Category& c) { return c.id == id; });
+        exists = std::any_of(categories.begin(), categories.end(), [&id](const Domain::Category& c) { return c.id == id; });
     } else if (dbType == "locations" && facade.locations) {
         auto locations = facade.locations->getAllLocations();
-        exists = std::any_of(locations.begin(), locations.end(), [id](const Domain::Location& l) { return l.id == id; });
+        exists = std::any_of(locations.begin(), locations.end(), [&id](const Domain::Location& l) { return l.id == id; });
     } else if (dbType == "users" && facade.users) {
         auto users = facade.users->getAllUsers();
-        exists = std::any_of(users.begin(), users.end(), [id](const Domain::User& u) { return u.id == id; });
+        exists = std::any_of(users.begin(), users.end(), [&id](const Domain::User& u) { return u.id == id; });
     } else if (dbType == "loans" && facade.loans) {
         // For loans, we'd need a getLoanById method
         exists = false;
@@ -318,13 +324,13 @@ ValidationResult checkIdExists(const std::string& dbType, int id) {
     if (exists) {
         return ValidationResult::success();
     }
-    return ValidationResult::failure("ID " + std::to_string(id) + " not found in " + dbType);
+    return ValidationResult::failure("ID " + id + " not found in " + dbType);
 }
 
-ValidationResult checkIdNotExists(const std::string& dbType, int id) {
+ValidationResult checkIdNotExists(const std::string& dbType, const std::string& id) {
     auto result = checkIdExists(dbType, id);
     if (result.isValid) {
-        return ValidationResult::failure("ID " + std::to_string(id) + " already exists in " + dbType);
+        return ValidationResult::failure("ID " + id + " already exists in " + dbType);
     }
     return ValidationResult::success();
 }

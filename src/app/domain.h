@@ -36,8 +36,13 @@ inline bool isNull(const DateTime& dt) {
     return dt == DateTime{};
 }
 
+// Helper for string ID validation
+inline bool isValidId(const std::string& id) {
+    return !id.empty() && id != "0";
+}
+
 struct Book {
-    int id = 0;
+    std::string id;
     std::string title;
     std::string author;
     std::string location;
@@ -47,16 +52,16 @@ struct Book {
     DateTime updatedAt;
 
     bool isValid() const {
-        return !title.empty() && !author.empty() && id > 0;
+        return !title.empty() && !author.empty() && isValidId(id);
     }
 
     std::string toDisplayString() const {
-        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + std::to_string(id);
+        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + id;
     }
 };
 
 struct Reader {
-    int id = 0;
+    std::string id;
     std::string name;
     std::string surname;
     short grade = 0;
@@ -66,7 +71,7 @@ struct Reader {
     DateTime updatedAt;
 
     bool isValid() const {
-        return !name.empty() && !surname.empty() && id > 0;
+        return !name.empty() && !surname.empty() && isValidId(id);
     }
 
     std::string toDisplayString() const {
@@ -79,27 +84,27 @@ struct Reader {
 };
 
 struct Category {
-    int id = 0;
+    std::string id;
     std::string name;
 
     bool isValid() const {
-        return !name.empty();
+        return !name.empty() && isValidId(id);
     }
 };
 
 struct Location {
-    int id = 0;
+    std::string id;
     std::string name;
 
     bool isValid() const {
-        return !name.empty();
+        return !name.empty() && isValidId(id);
     }
 };
 
 struct User {
     enum class Role { UserRole = 1, Admin = 2, SuperAdmin = 3 };
 
-    int id = 0;
+    std::string id;
     std::string username;
     std::string passwordHash;
     std::string salt;
@@ -108,14 +113,14 @@ struct User {
     DateTime lastLogin;
 
     bool isValid() const {
-        return !username.empty() && !passwordHash.empty() && id > 0;
+        return !username.empty() && !passwordHash.empty() && isValidId(id);
     }
 };
 
 struct Loan {
-    int id = 0;
-    int bookId = 0;
-    int readerId = 0;
+    std::string id;
+    std::string bookId;
+    std::string readerId;
     DateTime loanDate;
     DateTime dueDate;
     DateTime returnDate;
@@ -130,7 +135,7 @@ struct Loan {
     }
 
     std::string toDisplayString() const {
-        return "Loan ID: " + std::to_string(id) + " | Book: " + std::to_string(bookId) + " | Reader: " + std::to_string(readerId) +
+        return "Loan ID: " + id + " | Book: " + bookId + " | Reader: " + readerId +
                " | Loan: " + Domain::toISOString(loanDate) + " | Due: " + Domain::toISOString(dueDate) +
                " | Return: " + (isNull(returnDate) ? "N/A" : Domain::toISOString(returnDate)) + " | Status: " + status;
     }
@@ -152,7 +157,7 @@ struct UndoEntry {
 namespace DTO {
 
 struct BookDTO {
-    int id = 0;
+    std::string id;
     std::string title;
     std::string author;
     std::string location;
@@ -162,11 +167,11 @@ struct BookDTO {
     std::string updatedAt;
 
     bool isValid() const {
-        return !title.empty() && !author.empty() && id > 0;
+        return !title.empty() && !author.empty() && Domain::isValidId(id);
     }
 
     std::string toDisplayString() const {
-        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + std::to_string(id);
+        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + id;
     }
 
     Domain::Book toDomain() const {
@@ -197,7 +202,7 @@ struct BookDTO {
 };
 
 struct ReaderDTO {
-    int id = 0;
+    std::string id;
     std::string name;
     std::string surname;
     short grade = 0;
@@ -207,7 +212,7 @@ struct ReaderDTO {
     std::string updatedAt;
 
     bool isValid() const {
-        return !name.empty() && !surname.empty() && id > 0;
+        return !name.empty() && !surname.empty() && Domain::isValidId(id);
     }
 
     std::string toDisplayString() const {
@@ -246,9 +251,9 @@ struct ReaderDTO {
 };
 
 struct LoanDTO {
-    int id = 0;
-    int bookId = 0;
-    int readerId = 0;
+    std::string id;
+    std::string bookId;
+    std::string readerId;
     std::string loanDate;
     std::string dueDate;
     std::string returnDate;
@@ -265,7 +270,7 @@ struct LoanDTO {
     }
 
     std::string toDisplayString() const {
-        return "Loan ID: " + std::to_string(id) + " | Book: " + std::to_string(bookId) + " | Reader: " + std::to_string(readerId) + 
+        return "Loan ID: " + id + " | Book: " + bookId + " | Reader: " + readerId + 
                " | Loan: " + loanDate + " | Due: " + dueDate + " | Return: " + returnDate + " | Status: " + status;
     }
 
@@ -295,11 +300,11 @@ struct LoanDTO {
 };
 
 struct CategoryDTO {
-    int id = 0;
+    std::string id;
     std::string name;
 
     bool isValid() const {
-        return !name.empty();
+        return !name.empty() && Domain::isValidId(id);
     }
 
     Domain::Category toDomain() const {
@@ -318,11 +323,11 @@ struct CategoryDTO {
 };
 
 struct LocationDTO {
-    int id = 0;
+    std::string id;
     std::string name;
 
     bool isValid() const {
-        return !name.empty();
+        return !name.empty() && Domain::isValidId(id);
     }
 
     Domain::Location toDomain() const {
@@ -341,13 +346,13 @@ struct LocationDTO {
 };
 
 struct UserDTO {
-    int id = 0;
+    std::string id;
     std::string username;
     std::string password;
     std::optional<Domain::User::Role> role;
 
     bool isValid() const {
-        return !username.empty() && !password.empty();
+        return !username.empty() && !password.empty() && Domain::isValidId(id);
     }
 
     Domain::User toDomain() const {

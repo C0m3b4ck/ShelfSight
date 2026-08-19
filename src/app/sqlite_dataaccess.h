@@ -9,12 +9,6 @@
 
 namespace DataAccess {
 
-struct ListItem {
-    int id = 0;
-    std::string displayText;
-    std::string searchField;
-};
-
 class SQLiteDataAccess : public IDataAccess {
 public:
     SQLiteDataAccess();
@@ -26,43 +20,43 @@ public:
 
     // Book operations
     std::vector<Domain::Book> getAllBooks() override;
-    std::optional<Domain::Book> getBookById(int id) override;
+    std::optional<Domain::Book> getBookById(const std::string& id) override;
     std::vector<Domain::Book> searchBooks(const std::string& term, const std::string& field) override;
     bool addBook(const Domain::Book& book) override;
     bool updateBook(const Domain::Book& book) override;
-    bool removeBook(int id) override;
+    bool removeBook(const std::string& id) override;
     std::vector<Domain::Book> getRemovedBooks() override;
-    bool restoreBook(int id) override;
+    bool restoreBook(const std::string& id) override;
 
     // Reader operations
     std::vector<Domain::Reader> getAllReaders() override;
-    std::optional<Domain::Reader> getReaderById(int id) override;
+    std::optional<Domain::Reader> getReaderById(const std::string& id) override;
     std::vector<Domain::Reader> searchReaders(const std::string& term, const std::string& field) override;
     bool addReader(const Domain::Reader& reader) override;
     bool updateReader(const Domain::Reader& reader) override;
-    bool removeReader(int id) override;
+    bool removeReader(const std::string& id) override;
     std::vector<Domain::Reader> getRemovedReaders() override;
-    bool restoreReader(int id) override;
+    bool restoreReader(const std::string& id) override;
 
     // Category operations
     std::vector<Domain::Category> getAllCategories() override;
     bool addCategory(const Domain::Category& category) override;
     bool updateCategory(const Domain::Category& category) override;
-    bool removeCategory(int id) override;
+    bool removeCategory(const std::string& id) override;
 
     // Location operations
     std::vector<Domain::Location> getAllLocations() override;
     bool addLocation(const Domain::Location& location) override;
     bool updateLocation(const Domain::Location& location) override;
-    bool removeLocation(int id) override;
+    bool removeLocation(const std::string& id) override;
 
     // Loan operations
-    bool loanBook(int bookId, int readerId, int days) override;
-    bool returnBook(int loanId) override;
+    bool loanBook(const std::string& bookId, const std::string& readerId, int days) override;
+    bool returnBook(const std::string& loanId) override;
     std::vector<Domain::Loan> getActiveLoans() override;
     std::vector<Domain::Loan> getOverdueLoans() override;
-    std::vector<Domain::Loan> getLoansForReader(int readerId) override;
-    std::vector<Domain::Loan> getLoansForBook(int bookId) override;
+    std::vector<Domain::Loan> getLoansForReader(const std::string& readerId) override;
+    std::vector<Domain::Loan> getLoansForBook(const std::string& bookId) override;
 
     // User operations
     bool addUser(const Domain::User& user) override;
@@ -71,7 +65,7 @@ public:
     std::vector<Domain::User> getAllUsers() override;
 
     // ID checking
-    bool checkIdExists(const std::string& entityType, int id);
+    bool checkIdExists(const std::string& entityType, const std::string& id);
 
     // Listbox population
     std::vector<ListItem> populateList(const std::string& entityType, const std::string& searchTerm = "", const std::string& filterField = "");

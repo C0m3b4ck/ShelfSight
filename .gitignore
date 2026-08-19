@@ -44,6 +44,14 @@ ShelfSightBeta
 # Build directory
 /build
 
+# Python fix scripts (generated during development)
+app/fix_*.py
+app/rename_*.py
+app/insert_*.py
+app/migrate_*.py
+app/page17_*.py
+app/update_*.py
+
 # IDE / build files
 *.vcxproj
 *.vcxproj.filters
