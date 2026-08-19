@@ -9,6 +9,9 @@ shelfsight
 *.a
 *.lib
 *.dll
+ShelfSight
+ShelfSightTest
+ShelfSightBeta
 
 # DB / data files (generated at runtime)
 *.db
