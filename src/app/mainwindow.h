@@ -22,8 +22,8 @@ public:
     ~MainWindow() override;
     bool isLoggedIn() const;
     void setLoggedIn(bool loggedIn);
-    bool checkLoginRequired();
-    bool checkRoleRequired(BusinessLogic::RequiredRole required);
+    bool checkLoginRequired(bool requireDatabases = true);
+    bool checkRoleRequired(BusinessLogic::RequiredRole required, bool requireDatabases = true);
     Domain::User::Role getCurrentUserRole() const;
     void setCurrentUser(const Domain::User& user);
     void clearCurrentUser();

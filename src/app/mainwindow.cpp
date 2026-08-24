@@ -105,22 +105,22 @@ void MainWindow::setLoggedIn(bool loggedIn) {
     m_isLoggedIn = loggedIn;
 }
 
-bool MainWindow::checkLoginRequired() {
+bool MainWindow::checkLoginRequired(bool requireDatabases) {
     if (!m_isLoggedIn) {
         QMessageBox::warning(this, tr("LOGIN REQUIRED"), tr("Please log in to access this feature."));
         return false;
     }
     
-    // Check if databases are selected
-    if (database_books.isEmpty() || database_readers.isEmpty() || database_loans.isEmpty()) {
+    // Check if databases are selected (skip for database selection menu itself)
+    if (requireDatabases && (database_books.isEmpty() || database_readers.isEmpty() || database_loans.isEmpty())) {
         QMessageBox::warning(this, tr("NO DATABASE SELECTED"), tr("Please select databases from the Database Selection menu."));
         return false;
     }
     return true;
 }
 
-bool MainWindow::checkRoleRequired(BusinessLogic::RequiredRole required) {
-    if (!checkLoginRequired()) {
+bool MainWindow::checkRoleRequired(BusinessLogic::RequiredRole required, bool requireDatabases) {
+    if (!checkLoginRequired(requireDatabases)) {
         return false;
     }
     if (!m_currentUser.has_value()) {
@@ -163,11 +163,28 @@ MainWindow::MainWindow(QWidget *parent)
         QMessageBox::critical(this, tr("LIBSODIUM FAILED"), tr("The application cannot function correctly without cryptographic functions."));
     }
 
+    // Load saved default config if available
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    bool hasDefault = settings.value("default_is_valid", false).toBool();
+    if (hasDefault) {
+        QString configKey = "config_default";
+        database_books = settings.value(configKey + "/books").toString();
+        database_readers = settings.value(configKey + "/readers").toString();
+        database_loans = settings.value(configKey + "/loans").toString();
+        qDebug() << "[STARTUP] Loaded default config - books:" << database_books << "readers:" << database_readers << "loans:" << database_loans;
+    } else {
+        // No saved config — initialize readers.db at minimum so login works
+        database_books = "";
+        database_readers = "readers.db";
+        database_loans = "";
+        qDebug() << "[STARTUP] No saved config found, using defaults (readers.db)";
+    }
+
     auto& db = DataAccess::SQLiteDataAccess::instance();
     try {
-        db.initialize("", "readers.db", "");
-    } catch (const std::exception&) {
-        // Continue without database
+        db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString());
+    } catch (const std::exception& e) {
+        qDebug() << "[STARTUP] DB init failed:" << e.what();
     }
 
     set_to_backdrop();
@@ -180,10 +197,6 @@ MainWindow::~MainWindow()
 // =========== HELPERS ==========
 void sanitize_variables() //clears variables (called by MainWindow and upon logging out/re-logging)
 {
-    // ====== databases ======
-    database_books = "";
-    database_readers = "";
-    database_loans = "";
     // ====== books - for undoing =====
     last_book_added = DTO::BookDTO{};
     last_book_edited = DTO::BookDTO{};
@@ -1041,10 +1054,21 @@ void MainWindow::on_actionSearchLoans_triggered()
 
 void MainWindow::on_actionDatabase_Selection_triggered()
 {
-    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin, false)) return;
 
     // Load saved configurations
     loadDbConfigs();
+
+    // Show current paths in the text fields
+    ui->txtBooksDb->setText(database_books);
+    ui->txtReadersDb->setText(database_readers);
+    ui->txtLoansDb->setText(database_loans);
+
+    // Select "default" in combo box if it exists
+    int defaultIndex = ui->cboDbConfigs->findText("default");
+    if (defaultIndex >= 0) {
+        ui->cboDbConfigs->setCurrentIndex(defaultIndex);
+    }
 
     ui->workspaces->setCurrentIndex(16); // page_17 (Database Selection)
 }
@@ -1107,6 +1131,7 @@ void MainWindow::on_btnBrowseBooksDb_clicked()
     QString file = QFileDialog::getOpenFileName(this, tr("Select Books Database"), "", tr("SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)"));
     if (!file.isEmpty()) {
         ui->txtBooksDb->setText(file);
+        database_books = file;
     }
 }
 
@@ -1115,6 +1140,7 @@ void MainWindow::on_btnBrowseReadersDb_clicked()
     QString file = QFileDialog::getOpenFileName(this, tr("Select Readers Database"), "", tr("SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)"));
     if (!file.isEmpty()) {
         ui->txtReadersDb->setText(file);
+        database_readers = file;
     }
 }
 
@@ -1123,6 +1149,7 @@ void MainWindow::on_btnBrowseLoansDb_clicked()
     QString file = QFileDialog::getOpenFileName(this, tr("Select Loans Database"), "", tr("SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)"));
     if (!file.isEmpty()) {
         ui->txtLoansDb->setText(file);
+        database_loans = file;
     }
 }
 
@@ -1139,10 +1166,27 @@ void MainWindow::on_btnSaveAsDefault_clicked()
 
     // Save as default configuration
     QSettings settings("ShelfSight", "DatabaseConfigs");
-    settings.setValue("default/books", booksDb);
-    settings.setValue("default/readers", readersDb);
-    settings.setValue("default/loans", loansDb);
+    QString configKey = "config_default";
+    settings.setValue(configKey + "/books", booksDb);
+    settings.setValue(configKey + "/readers", readersDb);
+    settings.setValue(configKey + "/loans", loansDb);
     settings.setValue("default_is_valid", true);
+
+    // Add "default" to config list so it appears in the combo box
+    QStringList configs = settings.value("configs").toStringList();
+    if (!configs.contains("default")) {
+        configs.append("default");
+        settings.setValue("configs", configs);
+    }
+
+    // Refresh UI
+    loadDbConfigs();
+
+    // Select "default" in the combo box
+    int index = ui->cboDbConfigs->findText("default");
+    if (index >= 0) {
+        ui->cboDbConfigs->setCurrentIndex(index);
+    }
 
     QMessageBox::information(this, tr("SUCCESS"), tr("Default configuration saved"));
 }
@@ -1226,6 +1270,10 @@ void MainWindow::on_btnCreateNewDb_clicked()
         auto& db = DataAccess::SQLiteDataAccess::instance();
         db.shutdown();
         db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
+
+        database_books = booksDb;
+        database_readers = readersDb;
+        database_loans = loansDb;
 
         ui->txtBooksDb->setText(booksDb);
         ui->txtReadersDb->setText(readersDb);

@@ -59,7 +59,7 @@ void SQLiteDataAccess::shutdown()
 bool SQLiteDataAccess::isConnected() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_connected && m_booksDb && m_readersDb && m_loansDb;
+    return m_connected && m_readersDb;
 }
 
 void SQLiteDataAccess::createTables()
@@ -290,6 +290,7 @@ std::vector<Domain::Book> SQLiteDataAccess::getAllBooks()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Book> books;
+    if (!m_booksDb) return books;
 
     SQLite::Statement query(*m_booksDb, "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE deleted = 0 ORDER BY title");
     while (query.executeStep()) {
@@ -301,6 +302,7 @@ std::vector<Domain::Book> SQLiteDataAccess::getAllBooks()
 std::optional<Domain::Book> SQLiteDataAccess::getBookById(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return std::nullopt;
     SQLite::Statement query(*m_booksDb, "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE id = ? AND deleted = 0");
     query.bind(1, id);
     if (query.executeStep()) {
@@ -313,6 +315,7 @@ std::vector<Domain::Book> SQLiteDataAccess::searchBooks(const std::string& term,
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Book> books;
+    if (!m_booksDb) return books;
 
     std::string sql = "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE deleted = 0";
     if (field == "title") {
@@ -352,6 +355,7 @@ std::vector<Domain::Book> SQLiteDataAccess::searchBooks(const std::string& term,
 bool SQLiteDataAccess::addBook(const Domain::Book& book)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Transaction transaction(*m_booksDb);
         SQLite::Statement query(*m_booksDb,
@@ -377,6 +381,7 @@ bool SQLiteDataAccess::addBook(const Domain::Book& book)
 bool SQLiteDataAccess::updateBook(const Domain::Book& book)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Transaction transaction(*m_booksDb);
         SQLite::Statement query(*m_booksDb,
@@ -400,6 +405,7 @@ bool SQLiteDataAccess::updateBook(const Domain::Book& book)
 bool SQLiteDataAccess::removeBook(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Transaction transaction(*m_booksDb);
 
@@ -448,6 +454,7 @@ std::vector<Domain::Book> SQLiteDataAccess::getRemovedBooks()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Book> books;
+    if (!m_booksDb) return books;
 
     SQLite::Statement query(*m_booksDb, "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM removed_books ORDER BY deletedAt DESC");
     while (query.executeStep()) {
@@ -459,6 +466,7 @@ std::vector<Domain::Book> SQLiteDataAccess::getRemovedBooks()
 bool SQLiteDataAccess::restoreBook(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Transaction transaction(*m_booksDb);
 
@@ -506,6 +514,7 @@ std::vector<Domain::Reader> SQLiteDataAccess::getAllReaders()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Reader> readers;
+    if (!m_readersDb) return readers;
 
     SQLite::Statement query(*m_readersDb, "SELECT id, name, surname, grade, classGroup, studentId, createdAt, updatedAt FROM readers WHERE deleted = 0 ORDER BY surname, name");
     while (query.executeStep()) {
@@ -517,6 +526,7 @@ std::vector<Domain::Reader> SQLiteDataAccess::getAllReaders()
 std::optional<Domain::Reader> SQLiteDataAccess::getReaderById(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return std::nullopt;
     SQLite::Statement query(*m_readersDb, "SELECT id, name, surname, grade, classGroup, studentId, createdAt, updatedAt FROM readers WHERE id = ? AND deleted = 0");
     query.bind(1, id);
     if (query.executeStep()) {
@@ -529,6 +539,7 @@ std::vector<Domain::Reader> SQLiteDataAccess::searchReaders(const std::string& t
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Reader> readers;
+    if (!m_readersDb) return readers;
 
     std::string sql = "SELECT id, name, surname, grade, classGroup, studentId, createdAt, updatedAt FROM readers WHERE deleted = 0";
     if (field == "name") {
@@ -566,6 +577,7 @@ std::vector<Domain::Reader> SQLiteDataAccess::searchReaders(const std::string& t
 bool SQLiteDataAccess::addReader(const Domain::Reader& reader)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return false;
     try {
         SQLite::Transaction transaction(*m_readersDb);
         SQLite::Statement query(*m_readersDb,
@@ -591,6 +603,7 @@ bool SQLiteDataAccess::addReader(const Domain::Reader& reader)
 bool SQLiteDataAccess::updateReader(const Domain::Reader& reader)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return false;
     try {
         SQLite::Transaction transaction(*m_readersDb);
         SQLite::Statement query(*m_readersDb,
@@ -614,6 +627,7 @@ bool SQLiteDataAccess::updateReader(const Domain::Reader& reader)
 bool SQLiteDataAccess::removeReader(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return false;
     try {
         SQLite::Transaction transaction(*m_readersDb);
 
@@ -659,6 +673,7 @@ std::vector<Domain::Reader> SQLiteDataAccess::getRemovedReaders()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Reader> readers;
+    if (!m_readersDb) return readers;
 
     SQLite::Statement query(*m_readersDb, "SELECT id, name, surname, grade, classGroup, studentId, createdAt, updatedAt FROM removed_readers ORDER BY deletedAt DESC");
     while (query.executeStep()) {
@@ -670,6 +685,7 @@ std::vector<Domain::Reader> SQLiteDataAccess::getRemovedReaders()
 bool SQLiteDataAccess::restoreReader(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return false;
     try {
         SQLite::Transaction transaction(*m_readersDb);
 
@@ -715,6 +731,7 @@ std::vector<Domain::Category> SQLiteDataAccess::getAllCategories()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Category> categories;
+    if (!m_booksDb) return categories;
 
     SQLite::Statement query(*m_booksDb, "SELECT id, name FROM categories ORDER BY name");
     while (query.executeStep()) {
@@ -726,9 +743,15 @@ std::vector<Domain::Category> SQLiteDataAccess::getAllCategories()
 bool SQLiteDataAccess::addCategory(const Domain::Category& category)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
-        SQLite::Statement query(*m_booksDb, "INSERT INTO categories (name) VALUES (?)");
-        query.bind(1, category.name);
+        std::string catId = category.id.empty()
+            ? std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count())
+            : category.id;
+        SQLite::Statement query(*m_booksDb, "INSERT INTO categories (id, name) VALUES (?, ?)");
+        query.bind(1, catId);
+        query.bind(2, category.name);
         query.exec();
         return true;
     }
@@ -740,6 +763,7 @@ bool SQLiteDataAccess::addCategory(const Domain::Category& category)
 bool SQLiteDataAccess::updateCategory(const Domain::Category& category)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Statement query(*m_booksDb, "UPDATE categories SET name = ? WHERE id = ?");
         query.bind(1, category.name);
@@ -755,6 +779,7 @@ bool SQLiteDataAccess::updateCategory(const Domain::Category& category)
 bool SQLiteDataAccess::removeCategory(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Statement query(*m_booksDb, "DELETE FROM categories WHERE id = ?");
         query.bind(1, id);
@@ -771,6 +796,7 @@ std::vector<Domain::Location> SQLiteDataAccess::getAllLocations()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Location> locations;
+    if (!m_booksDb) return locations;
 
     SQLite::Statement query(*m_booksDb, "SELECT id, name FROM locations ORDER BY name");
     while (query.executeStep()) {
@@ -782,9 +808,15 @@ std::vector<Domain::Location> SQLiteDataAccess::getAllLocations()
 bool SQLiteDataAccess::addLocation(const Domain::Location& location)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
-        SQLite::Statement query(*m_booksDb, "INSERT INTO locations (name) VALUES (?)");
-        query.bind(1, location.name);
+        std::string locId = location.id.empty()
+            ? std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count())
+            : location.id;
+        SQLite::Statement query(*m_booksDb, "INSERT INTO locations (id, name) VALUES (?, ?)");
+        query.bind(1, locId);
+        query.bind(2, location.name);
         query.exec();
         return true;
     }
@@ -796,6 +828,7 @@ bool SQLiteDataAccess::addLocation(const Domain::Location& location)
 bool SQLiteDataAccess::updateLocation(const Domain::Location& location)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Statement query(*m_booksDb, "UPDATE locations SET name = ? WHERE id = ?");
         query.bind(1, location.name);
@@ -811,6 +844,7 @@ bool SQLiteDataAccess::updateLocation(const Domain::Location& location)
 bool SQLiteDataAccess::removeLocation(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb) return false;
     try {
         SQLite::Statement query(*m_booksDb, "DELETE FROM locations WHERE id = ?");
         query.bind(1, id);
@@ -826,6 +860,7 @@ bool SQLiteDataAccess::removeLocation(const std::string& id)
 bool SQLiteDataAccess::loanBook(const std::string& bookId, const std::string& readerId, int days)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb || !m_readersDb || !m_loansDb) return false;
     try {
         SQLite::Transaction transaction(*m_loansDb);
 
@@ -843,12 +878,16 @@ bool SQLiteDataAccess::loanBook(const std::string& bookId, const std::string& re
         Domain::DateTime now = Domain::now();
         Domain::DateTime dueDate = now + std::chrono::hours(24 * days);
 
+        std::string loanId = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+            now.time_since_epoch()).count());
+
         SQLite::Statement query(*m_loansDb,
-            "INSERT INTO loans (bookId, readerId, loanDate, dueDate, status) VALUES (?, ?, ?, ?, 'active')");
-        query.bind(1, bookId);
-        query.bind(2, readerId);
-        query.bind(3, dateTimeToString(now));
-        query.bind(4, dateTimeToString(dueDate));
+            "INSERT INTO loans (id, bookId, readerId, loanDate, dueDate, status) VALUES (?, ?, ?, ?, ?, 'active')");
+        query.bind(1, loanId);
+        query.bind(2, bookId);
+        query.bind(3, readerId);
+        query.bind(4, dateTimeToString(now));
+        query.bind(5, dateTimeToString(dueDate));
         query.exec();
 
         // Update book status to Borrowed
@@ -868,6 +907,7 @@ bool SQLiteDataAccess::loanBook(const std::string& bookId, const std::string& re
 bool SQLiteDataAccess::returnBook(const std::string& loanId)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_booksDb || !m_loansDb) return false;
     try {
         SQLite::Transaction transaction(*m_loansDb);
 
@@ -875,7 +915,7 @@ bool SQLiteDataAccess::returnBook(const std::string& loanId)
         SQLite::Statement loanQuery(*m_loansDb, "SELECT bookId FROM loans WHERE id = ? AND status = 'active'");
         loanQuery.bind(1, loanId);
         if (!loanQuery.executeStep()) return false;
-        int bookId = loanQuery.getColumn(0).getInt();
+        std::string bookId = loanQuery.getColumn(0).getText();
 
         Domain::DateTime now = Domain::now();
 
@@ -904,6 +944,7 @@ std::vector<Domain::Loan> SQLiteDataAccess::getActiveLoans()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Loan> loans;
+    if (!m_loansDb) return loans;
 
     SQLite::Statement query(*m_loansDb, "SELECT id, bookId, readerId, loanDate, dueDate, returnDate, status FROM loans WHERE status = 'active' ORDER BY dueDate");
     while (query.executeStep()) {
@@ -916,6 +957,7 @@ std::vector<Domain::Loan> SQLiteDataAccess::getOverdueLoans()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Loan> loans;
+    if (!m_loansDb) return loans;
 
     std::string nowStr = dateTimeToString(Domain::now());
     SQLite::Statement query(*m_loansDb, "SELECT id, bookId, readerId, loanDate, dueDate, returnDate, status FROM loans WHERE status = 'active' AND dueDate < ? ORDER BY dueDate");
@@ -930,6 +972,7 @@ std::vector<Domain::Loan> SQLiteDataAccess::getLoansForReader(const std::string&
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Loan> loans;
+    if (!m_loansDb) return loans;
 
     SQLite::Statement query(*m_loansDb, "SELECT id, bookId, readerId, loanDate, dueDate, returnDate, status FROM loans WHERE readerId = ? ORDER BY loanDate DESC");
     query.bind(1, readerId);
@@ -943,6 +986,7 @@ std::vector<Domain::Loan> SQLiteDataAccess::getLoansForBook(const std::string& b
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::Loan> loans;
+    if (!m_loansDb) return loans;
 
     SQLite::Statement query(*m_loansDb, "SELECT id, bookId, readerId, loanDate, dueDate, returnDate, status FROM loans WHERE bookId = ? ORDER BY loanDate DESC");
     query.bind(1, bookId);
@@ -956,15 +1000,17 @@ std::vector<Domain::Loan> SQLiteDataAccess::getLoansForBook(const std::string& b
 bool SQLiteDataAccess::addUser(const Domain::User& user)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return false;
     try {
         qDebug() << "[DB addUser] username:" << QString::fromStdString(user.username) << "id empty:" << user.id.empty();
         SQLite::Statement query(*m_readersDb,
-            "INSERT INTO users (username, passwordHash, salt, role, createdAt) VALUES (?, ?, ?, ?, ?)");
-        query.bind(1, user.username);
-        query.bind(2, user.passwordHash);
-        query.bind(3, user.salt);
-        query.bind(4, static_cast<int>(user.role));
-        query.bind(5, dateTimeToString(user.createdAt));
+            "INSERT INTO users (id, username, passwordHash, salt, role, createdAt) VALUES (?, ?, ?, ?, ?, ?)");
+        query.bind(1, user.id);
+        query.bind(2, user.username);
+        query.bind(3, user.passwordHash);
+        query.bind(4, user.salt);
+        query.bind(5, static_cast<int>(user.role));
+        query.bind(6, dateTimeToString(user.createdAt));
         query.exec();
         qDebug() << "[DB addUser] SUCCESS";
         return true;
@@ -978,6 +1024,7 @@ bool SQLiteDataAccess::addUser(const Domain::User& user)
 std::optional<Domain::User> SQLiteDataAccess::getUserByUsername(const std::string& username)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return std::nullopt;
     SQLite::Statement query(*m_readersDb, "SELECT id, username, passwordHash, salt, role, createdAt, lastLogin FROM users WHERE username = ?");
     query.bind(1, username);
     if (query.executeStep()) {
@@ -989,6 +1036,7 @@ std::optional<Domain::User> SQLiteDataAccess::getUserByUsername(const std::strin
 bool SQLiteDataAccess::updateUser(const Domain::User& user)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_readersDb) return false;
     try {
         SQLite::Statement query(*m_readersDb,
             "UPDATE users SET passwordHash = ?, salt = ?, role = ?, lastLogin = ? WHERE id = ?");
@@ -1009,6 +1057,7 @@ std::vector<Domain::User> SQLiteDataAccess::getAllUsers()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<Domain::User> users;
+    if (!m_readersDb) return users;
 
     SQLite::Statement query(*m_readersDb, "SELECT id, username, passwordHash, salt, role, createdAt, lastLogin FROM users ORDER BY username");
     while (query.executeStep()) {
@@ -1057,7 +1106,6 @@ bool SQLiteDataAccess::checkIdExists(const std::string& entityType, const std::s
 // Listbox population
 std::vector<ListItem> SQLiteDataAccess::populateList(const std::string& entityType, const std::string& searchTerm, const std::string& filterField)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<ListItem> items;
 
     try {
