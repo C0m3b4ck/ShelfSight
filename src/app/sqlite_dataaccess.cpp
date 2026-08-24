@@ -7,6 +7,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <algorithm>
+#include <QDebug>
 
 namespace DataAccess {
 
@@ -25,14 +26,20 @@ void SQLiteDataAccess::initialize(const std::string& booksDb, const std::string&
     std::lock_guard<std::mutex> lock(m_mutex);
 
     try {
-        m_booksDb = std::make_unique<SQLite::Database>(booksDb, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-        m_readersDb = std::make_unique<SQLite::Database>(readersDb, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-        m_loansDb = std::make_unique<SQLite::Database>(loansDb, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        if (!booksDb.empty()) {
+            m_booksDb = std::make_unique<SQLite::Database>(booksDb, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        }
+        if (!readersDb.empty()) {
+            m_readersDb = std::make_unique<SQLite::Database>(readersDb, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        }
+        if (!loansDb.empty()) {
+            m_loansDb = std::make_unique<SQLite::Database>(loansDb, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+        }
 
-        createTables();
-        createIndexes();
+        if (m_booksDb || m_readersDb || m_loansDb) createTables();
+        if (m_booksDb || m_readersDb || m_loansDb) createIndexes();
 
-        m_connected = true;
+        m_connected = m_readersDb != nullptr;
     }
     catch (const std::exception& e) {
         shutdown();
@@ -58,128 +65,144 @@ bool SQLiteDataAccess::isConnected() const
 void SQLiteDataAccess::createTables()
 {
     // Books table
-    m_booksDb->exec(
-        "CREATE TABLE IF NOT EXISTS books ("
-        "id TEXT PRIMARY KEY,"
-        "title TEXT NOT NULL,"
-        "author TEXT NOT NULL,"
-        "location TEXT NOT NULL,"
-        "category TEXT NOT NULL,"
-        "status TEXT NOT NULL DEFAULT 'Available',"
-        "createdAt TEXT NOT NULL,"
-        "updatedAt TEXT NOT NULL,"
-        "deleted INTEGER NOT NULL DEFAULT 0"
-        ");"
-    );
+    if (m_booksDb) {
+        m_booksDb->exec(
+            "CREATE TABLE IF NOT EXISTS books ("
+            "id TEXT PRIMARY KEY,"
+            "title TEXT NOT NULL,"
+            "author TEXT NOT NULL,"
+            "location TEXT NOT NULL,"
+            "category TEXT NOT NULL,"
+            "status TEXT NOT NULL DEFAULT 'Available',"
+            "createdAt TEXT NOT NULL,"
+            "updatedAt TEXT NOT NULL,"
+            "deleted INTEGER NOT NULL DEFAULT 0"
+            ");"
+        );
 
-    // Removed books table (for undo functionality)
-    m_booksDb->exec(
-        "CREATE TABLE IF NOT EXISTS removed_books ("
-        "id TEXT PRIMARY KEY,"
-        "title TEXT NOT NULL,"
-        "author TEXT NOT NULL,"
-        "location TEXT NOT NULL,"
-        "category TEXT NOT NULL,"
-        "status TEXT NOT NULL,"
-        "createdAt TEXT NOT NULL,"
-        "updatedAt TEXT NOT NULL,"
-        "deletedAt TEXT NOT NULL"
-        ");"
-    );
+        // Removed books table (for undo functionality)
+        m_booksDb->exec(
+            "CREATE TABLE IF NOT EXISTS removed_books ("
+            "id TEXT PRIMARY KEY,"
+            "title TEXT NOT NULL,"
+            "author TEXT NOT NULL,"
+            "location TEXT NOT NULL,"
+            "category TEXT NOT NULL,"
+            "status TEXT NOT NULL,"
+            "createdAt TEXT NOT NULL,"
+            "updatedAt TEXT NOT NULL,"
+            "deletedAt TEXT NOT NULL"
+            ");"
+        );
+    }
 
     // Readers table
-    m_readersDb->exec(
-        "CREATE TABLE IF NOT EXISTS readers ("
-        "id TEXT PRIMARY KEY,"
-        "name TEXT NOT NULL,"
-        "surname TEXT NOT NULL,"
-        "grade INTEGER NOT NULL DEFAULT 0,"
-        "classGroup TEXT NOT NULL DEFAULT 'A',"
-        "studentId TEXT NOT NULL,"
-        "createdAt TEXT NOT NULL,"
-        "updatedAt TEXT NOT NULL,"
-        "deleted INTEGER NOT NULL DEFAULT 0"
-        ");"
-    );
+    if (m_readersDb) {
+        m_readersDb->exec(
+            "CREATE TABLE IF NOT EXISTS readers ("
+            "id TEXT PRIMARY KEY,"
+            "name TEXT NOT NULL,"
+            "surname TEXT NOT NULL,"
+            "grade INTEGER NOT NULL DEFAULT 0,"
+            "classGroup TEXT NOT NULL DEFAULT 'A',"
+            "studentId TEXT NOT NULL,"
+            "createdAt TEXT NOT NULL,"
+            "updatedAt TEXT NOT NULL,"
+            "deleted INTEGER NOT NULL DEFAULT 0"
+            ");"
+        );
 
-    // Removed readers table
-    m_readersDb->exec(
-        "CREATE TABLE IF NOT EXISTS removed_readers ("
-        "id TEXT PRIMARY KEY,"
-        "name TEXT NOT NULL,"
-        "surname TEXT NOT NULL,"
-        "grade INTEGER NOT NULL,"
-        "classGroup TEXT NOT NULL,"
-        "studentId TEXT NOT NULL,"
-        "createdAt TEXT NOT NULL,"
-        "updatedAt TEXT NOT NULL,"
-        "deletedAt TEXT NOT NULL"
-        ");"
-    );
+        // Removed readers table
+        m_readersDb->exec(
+            "CREATE TABLE IF NOT EXISTS removed_readers ("
+            "id TEXT PRIMARY KEY,"
+            "name TEXT NOT NULL,"
+            "surname TEXT NOT NULL,"
+            "grade INTEGER NOT NULL,"
+            "classGroup TEXT NOT NULL,"
+            "studentId TEXT NOT NULL,"
+            "createdAt TEXT NOT NULL,"
+            "updatedAt TEXT NOT NULL,"
+            "deletedAt TEXT NOT NULL"
+            ");"
+        );
+    }
 
     // Categories table
-    m_booksDb->exec(
-        "CREATE TABLE IF NOT EXISTS categories ("
-        "id TEXT PRIMARY KEY,"
-        "name TEXT NOT NULL UNIQUE"
-        ");"
-    );
+    if (m_booksDb) {
+        m_booksDb->exec(
+            "CREATE TABLE IF NOT EXISTS categories ("
+            "id TEXT PRIMARY KEY,"
+            "name TEXT NOT NULL UNIQUE"
+            ");"
+        );
 
-    // Locations table
-    m_booksDb->exec(
-        "CREATE TABLE IF NOT EXISTS locations ("
-        "id TEXT PRIMARY KEY,"
-        "name TEXT NOT NULL UNIQUE"
-        ");"
-    );
+        // Locations table
+        m_booksDb->exec(
+            "CREATE TABLE IF NOT EXISTS locations ("
+            "id TEXT PRIMARY KEY,"
+            "name TEXT NOT NULL UNIQUE"
+            ");"
+        );
+    }
 
     // Loans table
-    m_loansDb->exec(
-        "CREATE TABLE IF NOT EXISTS loans ("
-        "id TEXT PRIMARY KEY,"
-        "bookId TEXT NOT NULL,"
-        "readerId TEXT NOT NULL,"
-        "loanDate TEXT NOT NULL,"
-        "dueDate TEXT NOT NULL,"
-        "returnDate TEXT,"
-        "status TEXT NOT NULL DEFAULT 'active',"
-        "FOREIGN KEY (bookId) REFERENCES books(id),"
-        "FOREIGN KEY (readerId) REFERENCES readers(id)"
-        ");"
-    );
+    if (m_loansDb) {
+        m_loansDb->exec(
+            "CREATE TABLE IF NOT EXISTS loans ("
+            "id TEXT PRIMARY KEY,"
+            "bookId TEXT NOT NULL,"
+            "readerId TEXT NOT NULL,"
+            "loanDate TEXT NOT NULL,"
+            "dueDate TEXT NOT NULL,"
+            "returnDate TEXT,"
+            "status TEXT NOT NULL DEFAULT 'active',"
+            "FOREIGN KEY (bookId) REFERENCES books(id),"
+            "FOREIGN KEY (readerId) REFERENCES readers(id)"
+            ");"
+        );
+    }
 
     // Users table (in readers DB for simplicity)
-    m_readersDb->exec(
-        "CREATE TABLE IF NOT EXISTS users ("
-        "id TEXT PRIMARY KEY,"
-        "username TEXT NOT NULL UNIQUE,"
-        "passwordHash TEXT NOT NULL,"
-        "salt TEXT NOT NULL,"
-        "role INTEGER NOT NULL DEFAULT 1,"
-        "createdAt TEXT NOT NULL,"
-        "lastLogin TEXT"
-        ");"
-    );
+    if (m_readersDb) {
+        m_readersDb->exec(
+            "CREATE TABLE IF NOT EXISTS users ("
+            "id TEXT PRIMARY KEY,"
+            "username TEXT NOT NULL UNIQUE,"
+            "passwordHash TEXT NOT NULL,"
+            "salt TEXT NOT NULL,"
+            "role INTEGER NOT NULL DEFAULT 1,"
+            "createdAt TEXT NOT NULL,"
+            "lastLogin TEXT"
+            ");"
+        );
+    }
 }
 
 void SQLiteDataAccess::createIndexes()
 {
-    m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_title ON books(title);");
-    m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_author ON books(author);");
-    m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_category ON books(category);");
-    m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_location ON books(location);");
-    m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_status ON books(status);");
-    m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_deleted ON books(deleted);");
+    if (m_booksDb) {
+        m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_title ON books(title);");
+        m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_author ON books(author);");
+        m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_category ON books(category);");
+        m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_location ON books(location);");
+        m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_status ON books(status);");
+        m_booksDb->exec("CREATE INDEX IF NOT EXISTS idx_books_deleted ON books(deleted);");
+    }
 
-    m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_name ON readers(name);");
-    m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_surname ON readers(surname);");
-    m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_studentId ON readers(studentId);");
-    m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_deleted ON readers(deleted);");
+    if (m_readersDb) {
+        m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_name ON readers(name);");
+        m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_surname ON readers(surname);");
+        m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_studentId ON readers(studentId);");
+        m_readersDb->exec("CREATE INDEX IF NOT EXISTS idx_readers_deleted ON readers(deleted);");
+    }
 
-    m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_bookId ON loans(bookId);");
-    m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_readerId ON loans(readerId);");
-    m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_status ON loans(status);");
-    m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_dueDate ON loans(dueDate);");
+    if (m_loansDb) {
+        m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_bookId ON loans(bookId);");
+        m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_readerId ON loans(readerId);");
+        m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_status ON loans(status);");
+        m_loansDb->exec("CREATE INDEX IF NOT EXISTS idx_loans_dueDate ON loans(dueDate);");
+    }
 }
 
 Domain::Book SQLiteDataAccess::rowToBook(const SQLite::Statement& stmt)
@@ -934,6 +957,7 @@ bool SQLiteDataAccess::addUser(const Domain::User& user)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     try {
+        qDebug() << "[DB addUser] username:" << QString::fromStdString(user.username) << "id empty:" << user.id.empty();
         SQLite::Statement query(*m_readersDb,
             "INSERT INTO users (username, passwordHash, salt, role, createdAt) VALUES (?, ?, ?, ?, ?)");
         query.bind(1, user.username);
@@ -942,9 +966,11 @@ bool SQLiteDataAccess::addUser(const Domain::User& user)
         query.bind(4, static_cast<int>(user.role));
         query.bind(5, dateTimeToString(user.createdAt));
         query.exec();
+        qDebug() << "[DB addUser] SUCCESS";
         return true;
     }
-    catch (const std::exception&) {
+    catch (const std::exception& e) {
+        qDebug() << "[DB addUser] FAILED:" << e.what();
         return false;
     }
 }

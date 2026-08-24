@@ -14,21 +14,18 @@ LIBS += -lsodium
 SOURCES += \
     businesslogic.cpp \
     crypto.cpp \
-    dataaccesslayer.cpp \
     main.cpp \
     mainwindow.cpp \
     sanitize_string.cpp \
-    sqlite_dataaccess.cpp \
-    services.cpp
+    sqlite_dataaccess.cpp
 
 HEADERS += \
     businesslogic.h \
     crypto.h \
-    dataaccesslayer.h \
+    dataaccess.h \
     domain.h \
     mainwindow.h \
-    sqlite_dataaccess.h \
-    services.h
+    sqlite_dataaccess.h
 
 FORMS += \
     mainwindow.ui

@@ -1,8 +1,8 @@
 #include "businesslogic.h"
 #include "domain.h"
-#include <dataaccesslayer.h>
 #include <algorithm>
 #include <cctype>
+#include <QDebug>
 
 namespace BusinessLogic {
 
@@ -12,6 +12,8 @@ static std::string trim(const std::string& str) {
     size_t last = str.find_last_not_of(" \t\n\r");
     return str.substr(first, last - first + 1);
 }
+
+// ============ Validation ============
 
 ValidationResult validateBookDTO(const DTO::BookDTO& book) {
     if (trim(book.title).empty()) {
@@ -118,61 +120,66 @@ ValidationResult validateUserDTO(const DTO::UserDTO& user) {
     if (user.password.length() < 8) {
         return ValidationResult::failure("Password must be at least 8 characters");
     }
+    if (user.username == user.password) {
+        return ValidationResult::failure("Username and password cannot be the same");
+    }
     if (!user.role.has_value()) {
         return ValidationResult::failure("Role must be selected");
     }
     return ValidationResult::success();
 }
 
-ValidationResult addBook(IBookService& service, const DTO::BookDTO& book) {
+// ============ CRUD: validate then persist ============
+
+ValidationResult addBook(DataAccess::IDataAccess& db, const DTO::BookDTO& book) {
     auto validation = validateBookDTO(book);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Book domainBook = book.toDomain();
-    if (service.addBook(domainBook)) {
+    if (db.addBook(domainBook)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to add book to database");
 }
 
-ValidationResult addReader(IReaderService& service, const DTO::ReaderDTO& reader) {
+ValidationResult addReader(DataAccess::IDataAccess& db, const DTO::ReaderDTO& reader) {
     auto validation = validateReaderDTO(reader);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Reader domainReader = reader.toDomain();
-    if (service.addReader(domainReader)) {
+    if (db.addReader(domainReader)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to add reader to database");
 }
 
-ValidationResult addCategory(ICategoryService& service, const DTO::CategoryDTO& category) {
+ValidationResult addCategory(DataAccess::IDataAccess& db, const DTO::CategoryDTO& category) {
     auto validation = validateCategoryDTO(category);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Category domainCategory = category.toDomain();
-    if (service.addCategory(domainCategory)) {
+    if (db.addCategory(domainCategory)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to add category to database");
 }
 
-ValidationResult addLocation(ILocationService& service, const DTO::LocationDTO& location) {
+ValidationResult addLocation(DataAccess::IDataAccess& db, const DTO::LocationDTO& location) {
     auto validation = validateLocationDTO(location);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Location domainLocation = location.toDomain();
-    if (service.addLocation(domainLocation)) {
+    if (db.addLocation(domainLocation)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to add location to database");
 }
 
-ValidationResult addLoan(ILoanService& service, const DTO::LoanDTO& loan) {
+ValidationResult addLoan(DataAccess::IDataAccess& /*db*/, const DTO::LoanDTO& loan) {
     auto validation = validateLoanDTO(loan);
     if (!validation.isValid) {
         return validation;
@@ -180,97 +187,91 @@ ValidationResult addLoan(ILoanService& service, const DTO::LoanDTO& loan) {
     return ValidationResult::failure("Loan creation not implemented - use loanBook method");
 }
 
-ValidationResult addUser(IUserService& service, const DTO::UserDTO& user) {
+ValidationResult addUser(DataAccess::IDataAccess& db, const DTO::UserDTO& user) {
+    qDebug() << "[BL addUser] validating...";
     auto validation = validateUserDTO(user);
     if (!validation.isValid) {
+        qDebug() << "[BL addUser] validation FAILED:" << QString::fromStdString(validation.errorMessage);
         return validation;
     }
-    if (service.registerUser(user)) {
+    qDebug() << "[BL addUser] validation OK, converting to domain...";
+    Domain::User domainUser = user.toDomain();
+    qDebug() << "[BL addUser] calling db.addUser...";
+    if (db.addUser(domainUser)) {
+        qDebug() << "[BL addUser] SUCCESS";
         return ValidationResult::success();
     }
+    qDebug() << "[BL addUser] db.addUser FAILED";
     return ValidationResult::failure("Failed to register user");
 }
 
-ValidationResult updateBook(IBookService& service, const DTO::BookDTO& book) {
+ValidationResult updateBook(DataAccess::IDataAccess& db, const DTO::BookDTO& book) {
     auto validation = validateBookDTO(book);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Book domainBook = book.toDomain();
-    if (service.updateBook(domainBook)) {
+    if (db.updateBook(domainBook)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to update book in database");
 }
 
-ValidationResult updateReader(IReaderService& service, const DTO::ReaderDTO& reader) {
+ValidationResult updateReader(DataAccess::IDataAccess& db, const DTO::ReaderDTO& reader) {
     auto validation = validateReaderDTO(reader);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Reader domainReader = reader.toDomain();
-    if (service.updateReader(domainReader)) {
+    if (db.updateReader(domainReader)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to update reader in database");
 }
 
-ValidationResult updateCategory(ICategoryService& service, const DTO::CategoryDTO& category) {
+ValidationResult updateCategory(DataAccess::IDataAccess& db, const DTO::CategoryDTO& category) {
     auto validation = validateCategoryDTO(category);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Category domainCategory = category.toDomain();
-    if (service.updateCategory(domainCategory)) {
+    if (db.updateCategory(domainCategory)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to update category in database");
 }
 
-ValidationResult updateLocation(ILocationService& service, const DTO::LocationDTO& location) {
+ValidationResult updateLocation(DataAccess::IDataAccess& db, const DTO::LocationDTO& location) {
     auto validation = validateLocationDTO(location);
     if (!validation.isValid) {
         return validation;
     }
     Domain::Location domainLocation = location.toDomain();
-    if (service.updateLocation(domainLocation)) {
+    if (db.updateLocation(domainLocation)) {
         return ValidationResult::success();
     }
     return ValidationResult::failure("Failed to update location in database");
 }
 
-ValidationResult updateLoan(ILoanService& service, const DTO::LoanDTO& loan) {
+ValidationResult updateLoan(DataAccess::IDataAccess& /*db*/, const DTO::LoanDTO& loan) {
     auto validation = validateLoanDTO(loan);
     if (!validation.isValid) {
         return validation;
     }
-    Domain::Loan domainLoan = loan.toDomain();
     return ValidationResult::failure("Loan update not implemented");
 }
 
-DatabaseValidationResult validateDatabases(const IDatabaseManager& dbManager, bool requireBooks, bool requireReaders, bool requireLoans) {
-    if (!dbManager.isConnected()) {
+// ============ Database ============
+
+DatabaseValidationResult validateDatabases(DataAccess::IDataAccess& db) {
+    if (!db.isConnected()) {
         return DatabaseValidationResult::failure("No database connection established");
     }
-
-    bool booksOk = !requireBooks || dbManager.isBooksDbSelected();
-    bool readersOk = !requireReaders || dbManager.isReadersDbSelected();
-    bool loansOk = !requireLoans || dbManager.isLoansDbSelected();
-
-    if (!booksOk && requireBooks) {
-        return DatabaseValidationResult::failure("Book database not selected", false, readersOk, loansOk);
-    }
-    if (!readersOk && requireReaders) {
-        return DatabaseValidationResult::failure("Reader database not selected", booksOk, false, loansOk);
-    }
-    if (!loansOk && requireLoans) {
-        return DatabaseValidationResult::failure("Loan database not selected", booksOk, readersOk, false);
-    }
-
     return DatabaseValidationResult::success();
 }
 
-// Role-based access control
+// ============ Role check ============
+
 RoleCheckResult checkUserRole(const std::optional<Domain::User>& currentUser, RequiredRole required) {
     if (!currentUser.has_value()) {
         return RoleCheckResult::failure("No user logged in");
@@ -293,112 +294,22 @@ RoleCheckResult checkUserRole(int userRoleInt, RequiredRole required) {
     return RoleCheckResult::success();
 }
 
-// ID checking
-ValidationResult checkIdExists(const std::string& dbType, const std::string& id) {
-    auto& facade = BusinessLogicFacade::instance();
-    if (!facade.db || !facade.db->isConnected()) {
-        return ValidationResult::failure("Database not connected");
+// ============ Authentication ============
+
+std::optional<Domain::User> login(DataAccess::IDataAccess& db, const std::string& username, const std::string& password) {
+    qDebug() << "[BL login] looking up user:" << QString::fromStdString(username);
+    auto userOpt = db.getUserByUsername(username);
+    if (!userOpt.has_value()) {
+        qDebug() << "[BL login] user not found";
+        return std::nullopt;
     }
-
-    bool exists = false;
-    if (dbType == "books" && facade.books) {
-        auto book = facade.books->getBookById(id);
-        exists = book.has_value();
-    } else if (dbType == "readers" && facade.readers) {
-        auto reader = facade.readers->getReaderById(id);
-        exists = reader.has_value();
-    } else if (dbType == "categories" && facade.categories) {
-        auto categories = facade.categories->getAllCategories();
-        exists = std::any_of(categories.begin(), categories.end(), [&id](const Domain::Category& c) { return c.id == id; });
-    } else if (dbType == "locations" && facade.locations) {
-        auto locations = facade.locations->getAllLocations();
-        exists = std::any_of(locations.begin(), locations.end(), [&id](const Domain::Location& l) { return l.id == id; });
-    } else if (dbType == "users" && facade.users) {
-        auto users = facade.users->getAllUsers();
-        exists = std::any_of(users.begin(), users.end(), [&id](const Domain::User& u) { return u.id == id; });
-    } else if (dbType == "loans" && facade.loans) {
-        // For loans, we'd need a getLoanById method
-        exists = false;
+    qDebug() << "[BL login] user found, role:" << static_cast<int>(userOpt->role) << "comparing passwords...";
+    if (userOpt->passwordHash == password) {
+        qDebug() << "[BL login] password match - SUCCESS";
+        return userOpt;
     }
-
-    if (exists) {
-        return ValidationResult::success();
-    }
-    return ValidationResult::failure("ID " + id + " not found in " + dbType);
-}
-
-ValidationResult checkIdNotExists(const std::string& dbType, const std::string& id) {
-    auto result = checkIdExists(dbType, id);
-    if (result.isValid) {
-        return ValidationResult::failure("ID " + id + " already exists in " + dbType);
-    }
-    return ValidationResult::success();
-}
-
-// Listbox population
-std::vector<ListItem> populateList(const std::string& entityType, const std::string& searchTerm, const std::string& filterField) {
-    auto& facade = BusinessLogicFacade::instance();
-    if (!facade.db || !facade.db->isConnected()) {
-        return {};
-    }
-
-    std::vector<ListItem> items;
-
-    if (entityType == "books" && facade.books) {
-        std::vector<Domain::Book> books;
-        if (searchTerm.empty()) {
-            books = facade.books->getAllBooks();
-        } else {
-            books = facade.books->searchBooks(searchTerm, filterField);
-        }
-        for (const auto& book : books) {
-            items.push_back({book.id, book.toDisplayString(), ""});
-        }
-    } else if (entityType == "readers" && facade.readers) {
-        std::vector<Domain::Reader> readers;
-        if (searchTerm.empty()) {
-            readers = facade.readers->getAllReaders();
-        } else {
-            readers = facade.readers->searchReaders(searchTerm, filterField);
-        }
-        for (const auto& reader : readers) {
-            items.push_back({reader.id, reader.toDisplayString(), ""});
-        }
-    } else if (entityType == "categories" && facade.categories) {
-        auto categories = facade.categories->getAllCategories();
-        for (const auto& cat : categories) {
-            items.push_back({cat.id, cat.name, ""});
-        }
-    } else if (entityType == "locations" && facade.locations) {
-        auto locations = facade.locations->getAllLocations();
-        for (const auto& loc : locations) {
-            items.push_back({loc.id, loc.name, ""});
-        }
-    } else if (entityType == "users" && facade.users) {
-        auto users = facade.users->getAllUsers();
-        for (const auto& user : users) {
-            items.push_back({user.id, user.username + " | " + std::to_string(static_cast<int>(user.role)), ""});
-        }
-    } else if (entityType == "loans" && facade.loans) {
-        std::vector<Domain::Loan> loans;
-        if (searchTerm.empty()) {
-            loans = facade.loans->getActiveLoans();
-        } else {
-            // Use active loans as base, filter manually
-            loans = facade.loans->getActiveLoans();
-        }
-        for (const auto& loan : loans) {
-            items.push_back({loan.id, loan.toDisplayString(), ""});
-        }
-    }
-
-    return items;
-}
-
-std::vector<ListItem> populateListWithDb(const std::string& dbName, const std::string& entityType, const std::string& searchTerm, const std::string& filterField) {
-    // For now, ignore dbName and use facade
-    (void)dbName; // suppress unused warning
-    return populateList(entityType, searchTerm, filterField);
+    qDebug() << "[BL login] password mismatch - FAILED";
+    return std::nullopt;
 }
 
 } // namespace BusinessLogic

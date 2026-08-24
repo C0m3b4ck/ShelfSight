@@ -12,7 +12,7 @@ shelfsight
 ShelfSight
 ShelfSightTest
 ShelfSightBeta
-
+*.py
 # DB / data files (generated at runtime)
 *.db
 *.DB

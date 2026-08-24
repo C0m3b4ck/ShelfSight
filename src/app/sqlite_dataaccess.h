@@ -11,6 +11,11 @@ namespace DataAccess {
 
 class SQLiteDataAccess : public IDataAccess {
 public:
+    static SQLiteDataAccess& instance() {
+        static SQLiteDataAccess db;
+        return db;
+    }
+
     SQLiteDataAccess();
     ~SQLiteDataAccess() override;
 

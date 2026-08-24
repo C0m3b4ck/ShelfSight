@@ -357,7 +357,8 @@ struct UserDTO {
 
     Domain::User toDomain() const {
         Domain::User user;
-        user.id = id;
+        user.id = id.empty() ? std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count()) : id;
         user.username = username;
         user.passwordHash = password;
         user.role = role.value_or(Domain::User::Role::UserRole);

@@ -2,13 +2,15 @@
 #include "ui_mainwindow.h"
 #include "domain.h"
 #include "businesslogic.h"
-#include "crypto.h"
 #include "sqlite_dataaccess.h"
+#include "crypto.h"
+#include <QDebug>
 #include <QMessageBox>
 #include <QListWidget>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QSettings>
+#include <QRegularExpression>
 #include <vector>
 
 // ============== MAGIC NUMBERS ================
@@ -111,8 +113,7 @@ bool MainWindow::checkLoginRequired() {
     
     // Check if databases are selected
     if (database_books.isEmpty() || database_readers.isEmpty() || database_loans.isEmpty()) {
-        QMessageBox::warning(this, tr("NO DATABASE SELECTED"), tr("Please select databases first."));
-        on_actionDatabase_Selection_triggered();
+        QMessageBox::warning(this, tr("NO DATABASE SELECTED"), tr("Please select databases from the Database Selection menu."));
         return false;
     }
     return true;
@@ -161,6 +162,14 @@ MainWindow::MainWindow(QWidget *parent)
     {
         QMessageBox::critical(this, tr("LIBSODIUM FAILED"), tr("The application cannot function correctly without cryptographic functions."));
     }
+
+    auto& db = DataAccess::SQLiteDataAccess::instance();
+    try {
+        db.initialize("", "readers.db", "");
+    } catch (const std::exception&) {
+        // Continue without database
+    }
+
     set_to_backdrop();
 }
 
@@ -222,7 +231,7 @@ void MainWindow::on_btnClear_password1_register_clicked()
 
 void MainWindow::on_btnClear_password2_register_clicked()
 {
-    ui->txtPwd1_register->setText("");
+    ui->txtPassword2_register->setText("");
 }
 
 void MainWindow::on_btnClear_title_book_clicked()
@@ -783,18 +792,27 @@ bool is_qstring_empty(QString stringtocheck)
 ////////////////////////////// MENU BUTTONS //////////////////////////////////////////////
 void MainWindow::on_actionLog_out_triggered()
 {
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(tr("LOG OUT"));
+    box.setText(tr("Are you sure you want to log out?"));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+    if (box.exec() != QMessageBox::Yes) {
+        return;
+    }
+
     clearCurrentUser();
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    facade.currentUser.reset();
     sanitize_variables();
+    QMessageBox::information(this, tr("LOGGED OUT"), tr("You have been logged out successfully."));
     set_to_backdrop();
 }
 
 void MainWindow::on_actionLog_in_triggered()
 {
     // clear text fields
-    ui->txtUsr_register->clear();
-    ui->txtPwd1_register->clear();
+    ui->txtUsername_login->clear();
+    ui->txtPassword_login->clear();
     // navigate to login workspace (magic numbers)
     ui->workspaces->setCurrentIndex(1);
 }
@@ -804,7 +822,7 @@ void MainWindow::on_actionRegister_triggered()
     // clear text fields
     ui->txtUsr_register->clear();
     ui->txtPwd1_register->clear();
-    ui->txtPwd1_register->clear();
+    ui->txtPassword2_register->clear();
     ui->cboRole_register->setCurrentIndex(0);
     // navigate to register workspace (magic numbers)
     ui->workspaces->setCurrentIndex(0);
@@ -949,9 +967,9 @@ void MainWindow::on_actionAddLoans_triggered()
     if (!checkLoginRequired()) return;
 
     // check if DBs are selected via business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.db) {
-        auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::validateDatabases(db);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
             return;
@@ -974,9 +992,9 @@ void MainWindow::on_actionEditLoans_triggered()
     if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
 
     // check if DBs are selected via business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.db) {
-        auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::validateDatabases(db);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
             return;
@@ -1003,9 +1021,9 @@ void MainWindow::on_actionSearchLoans_triggered()
     if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
 
     // check if DBs are selected via business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.db) {
-        auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::validateDatabases(db);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
             return;
@@ -1075,14 +1093,12 @@ void MainWindow::on_btnLoadDbConfig_clicked()
     database_loans = ui->txtLoansDb->text();
 
     // Initialize data access with new databases
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.db) {
-        try {
-            facade.db->initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString());
-            QMessageBox::information(this, tr("SUCCESS"), tr("Database configuration loaded successfully"));
-        } catch (const std::exception& e) {
-            QMessageBox::critical(this, tr("ERROR"), tr("Failed to initialize databases: %1").arg(e.what()));
-        }
+    auto& db = DataAccess::SQLiteDataAccess::instance();
+    try {
+        db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString());
+        QMessageBox::information(this, tr("SUCCESS"), tr("Database configuration loaded successfully"));
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to initialize databases: %1").arg(e.what()));
     }
 }
 
@@ -1183,20 +1199,16 @@ void MainWindow::on_btnTestConnection_clicked()
         return;
     }
 
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.db) {
-        try {
-            facade.db->initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
-            if (facade.db->isConnected()) {
-                QMessageBox::information(this, tr("SUCCESS"), tr("Connection test successful! All databases are accessible."));
-            } else {
-                QMessageBox::critical(this, tr("FAILED"), tr("Failed to connect to databases"));
-            }
-        } catch (const std::exception& e) {
-            QMessageBox::critical(this, tr("ERROR"), tr("Connection failed: %1").arg(e.what()));
+    auto& db = DataAccess::SQLiteDataAccess::instance();
+    try {
+        db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
+        if (db.isConnected()) {
+            QMessageBox::information(this, tr("SUCCESS"), tr("Connection test successful! All databases are accessible."));
+        } else {
+            QMessageBox::critical(this, tr("FAILED"), tr("Failed to connect to databases"));
         }
-    } else {
-        QMessageBox::critical(this, tr("ERROR"), tr("Database manager not initialized"));
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Connection failed: %1").arg(e.what()));
     }
 }
 
@@ -1211,9 +1223,9 @@ void MainWindow::on_btnCreateNewDb_clicked()
 
     // Create new databases
     try {
-        DataAccess::SQLiteDataAccess tempDb;
-        tempDb.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
-        tempDb.shutdown();
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        db.shutdown();
+        db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString());
 
         ui->txtBooksDb->setText(booksDb);
         ui->txtReadersDb->setText(readersDb);
@@ -1283,9 +1295,13 @@ void MainWindow::set_to_backdrop()
 // ============================ ACCOUT MANAGEMENT ======================================================
 void MainWindow::on_btnRegister_clicked()
 {
+    auto& db = DataAccess::SQLiteDataAccess::instance();
+
     QString username = ui->txtUsr_register->text().trimmed();
     QString password1 = ui->txtPwd1_register->text();
-    QString password2 = ui->txtPwd1_register->text();
+    QString password2 = ui->txtPassword2_register->text();
+
+    qDebug() << "[REGISTER] username:" << username << "password1 len:" << password1.length() << "password2 len:" << password2.length();
 
     if (username.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
         QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("All fields are required"));
@@ -1295,6 +1311,31 @@ void MainWindow::on_btnRegister_clicked()
     if (password1 != password2) {
         QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Passwords do not match"));
         return;
+    }
+
+    // Check password strength
+    {
+        int score = 0;
+        if (password1.length() >= 8) score += 20;
+        if (password1.length() >= 12) score += 10;
+        if (password1.length() >= 16) score += 10;
+        if (password1.contains(QRegularExpression("[a-z]"))) score += 15;
+        if (password1.contains(QRegularExpression("[A-Z]"))) score += 15;
+        if (password1.contains(QRegularExpression("[0-9]"))) score += 15;
+        if (password1.contains(QRegularExpression("[^a-zA-Z0-9]"))) score += 15;
+        if (score > 100) score = 100;
+
+        if (score < 30) {
+            QMessageBox box(this);
+            box.setIcon(QMessageBox::Warning);
+            box.setWindowTitle(tr("WEAK PASSWORD"));
+            box.setText(tr("Your password is very weak. Are you sure you want to continue?"));
+            box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            box.setDefaultButton(QMessageBox::No);
+            if (box.exec() != QMessageBox::Yes) {
+                return;
+            }
+        }
     }
 
     int roleIndex = ui->cboRole_register->currentIndex();
@@ -1316,23 +1357,19 @@ void MainWindow::on_btnRegister_clicked()
     userDTO.password = toStd(password1);
     userDTO.role = role;
 
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (!facade.users) {
-        QMessageBox::critical(this, tr("ERROR"), tr("User service not available"));
-        return;
-    }
+    qDebug() << "[REGISTER] calling addUser... username:" << QString::fromStdString(userDTO.username) << "role:" << static_cast<int>(role);
 
-    auto result = BusinessLogic::addUser(*facade.users, userDTO);
+    auto result = BusinessLogic::addUser(db, userDTO);
+    qDebug() << "[REGISTER] addUser result:" << result.isValid << "error:" << QString::fromStdString(result.errorMessage);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("REGISTRATION FAILED"), QString::fromStdString(result.errorMessage));
         return;
     }
 
     // Auto-login after registration
-    auto loginResult = facade.users->login(userDTO.username, userDTO.password);
+    auto loginResult = BusinessLogic::login(db, userDTO.username, userDTO.password);
     if (loginResult.has_value()) {
         setCurrentUser(*loginResult);
-        facade.currentUser = *loginResult;
         QMessageBox::information(this, tr("SUCCESS"), tr("Registration successful! You are now logged in."));
         set_to_backdrop();
     } else {
@@ -1343,14 +1380,16 @@ void MainWindow::on_btnRegister_clicked()
     // Clear form
     ui->txtUsr_register->clear();
     ui->txtPwd1_register->clear();
-    ui->txtPwd1_register->clear();
+    ui->txtPassword2_register->clear();
     ui->cboRole_register->setCurrentIndex(0);
 }
 
 void MainWindow::on_btnLogin_clicked()
 {
-    QString username = ui->txtUsr_register->text().trimmed();
-    QString password = ui->txtPwd1_register->text();
+    auto& db = DataAccess::SQLiteDataAccess::instance();
+
+    QString username = ui->txtUsername_login->text().trimmed();
+    QString password = ui->txtPassword_login->text();
     QString roleStr = ui->cboRole_login->currentText();
 
     if (username.isEmpty() || password.isEmpty()) {
@@ -1363,13 +1402,7 @@ void MainWindow::on_btnLogin_clicked()
     else if (roleStr == "Superadmin") selectedRole = Domain::User::Role::SuperAdmin;
     else selectedRole = Domain::User::Role::UserRole;
 
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (!facade.users) {
-        QMessageBox::critical(this, tr("ERROR"), tr("User service not available"));
-        return;
-    }
-
-    auto loginResult = facade.users->login(toStd(username), toStd(password));
+    auto loginResult = BusinessLogic::login(db, toStd(username), toStd(password));
     if (loginResult.has_value()) {
         // Verify role matches
         if (loginResult->role != selectedRole) {
@@ -1377,13 +1410,12 @@ void MainWindow::on_btnLogin_clicked()
             return;
         }
         setCurrentUser(*loginResult);
-        facade.currentUser = *loginResult;
         QMessageBox::information(this, tr("SUCCESS"), tr("Login successful!"));
         set_to_backdrop();
 
         // Clear form
-        ui->txtUsr_register->clear();
-        ui->txtPwd1_register->clear();
+        ui->txtUsername_login->clear();
+        ui->txtPassword_login->clear();
         ui->cboRole_login->setCurrentIndex(0);
     } else {
         QMessageBox::critical(this, tr("LOGIN FAILED"), tr("Invalid username or password"));
@@ -1525,9 +1557,9 @@ void MainWindow::on_btnAddBook_addbooks_clicked()
     book.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.books) {
-        auto result = BusinessLogic::addBook(*facade.books, book);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::addBook(db, book);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -1577,9 +1609,9 @@ void MainWindow::on_btnEditBook_editbooks_clicked()
     newBook.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.books) {
-        auto result = BusinessLogic::updateBook(*facade.books, newBook);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::updateBook(db, newBook);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -1942,9 +1974,9 @@ void MainWindow::on_btnAddCategory_managecategories_clicked()
     category.name = toStd(category_toadd);
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.categories) {
-        auto result = BusinessLogic::addCategory(*facade.categories, category);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::addCategory(db, category);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -1990,9 +2022,9 @@ void MainWindow::on_btnEditCategory_managecategories_clicked()
     category.name = toStd(category_toadd);
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.categories) {
-        auto result = BusinessLogic::updateCategory(*facade.categories, category);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::updateCategory(db, category);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -2083,9 +2115,9 @@ void MainWindow::on_btnEditLocation_managelocations_clicked()
     location.name = toStd(location_toadd);
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.locations) {
-        auto result = BusinessLogic::updateLocation(*facade.locations, location);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::updateLocation(db, location);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -2160,9 +2192,9 @@ void MainWindow::on_btnAddLocation_managelocations_clicked()
     location.name = toStd(location_toadd);
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.locations) {
-        auto result = BusinessLogic::addLocation(*facade.locations, location);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::addLocation(db, location);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -2696,9 +2728,9 @@ void MainWindow::on_btnAddBook_addreaders_clicked()
     reader.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.readers) {
-        auto result = BusinessLogic::addReader(*facade.readers, reader);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::addReader(db, reader);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -2750,9 +2782,9 @@ void MainWindow::on_btnEditBook_editreaders_clicked()
     newReader.updatedAt = toStd(QDateTime::currentDateTime().toString(Qt::ISODate));
 
     // Validate through business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.readers) {
-        auto result = BusinessLogic::updateReader(*facade.readers, newReader);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::updateReader(db, newReader);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -2882,7 +2914,8 @@ void MainWindow::on_btnSearchReader_clicked()
     }
 
     // Use business logic to populate the list
-    auto items = BusinessLogic::populateList("readers", search_term.toStdString(), searchField.toStdString());
+    auto& db = DataAccess::SQLiteDataAccess::instance();
+    auto items = db.populateList("readers", search_term.toStdString(), searchField.toStdString());
     ui->lstSearch_reader->clear();
     for (const auto& item : items) {
         ui->lstSearch_reader->addItem(QString::fromStdString(item.displayText));
@@ -2893,9 +2926,9 @@ void MainWindow::on_btnSearchReader_clicked()
 void MainWindow::on_btnAddLoan_addloan_clicked()
 {
     // check if DBs are selected via business logic
-    auto& facade = BusinessLogic::BusinessLogicFacade::instance();
-    if (facade.db) {
-        auto result = BusinessLogic::validateDatabases(*facade.db, true, true, false);
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::validateDatabases(db);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
             return;
@@ -2954,9 +2987,10 @@ void MainWindow::on_btnAddLoan_addloan_clicked()
     loan.status = "active";
     loan.returnDate = "";
 
-    // Validate through business logic (already declared facade above)
-    if (facade.loans) {
-        auto result = BusinessLogic::addLoan(*facade.loans, loan);
+    // Validate through business logic
+    {
+        auto& db = DataAccess::SQLiteDataAccess::instance();
+        auto result = BusinessLogic::addLoan(db, loan);
         if (!result.isValid) {
             QMessageBox::critical(this, tr("VALIDATION ERROR"), QString::fromStdString(result.errorMessage));
             return;
@@ -3469,6 +3503,37 @@ void MainWindow::on_btnAdd_book_clicked()
 
 void MainWindow::on_txtPwd1_register_textChanged(const QString &text)
 {
-    Q_UNUSED(text);
+    int score = 0;
+    QString password = text;
+
+    // Length scoring
+    if (password.length() >= 8) score += 20;
+    if (password.length() >= 12) score += 10;
+    if (password.length() >= 16) score += 10;
+
+    // Character type scoring
+    if (password.contains(QRegularExpression("[a-z]"))) score += 15;
+    if (password.contains(QRegularExpression("[A-Z]"))) score += 15;
+    if (password.contains(QRegularExpression("[0-9]"))) score += 15;
+    if (password.contains(QRegularExpression("[^a-zA-Z0-9]"))) score += 15;
+
+    // Cap at 100
+    if (score > 100) score = 100;
+
+    qDebug() << "[PASSWORD STRENGTH] text:" << text << "score:" << score;
+
+    ui->barPasswordStrenght_register->setRange(0, 100);
+    ui->barPasswordStrenght_register->setValue(score);
+
+    // Color the bar based on strength
+    if (score < 30) {
+        ui->barPasswordStrenght_register->setStyleSheet("QProgressBar::chunk { background-color: red; }");
+    } else if (score < 60) {
+        ui->barPasswordStrenght_register->setStyleSheet("QProgressBar::chunk { background-color: orange; }");
+    } else if (score < 80) {
+        ui->barPasswordStrenght_register->setStyleSheet("QProgressBar::chunk { background-color: yellow; }");
+    } else {
+        ui->barPasswordStrenght_register->setStyleSheet("QProgressBar::chunk { background-color: green; }");
+    }
 }
 
