@@ -26,7 +26,7 @@ private:
 class IDataAccess {
 public:
     virtual ~IDataAccess() = default;
-    virtual void initialize(const std::string& booksDb, const std::string& readersDb, const std::string& loansDb) = 0;
+    virtual void initialize(const std::string& booksDb, const std::string& readersDb, const std::string& loansDb, const std::string& usersDb) = 0;
     virtual void shutdown() = 0;
     virtual bool isConnected() const = 0;
 
@@ -65,6 +65,7 @@ public:
     // Loan operations
     virtual bool loanBook(const std::string& bookId, const std::string& readerId, int days) = 0;
     virtual bool returnBook(const std::string& loanId) = 0;
+    virtual std::vector<Domain::Loan> getAllLoans() = 0;
     virtual std::vector<Domain::Loan> getActiveLoans() = 0;
     virtual std::vector<Domain::Loan> getOverdueLoans() = 0;
     virtual std::vector<Domain::Loan> getLoansForReader(const std::string& readerId) = 0;

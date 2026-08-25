@@ -19,7 +19,7 @@ public:
     SQLiteDataAccess();
     ~SQLiteDataAccess() override;
 
-    void initialize(const std::string& booksDb, const std::string& readersDb, const std::string& loansDb) override;
+    void initialize(const std::string& booksDb, const std::string& readersDb, const std::string& loansDb, const std::string& usersDb) override;
     void shutdown() override;
     bool isConnected() const override;
 
@@ -58,6 +58,7 @@ public:
     // Loan operations
     bool loanBook(const std::string& bookId, const std::string& readerId, int days) override;
     bool returnBook(const std::string& loanId) override;
+    std::vector<Domain::Loan> getAllLoans() override;
     std::vector<Domain::Loan> getActiveLoans() override;
     std::vector<Domain::Loan> getOverdueLoans() override;
     std::vector<Domain::Loan> getLoansForReader(const std::string& readerId) override;
@@ -90,6 +91,7 @@ private:
     std::unique_ptr<SQLite::Database> m_booksDb;
     std::unique_ptr<SQLite::Database> m_readersDb;
     std::unique_ptr<SQLite::Database> m_loansDb;
+    std::unique_ptr<SQLite::Database> m_usersDb;
     mutable std::mutex m_mutex;
     bool m_connected = false;
 };

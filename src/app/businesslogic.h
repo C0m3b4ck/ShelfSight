@@ -74,4 +74,15 @@ ValidationResult updateLoan(DataAccess::IDataAccess& db, const DTO::LoanDTO& loa
 // Authentication
 std::optional<Domain::User> login(DataAccess::IDataAccess& db, const std::string& username, const std::string& password);
 
+// Crypto initialization
+bool initializeCrypto();
+
+// Database lifecycle
+bool initializeDatabases(DataAccess::IDataAccess& db, const std::string& booksDb, const std::string& readersDb, const std::string& loansDb, const std::string& usersDb);
+void shutdownDatabases(DataAccess::IDataAccess& db);
+bool isDatabaseConnected(DataAccess::IDataAccess& db);
+
+// List population
+std::vector<DataAccess::ListItem> populateList(DataAccess::IDataAccess& db, const std::string& entityType, const std::string& searchTerm = "", const std::string& filterField = "");
+
 } // namespace BusinessLogic

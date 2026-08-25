@@ -17,6 +17,7 @@ void cleanup_test_dbs() {
     std::remove("test_books.db");
     std::remove("test_readers.db");
     std::remove("test_loans.db");
+    std::remove("test_users.db");
 }
 
 int main() {
@@ -27,7 +28,7 @@ int main() {
     // Use separate DB files for testing
     // We need a fresh instance, but the singleton is already created.
     // So we re-initialize with test DB paths.
-    db.initialize("test_books.db", "test_readers.db", "test_loans.db");
+    db.initialize("test_books.db", "test_readers.db", "test_loans.db", "test_users.db");
 
     // =============================================
     TEST("1. USER REGISTRATION")

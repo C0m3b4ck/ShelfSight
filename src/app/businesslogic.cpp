@@ -1,5 +1,6 @@
 #include "businesslogic.h"
 #include "domain.h"
+#include "crypto.h"
 #include <algorithm>
 #include <cctype>
 #include <QDebug>
@@ -310,6 +311,32 @@ std::optional<Domain::User> login(DataAccess::IDataAccess& db, const std::string
     }
     qDebug() << "[BL login] password mismatch - FAILED";
     return std::nullopt;
+}
+
+bool initializeCrypto() {
+    return load_libsodium();
+}
+
+bool initializeDatabases(DataAccess::IDataAccess& db, const std::string& booksDb, const std::string& readersDb, const std::string& loansDb, const std::string& usersDb) {
+    try {
+        db.initialize(booksDb, readersDb, loansDb, usersDb);
+        return true;
+    } catch (const std::exception& e) {
+        qDebug() << "[BL initializeDatabases] FAILED:" << e.what();
+        return false;
+    }
+}
+
+void shutdownDatabases(DataAccess::IDataAccess& db) {
+    db.shutdown();
+}
+
+bool isDatabaseConnected(DataAccess::IDataAccess& db) {
+    return db.isConnected();
+}
+
+std::vector<DataAccess::ListItem> populateList(DataAccess::IDataAccess& db, const std::string& entityType, const std::string& searchTerm, const std::string& filterField) {
+    return db.populateList(entityType, searchTerm, filterField);
 }
 
 } // namespace BusinessLogic

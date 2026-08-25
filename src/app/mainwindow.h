@@ -6,6 +6,7 @@
 #include <optional>
 #include "domain.h"
 #include "businesslogic.h"
+#include "dataaccess.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,7 +19,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(DataAccess::IDataAccess& db, QWidget *parent = nullptr);
     ~MainWindow() override;
     bool isLoggedIn() const;
     void setLoggedIn(bool loggedIn);
@@ -60,6 +61,8 @@ private slots:
     void on_btnClear_author_book_clicked();
     void on_btnClear_id_book_clicked();
     void on_btnAdd_book_clicked();
+    void on_btnCheckId_book_clicked();
+    void on_txtId_book_textChanged(const QString &text);
     // Edit Books page
     void on_btnClear_title_book_edit_clicked();
     void on_btnClear_author_book_edit_clicked();
@@ -73,9 +76,7 @@ private slots:
     void on_lstSearch_book_edit_itemClicked(QListWidgetItem *item);
     void on_lstSearch_undobooks_itemClicked(QListWidgetItem *item);
     void on_lstSearch_book_remove_itemClicked(QListWidgetItem *item);
-    void on_lstSearch_managelocations_itemClicked(QListWidgetItem *item);
     void on_lstSearch_reader_edit_itemClicked(QListWidgetItem *item);
-    void on_lstSearch_removereaders_itemClicked(QListWidgetItem *item);
 
     void on_actionManage_Categories_triggered();
     void on_actionUndo_Removed_triggered();
@@ -104,6 +105,7 @@ private slots:
     void on_btnUndoRemove_location_clicked();
     void on_btnUndoAdd_location_clicked();
     void on_btnUndoEdit_location_clicked();
+    void on_lstSearch_location_itemClicked(QListWidgetItem *item);
 
     void on_btnUndoSelected_undobooks_clicked();
     void on_btnRedoRemove_undobooks_clicked();
@@ -125,12 +127,13 @@ private slots:
     void on_btnClear_id_addreaders_clicked();
     void on_btnAddBook_addreaders_clicked();
     void on_btnUndoAdd_addreaders_clicked();
-
-    void on_btnEditBook_editreaders_clicked();
-    void on_btnUndoEdit_editreaders_clicked();
+    void on_chkAutogenerateID_addreaders_toggled(bool checked);
+    void on_btnCheckId_addreaders_clicked();
 
     void on_btnRemove_book_clicked();
     void on_btnSearch_reader_edit_clicked();
+    void on_btnEdit_reader_clicked();
+    void on_btnUndoEdit_reader_clicked();
     void on_btnSearch_reader_remove_clicked();
     void on_btnRemove_reader_clicked();
     void on_btnUndoRemoval_reader_clicked();
@@ -146,7 +149,9 @@ private slots:
 
     void on_actionAddLoans_triggered();
     void on_btnSearch_book_clicked();
+    void on_lstSearch_book_itemClicked(QListWidgetItem *item);
     void on_btnSearch_reader_clicked();
+    void on_lstSearch_reader_itemClicked(QListWidgetItem *item);
     void on_btnAdd_loan_clicked();
     void on_btnClear_loan_clicked();
 
@@ -160,6 +165,7 @@ private slots:
 
     void on_actionDatabase_Selection_triggered();
     void loadDbConfigs();
+    void on_chkTelemetry_toggled(bool checked);
     void on_cboDbConfigs_currentIndexChanged(int index);
     void on_btnLoadDbConfig_clicked();
     void on_btnBrowseBooksDb_clicked();
@@ -178,72 +184,12 @@ private slots:
     void on_btnOverdueReport_loanstatus_clicked();
     void on_lstSearch_loanstatus_itemDoubleClicked(QListWidgetItem *item);
 
-    // Additional slots from mainwindow.cpp implementations
-    void on_btnSearch_undoremovebooks_clicked();
-    void on_btnSearch_managelocations_clicked();
-    void on_btnSearch_removebooks_clicked();
-    void on_btnSearch_editreaders_clicked();
-    void on_btnSearch_removereaders_clicked();
-    void on_btnRemove_removereaders_clicked();
-    void on_btnUndoRemoval_removereaders_clicked();
-    void on_btnUndoLast_removereaders_clicked();
-    void on_btnClear_name_removereaders_clicked();
-    void on_btnClear_surname_removereaders_clicked();
-    void on_btnClear_grade_removereaders_clicked();
-    void on_btnClear_class_removereaders_clicked();
-    void on_btnClear_id_removereaders_clicked();
-
-    void on_btnUndoEdit_editbooks_clicked();
-    void on_btnUndoAdd_addbooks_clicked();
-    void on_btnAddBook_addbooks_clicked();
-    void on_btnEditBook_editbooks_clicked();
-
-    void on_lstSearch_managecategories_itemClicked(QListWidgetItem *item);
-    void on_lstSearch_undoremovebooks_itemClicked(QListWidgetItem *item);
-    void on_lstSearch_removebooks_itemClicked(QListWidgetItem *item);
-
-    void on_btnUndoAll_undoremovebooks_clicked();
-    void on_btnRemove_removebooks_clicked();
-
-    void on_btnUndoRemove_managecategories_clicked();
-    void on_btnUndoEdit_managecategories_clicked();
-    void on_btnUndoAdd_managecategories_clicked();
-    void on_btnAddCategory_managecategories_clicked();
-    void on_btnEditCategory_managecategories_clicked();
-    void on_btnRemoveCategory_managecategories_clicked();
-
-    void on_btnEditLocation_managelocations_clicked();
-    void on_btnRemoveLocation_managelocations_clicked();
-    void on_btnAddLocation_managelocations_clicked();
-    void on_btnUndoRemove_managelocations_clicked();
-    void on_btnUndoAdd_managelocations_clicked();
-    void on_btnUndoEdit_managelocations_clicked();
-
-    void on_btnUndoSelected_undoremovebooks_clicked();
-    void on_btnRedoRemove_undoremovebooks_clicked();
-    void on_btnRedoAllSelected_undoremovebooks_clicked();
-
-    void on_btnSearch_undoremovereaders_clicked();
-    void on_lstSearch_undoremovereaders_itemClicked(QListWidgetItem *item);
-    void on_btnUndoAll_undoremovereaders_clicked();
-    void on_btnUndoSelected_undoremovereaders_clicked();
-    void on_btnRedoRemove_undoremovereaders_clicked();
-    void on_btnRedoAllSelected_undoremovereaders_clicked();
-
-    void on_btnSearchBook_addloan_clicked();
-    void on_btnSearchReader_clicked();
-    void on_btnAddLoan_addloan_clicked();
-    void on_btnClear_addloan_clicked();
-    void on_btnSearchLoan_editloan_clicked();
-    void on_lstSearch_editloan_itemClicked(QListWidgetItem *item);
-    void on_btnUpdateLoan_editloan_clicked();
-    void on_btnReturnLoan_editloan_clicked();
-    void on_btnClear_editloan_clicked();
-
 private:
     Ui::MainWindow *ui;
+    DataAccess::IDataAccess& m_db;
     bool m_isLoggedIn = false;
     std::optional<Domain::User> m_currentUser;
+    bool m_loadingDbConfigs = false;
 };
 
 #endif // MAINWINDOW_H

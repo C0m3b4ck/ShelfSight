@@ -830,22 +830,59 @@
        <string>Clear</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="txtId_book">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>80</y>
-        <width>381</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-     </widget>
+      <widget class="QLineEdit" name="txtId_book">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>381</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnCheckId_book">
+       <property name="geometry">
+        <rect>
+         <x>420</x>
+         <y>80</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Check</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="chkAutoCheckId_book">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>97</y>
+         <width>300</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Automatically check if ID exists</string>
+       </property>
+      </widget>
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
@@ -3477,45 +3514,45 @@
         <bold>true</bold>
        </font>
       </property>
-      <property name="text">
-       <string>Clear</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnClear_id_addreaders">
-      <property name="geometry">
-       <rect>
-        <x>420</x>
-        <y>120</y>
-        <width>81</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>15</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Clear</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="txtID_addreaders">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>120</y>
-        <width>381</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-     </widget>
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="txtID_addreaders">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>120</y>
+         <width>381</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnCheckId_addreaders">
+       <property name="geometry">
+        <rect>
+         <x>420</x>
+         <y>120</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Check</string>
+       </property>
+      </widget>
      <widget class="QCheckBox" name="chkAutogenerateID_addreaders">
       <property name="geometry">
        <rect>
@@ -3631,10 +3668,10 @@
      <zorder>btnClear_grade_addreaders</zorder>
      <zorder>label_24</zorder>
      <zorder>txtClass_addreaders</zorder>
-     <zorder>btnClear_class_addreaders</zorder>
-     <zorder>btnClear_id_addreaders</zorder>
-     <zorder>txtID_addreaders</zorder>
-     <zorder>chkAutogenerateID_addreaders</zorder>
+      <zorder>btnClear_class_addreaders</zorder>
+      <zorder>txtID_addreaders</zorder>
+      <zorder>btnCheckId_addreaders</zorder>
+      <zorder>chkAutogenerateID_addreaders</zorder>
      <zorder>cboIDtypes_addreaders</zorder>
      <zorder>label_29</zorder>
      <zorder>txtIDlength_addreaders</zorder>
@@ -4850,6 +4887,50 @@
         <string>Filter</string>
        </property>
       </widget>
+      <widget class="QLabel" name="labelReturnDate_loanstatus">
+       <property name="geometry">
+        <rect>
+         <x>370</x>
+         <y>40</y>
+         <width>51</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Return:</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="cboReturnDateFilter_loanstatus">
+       <property name="geometry">
+        <rect>
+         <x>420</x>
+         <y>40</y>
+         <width>81</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>All</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Returned</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Not Returned</string>
+        </property>
+       </item>
+      </widget>
       <widget class="QLabel" name="labelSearch_loanstatus">
        <property name="geometry">
         <rect>
@@ -5604,9 +5685,49 @@
         </rect>
        </property>
       </widget>
+      <widget class="QCheckBox" name="chkTelemetry">
+       <property name="geometry">
+        <rect>
+         <x>5</x>
+         <y>390</y>
+         <width>200</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Enable Telemetry Logging</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_telemetry_path">
+       <property name="geometry">
+        <rect>
+         <x>5</x>
+         <y>415</y>
+         <width>491</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Log file: (telemetry disabled)</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: gray;</string>
+       </property>
+      </widget>
      </widget>
+    </widget>
    </widget>
-  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>

@@ -271,7 +271,7 @@ struct LoanDTO {
 
     std::string toDisplayString() const {
         return "Loan ID: " + id + " | Book: " + bookId + " | Reader: " + readerId + 
-               " | Loan: " + loanDate + " | Due: " + dueDate + " | Return: " + returnDate + " | Status: " + status;
+               " | Loan: " + loanDate + " | Due: " + dueDate + " | Return: " + (returnDate.empty() ? "N/A" : returnDate) + " | Status: " + status;
     }
 
     Domain::Loan toDomain() const {
