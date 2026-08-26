@@ -24,8 +24,10 @@ HEADERS += \
     crypto.h \
     dataaccess.h \
     domain.h \
+    logger.h \
     mainwindow.h \
-    sqlite_dataaccess.h
+    sqlite_dataaccess.h \
+    worklog.h
 
 FORMS += \
     mainwindow.ui

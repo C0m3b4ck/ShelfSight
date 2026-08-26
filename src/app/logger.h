@@ -55,9 +55,14 @@ public:
 
     void close() {
         std::lock_guard<std::mutex> lock(m_mutex);
+        if (m_stream) {
+            m_stream->flush();
+            m_stream.reset();
+        }
         if (m_logFile && m_logFile->isOpen()) {
             m_logFile->close();
         }
+        m_logFile.reset();
     }
 
 private:

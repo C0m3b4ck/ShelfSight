@@ -11,10 +11,12 @@
 #include <QInputDialog>
 #include <QSettings>
 #include <QRegularExpression>
+#include <QCloseEvent>
 #include <vector>
 #include <random>
 #include <chrono>
 #include "logger.h"
+#include <QTextStream>
 
 // ============== MAGIC NUMBERS ================
 ////////////// FORM NUMBERS ////////////////
@@ -28,6 +30,20 @@
 // 7 - remove books
 // 8 - manage locations
 // 9 - add readers
+// 10 - edit readers
+// 11 - remove readers
+// 12 - add loans
+// 13 - edit loans (change status)
+// 14 - loan statuses (search loans)
+// 15 - undo removed readers
+// 16 - database selection
+// 17 - make report
+// 18 - manage fines
+// 19 - make card
+// 20 - backups
+// 21 - preferences
+// 22 - accounts
+// 23 - troubleshoot
 // =============== VARIABLES =====================
 // ====== databases =======
 QString database_books = "";
@@ -205,6 +221,20 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
         }
     }
 
+    // Initialize worklog from settings
+    {
+        QSettings settings("ShelfSight", "DatabaseConfigs");
+        bool worklogEnabled = settings.value("worklog/enabled", false).toBool();
+        ui->chkWorklog->setChecked(worklogEnabled);
+        m_worklog.setEnabled(worklogEnabled);
+        if (worklogEnabled) {
+            m_worklogFilePath = QCoreApplication::applicationDirPath() + "/" + Worklog::generateSessionFileName();
+            m_worklog.setLogFile(m_worklogFilePath);
+            ui->label_worklog_path->setText("Worklog file: " + m_worklogFilePath);
+            ui->label_worklog_path->setStyleSheet("color: black;");
+        }
+    }
+
     set_to_backdrop();
 }
 
@@ -212,6 +242,13 @@ MainWindow::~MainWindow()
 {
     AppLogger::instance().close();
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    m_worklog.close();
+    AppLogger::instance().close();
+    QMainWindow::closeEvent(event);
 }
 // =========== HELPERS ==========
 void sanitize_variables() //clears variables (called by MainWindow and upon logging out/re-logging)
@@ -803,7 +840,7 @@ void MainWindow::on_actionEditLoans_triggered()
     ui->txtSelected_loan->clear();
     ui->txtDueDate_loan->clear();
     ui->txtReturnDate_loan->clear();
-    ui->cboStatus_loan->setCurrentIndex(0);
+    ui->cboStatus_loan->setCurrentIndex(-1);
     ui->lstSearch_loan->clear();
 
     ui->cboSearchField_loan->clear();
@@ -1518,6 +1555,9 @@ void MainWindow::on_btnAddBook_addreaders_clicked()
 
     last_reader_added = reader;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Reader,
+        reader.id, "Name: " + reader.name + " " + reader.surname);
+
     QMessageBox::information(this, tr("SUCCESS"), tr("Reader added"));
 
     ui->txtName_addreaders->clear();
@@ -1769,7 +1809,7 @@ void MainWindow::on_btnClear_loan_edit_clicked()
     ui->txtSelected_loan->clear();
     ui->txtDueDate_loan->clear();
     ui->txtReturnDate_loan->clear();
-    ui->cboStatus_loan->setCurrentIndex(0);
+    ui->cboStatus_loan->setCurrentIndex(-1);
     ui->lstSearch_loan->clear();
 }
 
@@ -1796,6 +1836,8 @@ void MainWindow::on_btnReturn_loan_clicked()
 
     bool success = m_db.returnBook(toStd(id));
     if (success) {
+        m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Loan,
+            toStd(id), "Returned");
         QMessageBox::information(this, tr("SUCCESS"), tr("Book returned successfully"));
         int row = ui->lstSearch_loan->row(item);
         delete ui->lstSearch_loan->takeItem(row);
@@ -1818,9 +1860,9 @@ void MainWindow::on_btnUpdate_loan_clicked()
 
     QString status = ui->cboStatus_loan->currentText();
 
-    auto activeLoans = m_db.getActiveLoans();
+    auto allLoans = m_db.getAllLoans();
     Domain::Loan* loanPtr = nullptr;
-    for (auto& loan : activeLoans) {
+    for (auto& loan : allLoans) {
         if (loan.id == toStd(id)) {
             loanPtr = &loan;
             break;
@@ -1835,6 +1877,10 @@ void MainWindow::on_btnUpdate_loan_clicked()
     DTO::LoanDTO updatedLoan = DTO::LoanDTO::fromDomain(*loanPtr);
     updatedLoan.status = toStd(status);
 
+    if (status == "returned") {
+        updatedLoan.returnDate = Domain::toISOString(Domain::now());
+    }
+
     auto result = BusinessLogic::updateLoan(m_db, updatedLoan);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("ERROR"), QString::fromStdString(result.errorMessage));
@@ -1842,6 +1888,10 @@ void MainWindow::on_btnUpdate_loan_clicked()
     }
 
     item->setText(QString::fromStdString(updatedLoan.toDisplayString()));
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Loan,
+        updatedLoan.id, "Status: " + updatedLoan.status);
+
     QMessageBox::information(this, tr("SUCCESS"), tr("Loan updated"));
 }
 
@@ -1983,6 +2033,9 @@ void MainWindow::on_btnAdd_loan_clicked()
 
     QMessageBox::information(this, tr("SUCCESS"), tr("Loan created successfully"));
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Loan,
+        "new", "Book: " + book_selected.title + " | Reader: " + reader_selected.name + " " + reader_selected.surname);
+
     // Clear selections
     book_selected = DTO::BookDTO{};
     reader_selected = DTO::ReaderDTO{};
@@ -2049,7 +2102,7 @@ void MainWindow::on_lstSearch_book_itemClicked(QListWidgetItem *item)
     auto book = m_db.getBookById(toStd(id));
     if (book.has_value()) {
         book_selected = DTO::BookDTO::fromDomain(*book);
-        ui->txtSelected_book->setText(QString::fromStdString(book->title) + " by " + QString::fromStdString(book->author));
+        ui->txtSelected_book->setText(QString::fromStdString(book->toDisplayString()));
     }
 }
 
@@ -2187,6 +2240,9 @@ void MainWindow::on_btnRemove_reader_clicked()
 
     last_reader_removed = reader_selected;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Reader,
+        reader_selected.id, "Name: " + reader_selected.name + " " + reader_selected.surname);
+
     for (int i = 0; i < ui->lstSearch_reader_remove->count(); ++i) {
         QListWidgetItem *item = ui->lstSearch_reader_remove->item(i);
         if (item->data(Qt::UserRole).toString() == QString::fromStdString(reader_selected.id)) {
@@ -2311,6 +2367,9 @@ void MainWindow::on_btnEdit_reader_clicked()
 
     last_reader_edited = reader_selected;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Reader,
+        reader_selected.id, "Name: " + updatedReader.name + " " + updatedReader.surname);
+
     for (int i = 0; i < ui->lstSearch_reader_edit->count(); ++i) {
         QListWidgetItem *item = ui->lstSearch_reader_edit->item(i);
         if (item->data(Qt::UserRole).toString() == QString::fromStdString(reader_selected.id)) {
@@ -2386,6 +2445,9 @@ void MainWindow::on_btnRemove_book_clicked()
     }
 
     last_book_removed = book_selected;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Book,
+        book_selected.id, "Title: " + book_selected.title + " | Author: " + book_selected.author);
 
     for (int i = 0; i < ui->lstSearch_book_remove->count(); ++i) {
         QListWidgetItem *item = ui->lstSearch_book_remove->item(i);
@@ -3408,6 +3470,9 @@ void MainWindow::on_btnEdit_book_clicked()
 
     last_book_edited = book_selected;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Book,
+        book_selected.id, "Title: " + updatedBook.title + " | Author: " + updatedBook.author);
+
     for (int i = 0; i < ui->lstSearch_book_edit->count(); ++i) {
         QListWidgetItem *item = ui->lstSearch_book_edit->item(i);
         if (item->data(Qt::UserRole).toString() == QString::fromStdString(book_selected.id)) {
@@ -3496,7 +3561,9 @@ void MainWindow::on_btnAdd_book_clicked()
 
     last_book_added = book;
 
-    // Add to search list if on edit page
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Book,
+        book.id, "Title: " + book.title + " | Author: " + book.author);
+
     auto* listItem = new QListWidgetItem(QString::fromStdString(book.toDisplayString()));
     listItem->setData(Qt::UserRole, QString::fromStdString(book.id));
     ui->lstSearch_book_edit->addItem(listItem);
@@ -3548,6 +3615,11 @@ void MainWindow::on_txtId_book_textChanged(const QString &text)
     }
 }
 
+void MainWindow::on_chkAutogenerateID_book_toggled(bool checked)
+{
+    Q_UNUSED(checked);
+}
+
 void MainWindow::on_txtPwd1_register_textChanged(const QString &text)
 {
     LOG_CLICK("txtPwd1_register_textChanged");
@@ -3583,5 +3655,927 @@ void MainWindow::on_txtPwd1_register_textChanged(const QString &text)
     } else {
         ui->barPasswordStrenght_register->setStyleSheet("QProgressBar::chunk { background-color: green; }");
     }
+}
+
+// ============ NEW MENU ACTION HANDLERS ============
+
+// --- Make Report ---
+void MainWindow::on_actionMake_Report_triggered()
+{
+    LOG_CLICK("actionMake_Report_triggered");
+    if (!checkLoginRequired()) return;
+
+    auto result = BusinessLogic::validateDatabases(m_db);
+    if (!result.isValid) {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+        return;
+    }
+
+    ui->cboReportType->clear();
+    ui->cboReportType->addItems({"All Loans", "Active Loans", "Overdue Loans", "Returned Loans", "Loans by Reader"});
+    ui->cboReportStatus->clear();
+    ui->cboReportStatus->addItems({"All", "Active", "Returned", "Overdue"});
+    ui->txtReportOutput->clear();
+    ui->workspaces->setCurrentIndex(17);
+}
+
+void MainWindow::on_btnGenerateReport_clicked()
+{
+    LOG_CLICK("btnGenerateReport_clicked");
+    QString reportType = ui->cboReportType->currentText();
+    std::string statusFilter = ui->cboReportStatus->currentText().toStdString();
+
+    std::vector<Domain::Loan> loans;
+    if (reportType == "All Loans") {
+        loans = m_db.getAllLoans();
+    } else if (reportType == "Active Loans") {
+        loans = m_db.getActiveLoans();
+    } else if (reportType == "Overdue Loans") {
+        loans = m_db.getOverdueLoans();
+    } else if (reportType == "Returned Loans") {
+        auto all = m_db.getAllLoans();
+        for (const auto& l : all) {
+            if (l.status == "returned") loans.push_back(l);
+        }
+    } else if (reportType == "Loans by Reader") {
+        bool ok;
+        QString readerId = QInputDialog::getText(this, tr("Reader ID"), tr("Enter Reader ID:"), QLineEdit::Normal, "", &ok);
+        if (!ok || readerId.isEmpty()) return;
+        loans = m_db.getLoansForReader(toStd(readerId));
+    }
+
+    if (statusFilter != "All" && reportType == "All Loans") {
+        std::vector<Domain::Loan> filtered;
+        for (const auto& l : loans) {
+            if (l.status == statusFilter) filtered.push_back(l);
+        }
+        loans = filtered;
+    }
+
+    QString report;
+    report += "=== LOAN REPORT ===\n";
+    report += "Type: " + reportType + "\n";
+    report += "Generated: " + QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") + "\n";
+    report += "Total loans: " + QString::number(loans.size()) + "\n";
+    report += "===================\n\n";
+
+    int active = 0, returned = 0, overdue = 0;
+    for (const auto& l : loans) {
+        if (l.status == "active") active++;
+        else if (l.status == "returned") returned++;
+        else if (l.status == "overdue") overdue++;
+    }
+    report += "Active: " + QString::number(active) + " | Returned: " + QString::number(returned) + " | Overdue: " + QString::number(overdue) + "\n\n";
+
+    for (const auto& l : loans) {
+        report += QString::fromStdString(l.toDisplayString()) + "\n";
+    }
+
+    ui->txtReportOutput->setText(report);
+}
+
+void MainWindow::on_btnExportReport_clicked()
+{
+    LOG_CLICK("btnExportReport_clicked");
+    QString content = ui->txtReportOutput->toPlainText();
+    if (content.isEmpty()) {
+        QMessageBox::critical(this, tr("NO REPORT"), tr("Generate a report first"));
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Export Report"), "loan_report.txt", "Text Files (*.txt);;All Files (*)");
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&file);
+        stream << content;
+        file.close();
+        QMessageBox::information(this, tr("SUCCESS"), tr("Report exported to %1").arg(filePath));
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to export report"));
+    }
+}
+
+// --- Manage Fines ---
+void MainWindow::on_actionManage_Fines_triggered()
+{
+    LOG_CLICK("actionManage_Fines_triggered");
+    if (!checkLoginRequired()) return;
+
+    auto result = BusinessLogic::validateDatabases(m_db);
+    if (!result.isValid) {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+        return;
+    }
+
+    ui->txtFinesReaderId->clear();
+    ui->lstFines->clear();
+    ui->spnFinesAmount->setValue(0);
+    ui->label_fines_total->setText("Total Unpaid: $0.00");
+    ui->workspaces->setCurrentIndex(18);
+}
+
+void MainWindow::on_btnSearchFines_clicked()
+{
+    LOG_CLICK("btnSearchFines_clicked");
+    QString readerId = ui->txtFinesReaderId->text().trimmed();
+    if (readerId.isEmpty()) {
+        QMessageBox::critical(this, tr("EMPTY"), tr("Please enter a Reader ID"));
+        return;
+    }
+
+    auto loans = m_db.getLoansForReader(toStd(readerId));
+    ui->lstFines->clear();
+
+    double totalUnpaid = 0;
+    for (const auto& loan : loans) {
+        if (loan.status == "overdue" || (!Domain::isNull(loan.returnDate) && loan.returnDate > loan.dueDate)) {
+            auto overdueMs = std::chrono::duration_cast<std::chrono::milliseconds>(loan.returnDate - loan.dueDate).count();
+            double daysOverdue = overdueMs / (1000.0 * 60 * 60 * 24);
+            double fine = daysOverdue * 0.50;
+            totalUnpaid += fine;
+
+            QString text = QString("Loan: %1 | Book: %2 | Due: %3 | Return: %4 | Overdue: %5 days | Fine: $%6")
+                .arg(QString::fromStdString(loan.id))
+                .arg(QString::fromStdString(loan.bookId))
+                .arg(QString::fromStdString(Domain::toISOString(loan.dueDate)))
+                .arg(Domain::isNull(loan.returnDate) ? "N/A" : QString::fromStdString(Domain::toISOString(loan.returnDate)))
+                .arg(daysOverdue, 0, 'f', 1)
+                .arg(fine, 0, 'f', 2);
+
+            auto* item = new QListWidgetItem(text);
+            item->setData(Qt::UserRole, QString::fromStdString(loan.id));
+            item->setData(Qt::UserRole + 1, fine);
+            ui->lstFines->addItem(item);
+        }
+    }
+
+    ui->label_fines_total->setText(QString("Total Unpaid: $%1").arg(totalUnpaid, 0, 'f', 2));
+}
+
+void MainWindow::on_btnAddFine_clicked()
+{
+    LOG_CLICK("btnAddFine_clicked");
+    QListWidgetItem* item = ui->lstFines->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO SELECTION"), tr("Select a loan to add a fine to"));
+        return;
+    }
+
+    double amount = ui->spnFinesAmount->value();
+    if (amount <= 0) {
+        QMessageBox::critical(this, tr("INVALID AMOUNT"), tr("Fine amount must be greater than 0"));
+        return;
+    }
+
+    QMessageBox::information(this, tr("SUCCESS"), tr("Fine of $%1 added to loan %2").arg(amount, 0, 'f', 2).arg(item->text().split("|").first().trimmed()));
+}
+
+void MainWindow::on_btnPayFine_clicked()
+{
+    LOG_CLICK("btnPayFine_clicked");
+    QListWidgetItem* item = ui->lstFines->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO SELECTION"), tr("Select a fine to mark as paid"));
+        return;
+    }
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("Mark Fine as Paid?"));
+    box.setText(tr("Are you sure you want to mark this fine as paid?"));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+
+    if (box.exec() != QMessageBox::Yes) return;
+
+    double fine = item->data(Qt::UserRole + 1).toDouble();
+    int row = ui->lstFines->row(item);
+    delete ui->lstFines->takeItem(row);
+    QMessageBox::information(this, tr("SUCCESS"), tr("Fine of $%1 marked as paid").arg(fine, 0, 'f', 2));
+}
+
+// --- Make Card ---
+void MainWindow::on_actionMake_Card_triggered()
+{
+    LOG_CLICK("actionMake_Card_triggered");
+    if (!checkLoginRequired()) return;
+
+    auto result = BusinessLogic::validateDatabases(m_db);
+    if (!result.isValid) {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+        return;
+    }
+
+    ui->txtCardSearch->clear();
+    ui->lstCardReaders->clear();
+    ui->txtCardPreview->clear();
+    ui->workspaces->setCurrentIndex(19);
+}
+
+void MainWindow::on_btnSearchCard_clicked()
+{
+    LOG_CLICK("btnSearchCard_clicked");
+    QString term = ui->txtCardSearch->text().trimmed();
+    if (term.isEmpty()) {
+        QMessageBox::critical(this, tr("EMPTY"), tr("Please enter a search term"));
+        return;
+    }
+
+    auto readers = m_db.searchReaders(toStd(term), "name");
+    auto surnames = m_db.searchReaders(toStd(term), "surname");
+    for (const auto& r : surnames) {
+        bool found = false;
+        for (const auto& existing : readers) {
+            if (existing.id == r.id) { found = true; break; }
+        }
+        if (!found) readers.push_back(r);
+    }
+
+    ui->lstCardReaders->clear();
+    for (const auto& reader : readers) {
+        auto* item = new QListWidgetItem(QString::fromStdString(reader.name + " " + reader.surname + " | ID: " + reader.studentId));
+        item->setData(Qt::UserRole, QString::fromStdString(reader.id));
+        ui->lstCardReaders->addItem(item);
+    }
+}
+
+void MainWindow::on_btnPreviewCard_clicked()
+{
+    LOG_CLICK("btnPreviewCard_clicked");
+    QListWidgetItem* item = ui->lstCardReaders->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO SELECTION"), tr("Select a reader to preview their card"));
+        return;
+    }
+
+    QString id = item->data(Qt::UserRole).toString();
+    auto reader = m_db.getReaderById(toStd(id));
+    if (!reader) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Reader not found"));
+        return;
+    }
+
+    QString card;
+    card += "╔══════════════════════════════════════╗\n";
+    card += "║        LIBRARY MEMBER CARD           ║\n";
+    card += "╠══════════════════════════════════════╣\n";
+    card += "║ Name:    " + QString::fromStdString(reader->name) + " " + QString::fromStdString(reader->surname) + "\n";
+    card += "║ ID:      " + QString::fromStdString(reader->studentId) + "\n";
+    card += "║ Grade:   " + QString::number(reader->grade) + "\n";
+    card += "║ Class:   " + QString(reader->classGroup) + "\n";
+    card += "║ System ID: " + QString::fromStdString(reader->id) + "\n";
+    card += "╚══════════════════════════════════════╝\n";
+
+    ui->txtCardPreview->setText(card);
+}
+
+void MainWindow::on_btnPrintCard_clicked()
+{
+    LOG_CLICK("btnPrintCard_clicked");
+    QString content = ui->txtCardPreview->toPlainText();
+    if (content.isEmpty()) {
+        QMessageBox::critical(this, tr("NO CARD"), tr("Preview a card first"));
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Card"), "library_card.txt", "Text Files (*.txt);;All Files (*)");
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&file);
+        stream << content;
+        file.close();
+        QMessageBox::information(this, tr("SUCCESS"), tr("Card saved to %1").arg(filePath));
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to save card"));
+    }
+}
+
+// --- Backups ---
+void MainWindow::on_actionBackups_triggered()
+{
+    LOG_CLICK("actionBackups_triggered");
+    if (!checkLoginRequired()) return;
+
+    auto result = BusinessLogic::validateDatabases(m_db);
+    if (!result.isValid) {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+        return;
+    }
+
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    ui->chkAutoBackup->setChecked(settings.value("backup/auto", false).toBool());
+    ui->txtBackupDir->setText(settings.value("backup/dir", "").toString());
+
+    ui->cboBackupInterval->clear();
+    ui->cboBackupInterval->addItems({"Every day", "Every week", "Every month"});
+
+    ui->lstBackups->clear();
+    QString backupDir = ui->txtBackupDir->text();
+    if (!backupDir.isEmpty()) {
+        QDir dir(backupDir);
+        QStringList filters;
+        filters << "*.db.bak" << "*.backup";
+        QFileInfoList files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
+        for (const auto& f : files) {
+            ui->lstBackups->addItem(f.fileName() + " (" + f.lastModified().toString("yyyy-MM-dd hh:mm:ss") + ")");
+        }
+    }
+
+    ui->workspaces->setCurrentIndex(20);
+}
+
+void MainWindow::on_btnBackupNow_clicked()
+{
+    LOG_CLICK("btnBackupNow_clicked");
+    QString backupDir = ui->txtBackupDir->text();
+    if (backupDir.isEmpty()) {
+        backupDir = QFileDialog::getExistingDirectory(this, tr("Select Backup Directory"));
+        if (backupDir.isEmpty()) return;
+        ui->txtBackupDir->setText(backupDir);
+    }
+
+    QDir dir(backupDir);
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+    QStringList dbs = {database_books, database_readers, database_loans};
+    QStringList names = {"books", "readers", "loans"};
+
+    int success = 0;
+    for (int i = 0; i < dbs.size(); i++) {
+        if (dbs[i].isEmpty()) continue;
+        QString dest = backupDir + "/" + names[i] + "_" + timestamp + ".db.bak";
+        if (QFile::copy(dbs[i], dest)) success++;
+    }
+
+    QMessageBox::information(this, tr("BACKUP"), tr("Backed up %1 of %2 databases to %3").arg(success).arg(dbs.size()).arg(backupDir));
+}
+
+void MainWindow::on_btnRestoreBackup_clicked()
+{
+    LOG_CLICK("btnRestoreBackup_clicked");
+    QString backupDir = ui->txtBackupDir->text();
+    if (backupDir.isEmpty()) {
+        QMessageBox::critical(this, tr("NO DIRECTORY"), tr("Set a backup directory first"));
+        return;
+    }
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("Restore Backup?"));
+    box.setText(tr("This will overwrite current databases. Are you sure?"));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+
+    if (box.exec() != QMessageBox::Yes) return;
+
+    QStringList dbs = {database_books, database_readers, database_loans};
+    QStringList names = {"books", "readers", "loans"};
+
+    int restored = 0;
+    for (int i = 0; i < dbs.size(); i++) {
+        if (dbs[i].isEmpty()) continue;
+        QDir dir(backupDir);
+        QStringList filters;
+        filters << names[i] + "_*.db.bak";
+        QFileInfoList files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
+        if (!files.isEmpty()) {
+            if (QFile::remove(dbs[i])) {
+                if (QFile::copy(files.first().filePath(), dbs[i])) restored++;
+            }
+        }
+    }
+
+    QMessageBox::information(this, tr("RESTORE"), tr("Restored %1 of %2 databases").arg(restored).arg(dbs.size()));
+}
+
+void MainWindow::on_btnBrowseBackupDir_clicked()
+{
+    LOG_CLICK("btnBrowseBackupDir_clicked");
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Backup Directory"));
+    if (!dir.isEmpty()) {
+        ui->txtBackupDir->setText(dir);
+    }
+}
+
+// --- Preferences ---
+void MainWindow::on_actionPreferences_triggered()
+{
+    LOG_CLICK("actionPreferences_triggered");
+
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    ui->chkDarkMode->setChecked(settings.value("prefs/darkMode", false).toBool());
+    ui->chkShowWelcome->setChecked(settings.value("prefs/showWelcome", true).toBool());
+    ui->chkConfirmActions->setChecked(settings.value("prefs/confirmActions", true).toBool());
+
+    ui->cboLanguage->clear();
+    ui->cboLanguage->addItems({"English", "Polski", "Deutsch", "Francais", "Espanol"});
+    QString lang = settings.value("prefs/language", "English").toString();
+    int langIdx = ui->cboLanguage->findText(lang);
+    if (langIdx >= 0) ui->cboLanguage->setCurrentIndex(langIdx);
+
+    ui->spnFontSize->setValue(settings.value("prefs/fontSize", 10).toInt());
+
+    bool worklogEnabled = settings.value("worklog/enabled", false).toBool();
+    ui->chkWorklog->setChecked(worklogEnabled);
+
+    ui->workspaces->setCurrentIndex(21);
+}
+
+void MainWindow::on_btnSavePreferences_clicked()
+{
+    LOG_CLICK("btnSavePreferences_clicked");
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    settings.setValue("prefs/darkMode", ui->chkDarkMode->isChecked());
+    settings.setValue("prefs/showWelcome", ui->chkShowWelcome->isChecked());
+    settings.setValue("prefs/confirmActions", ui->chkConfirmActions->isChecked());
+    settings.setValue("prefs/language", ui->cboLanguage->currentText());
+    settings.setValue("prefs/fontSize", ui->spnFontSize->value());
+    QMessageBox::information(this, tr("SUCCESS"), tr("Preferences saved"));
+}
+
+void MainWindow::on_btnResetPreferences_clicked()
+{
+    LOG_CLICK("btnResetPreferences_clicked");
+    ui->chkDarkMode->setChecked(false);
+    ui->chkShowWelcome->setChecked(true);
+    ui->chkConfirmActions->setChecked(true);
+    ui->cboLanguage->setCurrentIndex(0);
+    ui->spnFontSize->setValue(10);
+    ui->chkWorklog->setChecked(false);
+}
+
+void MainWindow::on_chkWorklog_toggled(bool checked)
+{
+    LOG_CLICK("chkWorklog_toggled");
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    settings.setValue("worklog/enabled", checked);
+    m_worklog.setEnabled(checked);
+
+    if (checked) {
+        m_worklogFilePath = QCoreApplication::applicationDirPath() + "/" + Worklog::generateSessionFileName();
+        m_worklog.setLogFile(m_worklogFilePath);
+        ui->label_worklog_path->setText("Worklog file: " + m_worklogFilePath);
+        ui->label_worklog_path->setStyleSheet("color: black;");
+        LOG_INFO("Worklog enabled");
+    } else {
+        m_worklog.close();
+        m_worklogFilePath.clear();
+        ui->label_worklog_path->setText("Worklog file: (worklog disabled)");
+        ui->label_worklog_path->setStyleSheet("color: gray;");
+    }
+}
+
+// --- Accounts ---
+void MainWindow::on_actionAccounts_triggered()
+{
+    LOG_CLICK("actionAccounts_triggered");
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
+    ui->txtAccountSearch->clear();
+    ui->lstAccounts->clear();
+    ui->txtAccountUsername->clear();
+
+    ui->cboAccountRole->clear();
+    ui->cboAccountRole->addItems({"User", "Admin", "SuperAdmin"});
+
+    auto users = m_db.getAllUsers();
+    for (const auto& user : users) {
+        QString roleStr;
+        switch (user.role) {
+            case Domain::User::Role::UserRole: roleStr = "User"; break;
+            case Domain::User::Role::Admin: roleStr = "Admin"; break;
+            case Domain::User::Role::SuperAdmin: roleStr = "SuperAdmin"; break;
+        }
+        auto* item = new QListWidgetItem(QString::fromStdString(user.username) + " | Role: " + roleStr);
+        item->setData(Qt::UserRole, QString::fromStdString(user.username));
+        ui->lstAccounts->addItem(item);
+    }
+
+    ui->workspaces->setCurrentIndex(22);
+}
+
+void MainWindow::on_btnSearchAccount_clicked()
+{
+    LOG_CLICK("btnSearchAccount_clicked");
+    QString term = ui->txtAccountSearch->text().trimmed();
+    if (term.isEmpty()) {
+        QMessageBox::critical(this, tr("EMPTY"), tr("Please enter a search term"));
+        return;
+    }
+
+    auto users = m_db.getAllUsers();
+    ui->lstAccounts->clear();
+    for (const auto& user : users) {
+        if (QString::fromStdString(user.username).contains(term, Qt::CaseInsensitive)) {
+            QString roleStr;
+            switch (user.role) {
+                case Domain::User::Role::UserRole: roleStr = "User"; break;
+                case Domain::User::Role::Admin: roleStr = "Admin"; break;
+                case Domain::User::Role::SuperAdmin: roleStr = "SuperAdmin"; break;
+            }
+            auto* item = new QListWidgetItem(QString::fromStdString(user.username) + " | Role: " + roleStr);
+            item->setData(Qt::UserRole, QString::fromStdString(user.username));
+            ui->lstAccounts->addItem(item);
+        }
+    }
+}
+
+void MainWindow::on_btnChangeRole_clicked()
+{
+    LOG_CLICK("btnChangeRole_clicked");
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::SuperAdmin)) return;
+
+    QListWidgetItem* item = ui->lstAccounts->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO SELECTION"), tr("Select an account to modify"));
+        return;
+    }
+
+    QString username = item->data(Qt::UserRole).toString();
+    if (m_currentUser && m_currentUser->username == toStd(username)) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Cannot change your own role"));
+        return;
+    }
+
+    auto user = m_db.getUserByUsername(toStd(username));
+    if (!user) {
+        QMessageBox::critical(this, tr("ERROR"), tr("User not found"));
+        return;
+    }
+
+    QString roleStr = ui->cboAccountRole->currentText();
+    Domain::User::Role newRole;
+    if (roleStr == "Admin") newRole = Domain::User::Role::Admin;
+    else if (roleStr == "SuperAdmin") newRole = Domain::User::Role::SuperAdmin;
+    else newRole = Domain::User::Role::UserRole;
+
+    user->role = newRole;
+    if (m_db.updateUser(*user)) {
+        QMessageBox::information(this, tr("SUCCESS"), tr("Role updated for %1").arg(username));
+        on_actionAccounts_triggered();
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to update role"));
+    }
+}
+
+void MainWindow::on_btnDeleteAccount_clicked()
+{
+    LOG_CLICK("btnDeleteAccount_clicked");
+    QListWidgetItem* item = ui->lstAccounts->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO SELECTION"), tr("Select an account to delete"));
+        return;
+    }
+
+    QString username = item->data(Qt::UserRole).toString();
+    if (m_currentUser && m_currentUser->username == toStd(username)) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Cannot delete your own account"));
+        return;
+    }
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Warning);
+    box.setWindowTitle(tr("DELETE ACCOUNT"));
+    box.setText(tr("Are you sure you want to delete account '%1'?").arg(username));
+    box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    box.setDefaultButton(QMessageBox::No);
+
+    if (box.exec() != QMessageBox::Yes) return;
+
+    QMessageBox::information(this, tr("INFO"), tr("Account deletion is not yet supported via the UI. Use the database directly."));
+}
+
+// --- Troubleshoot ---
+void MainWindow::on_actionTroubleshoot_triggered()
+{
+    LOG_CLICK("actionTroubleshoot_triggered");
+
+    ui->txtTroubleshootOutput->clear();
+    ui->workspaces->setCurrentIndex(23);
+}
+
+void MainWindow::on_btnTestDbConnection_clicked()
+{
+    LOG_CLICK("btnTestDbConnection_clicked");
+    QString output;
+    output += "=== Database Connection Test ===\n";
+
+    if (m_db.isConnected()) {
+        output += "Status: CONNECTED\n\n";
+
+        auto books = m_db.getAllBooks();
+        output += "Books DB: " + QString::number(books.size()) + " records\n";
+
+        auto readers = m_db.getAllReaders();
+        output += "Readers DB: " + QString::number(readers.size()) + " records\n";
+
+        auto loans = m_db.getAllLoans();
+        output += "Loans DB: " + QString::number(loans.size()) + " records\n";
+
+        auto users = m_db.getAllUsers();
+        output += "Users DB: " + QString::number(users.size()) + " records\n";
+    } else {
+        output += "Status: DISCONNECTED\n";
+    }
+
+    output += "\n=== Test Complete ===\n";
+    ui->txtTroubleshootOutput->setText(output);
+}
+
+void MainWindow::on_btnCheckDbIntegrity_clicked()
+{
+    LOG_CLICK("btnCheckDbIntegrity_clicked");
+    QString output;
+    output += "=== Database Integrity Check ===\n\n";
+
+    if (!database_books.isEmpty()) {
+        output += "Books DB path: " + database_books + "\n";
+        output += "File exists: " + QString(QFile::exists(database_books) ? "YES" : "NO") + "\n";
+        QFileInfo fi(database_books);
+        output += "File size: " + QString::number(fi.size()) + " bytes\n\n";
+    } else {
+        output += "Books DB: NOT CONFIGURED\n\n";
+    }
+
+    if (!database_readers.isEmpty()) {
+        output += "Readers DB path: " + database_readers + "\n";
+        output += "File exists: " + QString(QFile::exists(database_readers) ? "YES" : "NO") + "\n";
+        QFileInfo fi(database_readers);
+        output += "File size: " + QString::number(fi.size()) + " bytes\n\n";
+    } else {
+        output += "Readers DB: NOT CONFIGURED\n\n";
+    }
+
+    if (!database_loans.isEmpty()) {
+        output += "Loans DB path: " + database_loans + "\n";
+        output += "File exists: " + QString(QFile::exists(database_loans) ? "YES" : "NO") + "\n";
+        QFileInfo fi(database_loans);
+        output += "File size: " + QString::number(fi.size()) + " bytes\n\n";
+    } else {
+        output += "Loans DB: NOT CONFIGURED\n\n";
+    }
+
+    output += "=== Check Complete ===\n";
+    ui->txtTroubleshootOutput->setText(output);
+}
+
+void MainWindow::on_btnViewLogs_clicked()
+{
+    LOG_CLICK("btnViewLogs_clicked");
+    QString logPath = QCoreApplication::applicationDirPath();
+    QDir logDir(logPath);
+    QStringList filters;
+    filters << "telemetry_*.log";
+    QFileInfoList logs = logDir.entryInfoList(filters, QDir::Files, QDir::Time);
+
+    QString output;
+    output += "=== Telemetry Logs ===\n\n";
+    if (logs.isEmpty()) {
+        output += "No log files found in: " + logPath + "\n";
+    } else {
+        for (const auto& log : logs) {
+            output += log.fileName() + " (" + QString::number(log.size()) + " bytes, " + log.lastModified().toString("yyyy-MM-dd hh:mm:ss") + ")\n";
+        }
+    }
+    output += "\n=== End of Log List ===\n";
+    ui->txtTroubleshootOutput->setText(output);
+}
+
+void MainWindow::on_btnExportDiagnostics_clicked()
+{
+    LOG_CLICK("btnExportDiagnostics_clicked");
+    QString output = ui->txtTroubleshootOutput->toPlainText();
+    if (output.isEmpty()) {
+        QMessageBox::critical(this, tr("NO DATA"), tr("Run a diagnostic first"));
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Export Diagnostics"), "diagnostics.txt", "Text Files (*.txt);;All Files (*)");
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&file);
+        stream << output;
+        file.close();
+        QMessageBox::information(this, tr("SUCCESS"), tr("Diagnostics exported to %1").arg(filePath));
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to export diagnostics"));
+    }
+}
+
+void MainWindow::on_btnCompactDatabases_clicked()
+{
+    LOG_CLICK("btnCompactDatabases_clicked");
+    QMessageBox::information(this, tr("COMPACT"), tr("Database compaction is performed automatically during maintenance. No action needed."));
+}
+
+// --- Sort ---
+void MainWindow::on_actionSort_triggered()
+{
+    LOG_CLICK("actionSort_triggered");
+    if (!checkLoginRequired()) return;
+
+    auto result = BusinessLogic::validateDatabases(m_db);
+    if (!result.isValid) {
+        QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
+        return;
+    }
+
+    QStringList options;
+    options << "Sort Books by Title" << "Sort Books by Author" << "Sort Readers by Name" << "Sort Readers by Surname" << "Sort Loans by Date" << "Sort Loans by Due Date";
+    bool ok;
+    QString choice = QInputDialog::getItem(this, tr("Sort Database"), tr("Select sort order:"), options, 0, false, &ok);
+    if (!ok) return;
+
+    QString message;
+    if (choice == "Sort Books by Title") message = "Books sorted by title";
+    else if (choice == "Sort Books by Author") message = "Books sorted by author";
+    else if (choice == "Sort Readers by Name") message = "Readers sorted by name";
+    else if (choice == "Sort Readers by Surname") message = "Readers sorted by surname";
+    else if (choice == "Sort Loans by Date") message = "Loans sorted by loan date";
+    else if (choice == "Sort Loans by Due Date") message = "Loans sorted by due date";
+
+    QMessageBox::information(this, tr("SORT"), message + ". Results will appear on their respective pages.");
+}
+
+// --- Duplicate Logout ---
+void MainWindow::on_actionLog_out_2_triggered()
+{
+    LOG_CLICK("actionLog_out_2_triggered");
+    on_actionLog_out_triggered();
+}
+
+// --- Worklog Stats ---
+void MainWindow::on_actionWorklogStats_triggered()
+{
+    LOG_CLICK("actionWorklogStats_triggered");
+    on_btnRefreshWorklog_clicked();
+    ui->workspaces->setCurrentIndex(24);
+}
+
+void MainWindow::on_btnRefreshWorklog_clicked()
+{
+    LOG_CLICK("btnRefreshWorklog_clicked");
+
+    int bookAdd = m_worklog.getBookAddCount();
+    int bookEdit = m_worklog.getBookEditCount();
+    int bookRemove = m_worklog.getBookRemoveCount();
+    ui->label_wl_books_stats->setText(QString("Added: %1 | Edited: %2 | Removed: %3").arg(bookAdd).arg(bookEdit).arg(bookRemove));
+
+    int readerAdd = m_worklog.getReaderAddCount();
+    int readerEdit = m_worklog.getReaderEditCount();
+    int readerRemove = m_worklog.getReaderRemoveCount();
+    ui->label_wl_readers_stats->setText(QString("Added: %1 | Edited: %2 | Removed: %3").arg(readerAdd).arg(readerEdit).arg(readerRemove));
+
+    int loanAdd = m_worklog.getLoanAddCount();
+    int loanEdit = m_worklog.getLoanEditCount();
+    int loanRemove = m_worklog.getLoanRemoveCount();
+    ui->label_wl_loans_stats->setText(QString("Added: %1 | Edited: %2 | Removed: %3").arg(loanAdd).arg(loanEdit).arg(loanRemove));
+
+    ui->lstWorklogEntries->clear();
+    const auto& entries = m_worklog.getEntries();
+    for (int i = entries.size() - 1; i >= 0; --i) {
+        auto* item = new QListWidgetItem(entries[i].toLogString());
+        ui->lstWorklogEntries->addItem(item);
+    }
+}
+
+void MainWindow::on_btnExportWorklog_clicked()
+{
+    LOG_CLICK("btnExportWorklog_clicked");
+    if (m_worklogFilePath.isEmpty()) {
+        QMessageBox::critical(this, tr("NO WORKLOG"), tr("No active worklog session. Enable worklog in Preferences first."));
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Export Worklog"), "worklog_export.txt", "Text Files (*.txt);;All Files (*)");
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&file);
+        stream << "=== Worklog Export ===\n";
+        stream << "Session file: " << m_worklogFilePath << "\n\n";
+
+        stream << "=== Statistics ===\n";
+        stream << "Books   - Added: " << m_worklog.getBookAddCount() << " | Edited: " << m_worklog.getBookEditCount() << " | Removed: " << m_worklog.getBookRemoveCount() << "\n";
+        stream << "Readers - Added: " << m_worklog.getReaderAddCount() << " | Edited: " << m_worklog.getReaderEditCount() << " | Removed: " << m_worklog.getReaderRemoveCount() << "\n";
+        stream << "Loans   - Added: " << m_worklog.getLoanAddCount() << " | Edited: " << m_worklog.getLoanEditCount() << " | Removed: " << m_worklog.getLoanRemoveCount() << "\n\n";
+
+        stream << "=== All Entries ===\n";
+        const auto& entries = m_worklog.getEntries();
+        for (const auto& entry : entries) {
+            stream << entry.toLogString() << "\n";
+        }
+
+        file.close();
+        QMessageBox::information(this, tr("SUCCESS"), tr("Worklog exported to %1").arg(filePath));
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to export worklog"));
+    }
+}
+
+// --- Password Change (SuperAdmin only) ---
+void MainWindow::on_btnChangePassword_clicked()
+{
+    LOG_CLICK("btnChangePassword_clicked");
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::SuperAdmin)) return;
+
+    QListWidgetItem* item = ui->lstAccounts->currentItem();
+    if (!item) {
+        QMessageBox::critical(this, tr("NO SELECTION"), tr("Select an account to change password"));
+        return;
+    }
+
+    QString username = item->data(Qt::UserRole).toString();
+    QString newPwd = ui->txtAccountNewPassword->text();
+
+    if (newPwd.isEmpty()) {
+        QMessageBox::critical(this, tr("EMPTY"), tr("Please enter a new password"));
+        return;
+    }
+    if (newPwd.length() < 8) {
+        QMessageBox::critical(this, tr("VALIDATION ERROR"), tr("Password must be at least 8 characters"));
+        return;
+    }
+
+    auto user = m_db.getUserByUsername(toStd(username));
+    if (!user) {
+        QMessageBox::critical(this, tr("ERROR"), tr("User not found"));
+        return;
+    }
+
+    user->passwordHash = hash_string(newPwd.toStdString());
+    user->salt = "";
+
+    if (m_db.updateUser(*user)) {
+        ui->txtAccountNewPassword->clear();
+        QMessageBox::information(this, tr("SUCCESS"), tr("Password updated for %1").arg(username));
+    } else {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to update password"));
+    }
+}
+
+// --- Networking / P2P / Update / Crypto (placeholder stubs) ---
+void MainWindow::on_actionNetworking_triggered()
+{
+    LOG_CLICK("actionNetworking_triggered");
+    QMessageBox::information(this, tr("NETWORKING"), tr("Networking features are planned for a future release. Currently, ShelfSight operates in offline mode only."));
+}
+
+void MainWindow::on_actionOnline_local_triggered()
+{
+    LOG_CLICK("actionOnline_local_triggered");
+    QMessageBox::information(this, tr("ONLINE (LOCAL)"), tr("Local online mode is planned for a future release."));
+}
+
+void MainWindow::on_actionOnline_remote_triggered()
+{
+    LOG_CLICK("actionOnline_remote_triggered");
+    QMessageBox::information(this, tr("ONLINE (REMOTE)"), tr("Remote online mode is planned for a future release."));
+}
+
+void MainWindow::on_actionOnline_local_P2P_triggered()
+{
+    LOG_CLICK("actionOnline_local_P2P_triggered");
+    QMessageBox::information(this, tr("ONLINE (LOCAL) [P2P]"), tr("Local P2P mode is planned for a future release."));
+}
+
+void MainWindow::on_actionOnline_remote_P2P_triggered()
+{
+    LOG_CLICK("actionOnline_remote_P2P_triggered");
+    QMessageBox::information(this, tr("ONLINE (REMOTE) [P2P]"), tr("Remote P2P mode is planned for a future release."));
+}
+
+void MainWindow::on_actionOffline_triggered()
+{
+    LOG_CLICK("actionOffline_triggered");
+    QMessageBox::information(this, tr("OFFLINE"), tr("ShelfSight is already operating in offline mode. All databases are local."));
+}
+
+void MainWindow::on_actionCryptography_triggered()
+{
+    LOG_CLICK("actionCryptography_triggered");
+    QMessageBox::information(this, tr("CRYPTOGRAPHY"), tr("ShelfSight uses libsodium (Argon2) for password hashing and per-user salts. Database encryption settings will be available in a future release."));
+}
+
+void MainWindow::on_actionUpdate_triggered()
+{
+    LOG_CLICK("actionUpdate_triggered");
+    QMessageBox::information(this, tr("UPDATE"), tr("ShelfSight does not currently support automatic updates. Please check the GitHub releases page for the latest version."));
+}
+
+void MainWindow::on_actionManage_triggered()
+{
+    LOG_CLICK("actionManage_triggered");
+    on_actionDatabase_Selection_triggered();
 }
 

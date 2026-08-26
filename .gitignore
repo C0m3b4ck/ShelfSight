@@ -21,6 +21,7 @@ ShelfSightBeta
 *.db3
 *.sql
 *.sq3
+*.log
 
 # Archives
 *.zip

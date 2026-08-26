@@ -58,6 +58,7 @@ public:
     // Loan operations
     bool loanBook(const std::string& bookId, const std::string& readerId, int days) override;
     bool returnBook(const std::string& loanId) override;
+    bool updateLoan(const Domain::Loan& loan) override;
     std::vector<Domain::Loan> getAllLoans() override;
     std::vector<Domain::Loan> getActiveLoans() override;
     std::vector<Domain::Loan> getOverdueLoans() override;

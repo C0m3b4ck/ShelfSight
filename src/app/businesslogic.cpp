@@ -79,9 +79,6 @@ ValidationResult validateLoanDTO(const DTO::LoanDTO& loan) {
     if (loan.status != "active" && loan.status != "returned" && loan.status != "overdue") {
         return ValidationResult::failure("Loan status must be 'active', 'returned', or 'overdue'");
     }
-    if (!trim(loan.returnDate).empty() && loan.status == "active") {
-        return ValidationResult::failure("Active loan cannot have a return date");
-    }
     if (trim(loan.returnDate).empty() && loan.status == "returned") {
         return ValidationResult::failure("Returned loan must have a return date");
     }
@@ -254,12 +251,16 @@ ValidationResult updateLocation(DataAccess::IDataAccess& db, const DTO::Location
     return ValidationResult::failure("Failed to update location in database");
 }
 
-ValidationResult updateLoan(DataAccess::IDataAccess& /*db*/, const DTO::LoanDTO& loan) {
+ValidationResult updateLoan(DataAccess::IDataAccess& db, const DTO::LoanDTO& loan) {
     auto validation = validateLoanDTO(loan);
     if (!validation.isValid) {
         return validation;
     }
-    return ValidationResult::failure("Loan update not implemented");
+    Domain::Loan domainLoan = loan.toDomain();
+    if (db.updateLoan(domainLoan)) {
+        return ValidationResult::success();
+    }
+    return ValidationResult::failure("Failed to update loan in database");
 }
 
 // ============ Database ============

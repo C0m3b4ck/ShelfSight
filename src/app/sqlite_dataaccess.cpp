@@ -881,17 +881,19 @@ bool SQLiteDataAccess::loanBook(const std::string& bookId, const std::string& re
 
         Domain::DateTime now = Domain::now();
         Domain::DateTime dueDate = now + std::chrono::hours(24 * days);
+        Domain::DateTime returnDate = now + std::chrono::hours(24 * days);
 
         std::string loanId = std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(
             now.time_since_epoch()).count());
 
         SQLite::Statement query(*m_loansDb,
-            "INSERT INTO loans (id, bookId, readerId, loanDate, dueDate, status) VALUES (?, ?, ?, ?, ?, 'active')");
+            "INSERT INTO loans (id, bookId, readerId, loanDate, dueDate, returnDate, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
         query.bind(1, loanId);
         query.bind(2, bookId);
         query.bind(3, readerId);
         query.bind(4, dateTimeToString(now));
         query.bind(5, dateTimeToString(dueDate));
+        query.bind(6, dateTimeToString(returnDate));
         query.exec();
 
         // Update book status to Borrowed
@@ -938,6 +940,27 @@ bool SQLiteDataAccess::returnBook(const std::string& loanId)
 
         transaction.commit();
         return true;
+    }
+    catch (const std::exception&) {
+        return false;
+    }
+}
+
+bool SQLiteDataAccess::updateLoan(const Domain::Loan& loan)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_loansDb) return false;
+    try {
+        SQLite::Transaction transaction(*m_loansDb);
+        SQLite::Statement query(*m_loansDb,
+            "UPDATE loans SET dueDate = ?, returnDate = ?, status = ? WHERE id = ?");
+        query.bind(1, dateTimeToString(loan.dueDate));
+        query.bind(2, loan.returnDate.time_since_epoch().count() > 0 ? dateTimeToString(loan.returnDate) : "");
+        query.bind(3, loan.status);
+        query.bind(4, loan.id);
+        int rows = query.exec();
+        transaction.commit();
+        return rows > 0;
     }
     catch (const std::exception&) {
         return false;

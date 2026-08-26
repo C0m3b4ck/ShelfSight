@@ -2,9 +2,38 @@
 **🇪🇺🇪🇺🇪🇺Made in Europe🇪🇺🇪🇺🇪🇺**
 [🇵🇱 Przeczytaj po polsku!](https://github.com/C0m3b4ck/ShelfSight/tree/main/README_PL.md)
 
+---
+
+> **ShelfSight Beta — Ready for Testing**
+>
+> The beta is now available for public testing. If you find a bug, have a suggestion, or want to contribute, please open an issue on the [Issues](https://github.com/C0m3b4ck/ShelfSight/issues) page.
+>
+> **What's new in this build:**
+> - **Worklog** — Session-based change tracking for books, readers, and loans. Every add, edit, and remove is logged with timestamps and can be reviewed in the new Worklog Statistics viewer or exported to file.
+> - **Worklog Statistics** — View aggregated counts and individual entries from the current session, available under *Help > Worklog Statistics*.
+> - **SuperAdmin-only account controls** — Changing roles and overwriting usernames/passwords for other users now requires SuperAdmin privileges.
+> - **Password change support** — SuperAdmins can change other users' passwords directly from the Accounts page. The old password hash is replaced with a freshly Argon2id-hashed value.
+> - **Telemetry & Worklog settings** — Both telemetry and worklog can be toggled independently from *Settings > Preferences*.
+
+---
+
 ## About
 ShelfSight is a program for managing libraries both large and small, private or public. It is ***free, open-source, cross-platform and has legacy-support***
 A successor to BookwormVB, it is intended to be ***more robust, more efficient and safer***, while having ***broader OS support and better functionality*** than Bibliotekarz.NET in the Polish freeware sphere. 
+
+### Features
+- **Book Management** - Add, edit, search, and soft-delete books with title, author, category, location, and status tracking
+- **Reader Management** - Manage library members with student IDs, contact details, and borrowing history
+- **Loan System** - Create loans with configurable durations, mark books as returned, track overdue loans, and generate overdue reports
+- **Categories & Locations** - Organize books by custom categories and physical locations
+- **User Authentication** - Role-based access control with User, Admin, and Superadmin roles; password hashing with libsodium
+- **Database Configuration** - Connect to multiple SQLite databases, save/load database configurations, and create new database sets
+- **Search & Filter** - Full-text search across all entities with field-specific filtering
+- **Undo System** - Undo support for entity modifications (add, edit, remove)
+- **Telemetry** - Optional local telemetry logging for usage analytics (no data sent externally)
+- **Worklog** - Session-based change tracking for books, readers, and loans with timestamped entries and a statistics viewer
+- **Soft Deletion** - Entities are soft-deleted (marked as deleted) rather than permanently removed, preserving data integrity
+
 ## Installation
 - ***1. Open the "Releases" page on the right-hand side of the page.***
 - ***2. Choose the latest release (the one on top).***
@@ -55,6 +84,22 @@ src/
 └── CMakeLists.txt
 ```
 The backend has no GUI dependency and can be built and tested on its own.
+### Architecture
+ShelfSight uses a layered architecture separating concerns:
+- **Domain layer** (`domain.h`) - Data models (Book, Reader, Loan, User) with DTOs for serialization
+- **Data access layer** (`sqlite_dataaccess.h/cpp`) - SQLite persistence with thread-safe operations
+- **Business logic layer** (`businesslogic.h/cpp`) - Validation rules and CRUD orchestration
+- **GUI layer** (`mainwindow.h/cpp`) - Qt 6 interface with workspace-based navigation
+
+Each entity (books, readers, loans, users) has its own SQLite database file, keeping data isolated and manageable.
+
+### Security
+- Passwords are hashed using **libsodium** (Argon2) with per-user salts
+- Input sanitization prevents SQL injection attacks
+- Role-based access control restricts operations by user role
+- Role changes and password overwrites are restricted to **SuperAdmin** accounts only
+- Headless backend tests cover SQL-injection-safe paths
+
 ## Documentation
 - Docs are available in */DOCS/* subfolder. 
 - User and developer manuals will be made after 1.0 release.
@@ -64,5 +109,5 @@ The backend has no GUI dependency and can be built and tested on its own.
 ### Libraries used:
 - [Qt](https://www.qt.io), a cross-platform C++ GUI toolkit,
 - [SQLite](https://www.sqlite.org), a lightweight embedded SQL database,
-- [OpenSSL](https://www.openssl.org), for SHA-256 hashing and AES-256-CBC encryption
+- [libsodium](https://libsodium.gitbook.io), for Argon2id password hashing and cryptographic operations
 

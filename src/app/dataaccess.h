@@ -65,6 +65,7 @@ public:
     // Loan operations
     virtual bool loanBook(const std::string& bookId, const std::string& readerId, int days) = 0;
     virtual bool returnBook(const std::string& loanId) = 0;
+    virtual bool updateLoan(const Domain::Loan& loan) = 0;
     virtual std::vector<Domain::Loan> getAllLoans() = 0;
     virtual std::vector<Domain::Loan> getActiveLoans() = 0;
     virtual std::vector<Domain::Loan> getOverdueLoans() = 0;

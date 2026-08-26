@@ -5724,11 +5724,1107 @@
        <property name="styleSheet">
         <string notr="true">color: gray;</string>
        </property>
+       </widget>
+      </widget>
+      <!-- page_18: Make Report -->
+      <widget class="QWidget" name="page_18">
+       <widget class="QLabel" name="label_report_title">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>0</y>
+          <width>201</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Make Report</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_report_type">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Report Type:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="cboReportType">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>50</y>
+          <width>201</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_report_status">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>85</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Loan Status:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="cboReportStatus">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>85</y>
+          <width>201</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnGenerateReport">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>120</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Generate Report</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnExportReport">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>120</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Export to File</string>
+        </property>
+       </widget>
+       <widget class="QTextBrowser" name="txtReportOutput">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>160</y>
+          <width>481</width>
+          <height>211</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <!-- page_19: Manage Fines -->
+      <widget class="QWidget" name="page_19">
+       <widget class="QLabel" name="label_fines_title">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>0</y>
+          <width>201</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Manage Fines</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_fines_reader">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Reader ID:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="txtFinesReaderId">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>50</y>
+          <width>201</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnSearchFines">
+        <property name="geometry">
+         <rect>
+          <x>310</x>
+          <y>50</y>
+          <width>81</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="lstFines">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>85</y>
+          <width>481</width>
+          <height>181</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_fines_amount">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>275</y>
+          <width>101</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Fine Amount:</string>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="spnFinesAmount">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>275</y>
+          <width>121</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <double>99999.99</double>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnAddFine">
+        <property name="geometry">
+         <rect>
+          <x>250</x>
+          <y>275</y>
+          <width>111</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add Fine</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnPayFine">
+        <property name="geometry">
+         <rect>
+          <x>370</x>
+          <y>275</y>
+          <width>111</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Mark Paid</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_fines_total">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>310</y>
+          <width>481</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Total Unpaid: $0.00</string>
+        </property>
+       </widget>
+      </widget>
+      <!-- page_20: Make Card -->
+      <widget class="QWidget" name="page_20">
+       <widget class="QLabel" name="label_card_title">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>0</y>
+          <width>201</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Make Cards</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_card_search">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>111</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Search Reader:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="txtCardSearch">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>50</y>
+          <width>251</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnSearchCard">
+        <property name="geometry">
+         <rect>
+          <x>380</x>
+          <y>50</y>
+          <width>81</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="lstCardReaders">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>85</y>
+          <width>481</width>
+          <height>151</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnPreviewCard">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>245</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Preview Card</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnPrintCard">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>245</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Print Card</string>
+        </property>
+       </widget>
+       <widget class="QTextBrowser" name="txtCardPreview">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>285</y>
+          <width>481</width>
+          <height>87</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <!-- page_21: Backups -->
+      <widget class="QWidget" name="page_21">
+       <widget class="QLabel" name="label_backup_title">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>0</y>
+          <width>201</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Backups</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnBackupNow">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Backup Now</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnRestoreBackup">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>50</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Restore from Backup</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkAutoBackup">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>95</y>
+          <width>201</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Enable automatic backups</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_backup_interval">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>125</y>
+          <width>111</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Backup Interval:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="cboBackupInterval">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>125</y>
+          <width>151</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_backup_dir">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>160</y>
+          <width>111</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Backup Directory:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="txtBackupDir">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>160</y>
+          <width>281</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnBrowseBackupDir">
+        <property name="geometry">
+         <rect>
+          <x>410</x>
+          <y>160</y>
+          <width>81</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="lstBackups">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>195</y>
+          <width>481</width>
+          <height>177</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <!-- page_22: Preferences -->
+      <widget class="QWidget" name="page_22">
+       <widget class="QLabel" name="label_prefs_title">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>0</y>
+          <width>201</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Preferences</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkDarkMode">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>201</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Dark Mode (requires restart)</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkShowWelcome">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>80</y>
+          <width>251</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show welcome screen on startup</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkConfirmActions">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>110</y>
+          <width>301</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Confirm before destructive actions</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_prefs_lang">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>145</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Language:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="cboLanguage">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>145</y>
+          <width>151</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_prefs_fontsize">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>180</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Font Size:</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="spnFontSize">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>180</y>
+          <width>81</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="minimum">
+         <number>8</number>
+        </property>
+        <property name="maximum">
+         <number>24</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnSavePreferences">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>220</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Save Preferences</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnResetPreferences">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>220</y>
+           <width>151</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Reset to Defaults</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="chkWorklog">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>260</y>
+           <width>251</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Enable Worklog (session change tracking)</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_worklog_path">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>285</y>
+           <width>481</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Worklog file: (worklog disabled)</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: gray;</string>
+         </property>
+        </widget>
+       </widget>
+      <!-- page_23: Accounts -->
+      <widget class="QWidget" name="page_23">
+       <widget class="QLabel" name="label_accounts_title">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>0</y>
+          <width>201</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Accounts</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_accounts_search">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Search:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="txtAccountSearch">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>50</y>
+          <width>251</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnSearchAccount">
+        <property name="geometry">
+         <rect>
+          <x>340</x>
+          <y>50</y>
+          <width>81</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="lstAccounts">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>85</y>
+          <width>481</width>
+          <height>161</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_accounts_user">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>255</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Username:</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="txtAccountUsername">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>255</y>
+          <width>201</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_accounts_role">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>290</y>
+          <width>81</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Role:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="cboAccountRole">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>290</y>
+          <width>151</width>
+          <height>25</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnChangeRole">
+        <property name="geometry">
+         <rect>
+          <x>270</x>
+          <y>290</y>
+          <width>111</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Change Role</string>
+        </property>
+       </widget>
+        <widget class="QPushButton" name="btnDeleteAccount">
+         <property name="geometry">
+          <rect>
+           <x>390</x>
+           <y>290</y>
+           <width>101</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Delete</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_account_newpwd">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>325</y>
+           <width>81</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>New Password:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="txtAccountNewPassword">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>325</y>
+           <width>201</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnChangePassword">
+         <property name="geometry">
+          <rect>
+           <x>270</x>
+           <y>325</y>
+           <width>111</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Change Password</string>
+         </property>
+        </widget>
+       </widget>
+      <!-- page_24: Troubleshoot -->
+      <widget class="QWidget" name="page_24">
+       <widget class="QLabel" name="label_troubleshoot_title">
+        <property name="geometry">
+         <rect>
+          <x>130</x>
+          <y>0</y>
+          <width>241</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Troubleshoot</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnTestDbConnection">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Test DB Connection</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnCheckDbIntegrity">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>50</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Check DB Integrity</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnViewLogs">
+        <property name="geometry">
+         <rect>
+          <x>330</x>
+          <y>50</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>View Logs</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnExportDiagnostics">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Export Diagnostics</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnCompactDatabases">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>90</y>
+          <width>151</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Compact Databases</string>
+        </property>
+       </widget>
+       <widget class="QTextBrowser" name="txtTroubleshootOutput">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>130</y>
+          <width>481</width>
+          <height>242</height>
+         </rect>
+        </property>
+        </widget>
+       </widget>
+       <!-- page_25: Worklog Stats -->
+       <widget class="QWidget" name="page_25">
+        <widget class="QLabel" name="label_worklog_title">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>0</y>
+           <width>241</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>18</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Worklog Statistics</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnRefreshWorklog">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>151</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Refresh</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btnExportWorklog">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>50</y>
+           <width>151</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Export Worklog</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_books_title">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Books:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_books_stats">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>481</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Added: 0 | Edited: 0 | Removed: 0</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_readers_title">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>135</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Readers:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_readers_stats">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>155</y>
+           <width>481</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Added: 0 | Edited: 0 | Removed: 0</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_loans_title">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>180</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Loans:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_loans_stats">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>200</y>
+           <width>481</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Added: 0 | Edited: 0 | Removed: 0</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_wl_entries_title">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>230</y>
+           <width>151</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>All Entries:</string>
+         </property>
+        </widget>
+        <widget class="QListWidget" name="lstWorklogEntries">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>250</y>
+           <width>481</width>
+           <height>122</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </widget>
-    </widget>
-   </widget>
-  <widget class="QMenuBar" name="menubar">
+    <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -5800,11 +6896,12 @@
     <addaction name="actionManage"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-    <addaction name="actionTroubleshoot"/>
-   </widget>
+     <property name="title">
+      <string>Help</string>
+     </property>
+     <addaction name="actionTroubleshoot"/>
+     <addaction name="actionWorklogStats"/>
+    </widget>
    <widget class="QMenu" name="menuLog_in_out">
     <property name="title">
      <string>Log in/out</string>
@@ -6016,9 +7113,9 @@
     <string>Undo Removed Books</string>
    </property>
   </action>
-  <action name="actionUndo_Removed_2">
+  <action name="actionWorklogStats">
    <property name="text">
-    <string>Undo Removed</string>
+    <string>Worklog Statistics</string>
    </property>
   </action>
  </widget>
