@@ -23,26 +23,20 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq \
-            g++ make \
+          sudo apt-get install -y -qq g++ make \
             qt6-base-dev libqt6sql6-sqlite \
-            libsqlite3-dev \
-            libsodium-dev
-
+            libsqlite3-dev libsodium-dev
       - name: Build ShelfSight
         working-directory: src
         run: |
           qmake6 ShelfSight.pro CONFIG+=release
           make -j$(nproc)
-
       - name: Verify binary
         working-directory: src/app
         run: file ShelfSight | grep -q "ELF 64-bit"
-
       - name: Package
         run: |
           OUT="build/ShelfSight-linux-x64"
@@ -62,11 +56,9 @@ jobs:
           sudo cp -r "$(dirname "$0")"/* /opt/ShelfSight/
           sudo chmod +x /opt/ShelfSight/ShelfSight.sh
           echo "Installed to /opt/ShelfSight"
-          echo "Run: /opt/ShelfSight/ShelfSight.sh"
           INSTALL
           chmod +x "$OUT/install.sh"
           cd build && tar czf ShelfSight-linux-x64.tar.gz ShelfSight-linux-x64
-
       - uses: actions/upload-artifact@v4
         with:
           name: ShelfSight-linux-x64
@@ -77,35 +69,31 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────
   build-linux-x86:
     runs-on: ubuntu-24.04
-    container:
-      image: i386/ubuntu:22.04
     steps:
-      - name: Install git
-        run: |
-          apt-get update -qq
-          apt-get install -y -qq git
-
       - uses: actions/checkout@v4
-
-      - name: Install dependencies
+      - name: Build in i386 container
         run: |
-          apt-get update -qq
-          apt-get install -y -qq \
-            g++ make \
-            qt6-base-dev libqt6sql6-sqlite \
-            libsqlite3-dev \
-            libsodium-dev
-
-      - name: Build ShelfSight
-        working-directory: src
-        run: |
-          qmake6 ShelfSight.pro CONFIG+=release
-          make -j$(nproc)
-
+          docker run --rm -v "$GITHUB_WORKSPACE:/workspace" -w /workspace \
+            i386/ubuntu:jammy bash -c '
+              apt-get update -qq &&
+              apt-get install -y -qq g++ make software-properties-common &&
+              add-apt-repository -y ppa:okirby/qt6-backports 2>/dev/null || true &&
+              apt-get update -qq &&
+              apt-get install -y -qq qt6-base-dev libqt6sql6-sqlite libsqlite3-dev libsodium-dev 2>/dev/null ||
+              apt-get install -y -qq g++ make libsqlite3-dev libsodium-dev
+              echo "=== Attempting build ==="
+              cd src
+              if command -v qmake6 &>/dev/null; then
+                qmake6 ShelfSight.pro CONFIG+=release
+                make -j$(nproc)
+              else
+                echo "Qt6 not available, attempting qmake (Qt5)"
+                qmake ShelfSight.pro CONFIG+=release
+                make -j$(nproc)
+              fi
+            '
       - name: Verify binary
-        working-directory: src/app
-        run: file ShelfSight | grep -q "ELF 32-bit"
-
+        run: file src/app/ShelfSight | grep -q "ELF 32-bit"
       - name: Package
         run: |
           OUT="build/ShelfSight-linux-x86"
@@ -119,7 +107,6 @@ jobs:
           LAUNCHER
           chmod +x "$OUT/ShelfSight.sh"
           cd build && tar czf ShelfSight-linux-x86.tar.gz ShelfSight-linux-x86
-
       - uses: actions/upload-artifact@v4
         with:
           name: ShelfSight-linux-x86
@@ -135,7 +122,6 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
         with:
@@ -146,30 +132,20 @@ jobs:
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-libsodium
             make
-
       - name: Build SQLiteCpp
         working-directory: src/sqlitecpp
         run: |
           qmake6 sqlitecpp.pro CONFIG+=release
           make -j$(nproc)
-          ls -la *.a release/*.a 2>/dev/null
-
-      - name: Copy library to expected location
-        working-directory: src/sqlitecpp
-        run: |
-          cp release/libSQLiteCpp.a . 2>/dev/null || true
-          ls -la *.a
-
+          cp release/libSQLiteCpp.a .
       - name: Build ShelfSight
         working-directory: src/app
         run: |
           qmake6 app.pro CONFIG+=release
           make -j$(nproc)
-
       - name: Verify binary
         working-directory: src/app
         run: file release/ShelfSight.exe | grep -qi "PE32+"
-
       - name: Package
         shell: bash
         run: |
@@ -177,17 +153,16 @@ jobs:
           mkdir -p "$OUT/bin/platforms"
           cp src/app/release/ShelfSight.exe "$OUT/bin/"
           cp LICENSE "$OUT/" 2>/dev/null || true
-          MINGW_PREFIX="$MSYS2_PREFIX"
-          cp "$MINGW_PREFIX/bin/libgcc_s_seh-1.dll" "$OUT/bin/" 2>/dev/null || true
-          cp "$MINGW_PREFIX/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
-          cp "$MINGW_PREFIX/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
+          MP="$MSYS2_PREFIX"
+          cp "$MP/bin/libgcc_s_seh-1.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MP/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MP/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
           for dll in Qt6Core Qt6Gui Qt6Widgets Qt6Sql; do
-            cp "$MINGW_PREFIX/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
+            cp "$MP/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
           done
-          cp "$MINGW_PREFIX/bin/libsodium.dll" "$OUT/bin/" 2>/dev/null || true
-          find "$MINGW_PREFIX" -name "qwindows.dll" -path "*/platforms/*" -exec cp {} "$OUT/bin/platforms/" \; 2>/dev/null || true
+          cp "$MP/bin/libsodium.dll" "$OUT/bin/" 2>/dev/null || true
+          find "$MP" -name "qwindows.dll" -path "*/platforms/*" -exec cp {} "$OUT/bin/platforms/" \; 2>/dev/null || true
           cd build && 7z a -tzip ShelfSight-windows-x64.zip ShelfSight-windows-x64
-
       - uses: actions/upload-artifact@v4
         with:
           name: ShelfSight-windows-x64
@@ -203,7 +178,6 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
         with:
@@ -212,36 +186,32 @@ jobs:
           install: >-
             mingw-w64-i686-toolchain
             make
-
       - name: Download prebuilt libsodium (i686)
         shell: bash
         run: |
           curl -L -o /tmp/libsodium-win32.zip \
             "https://download.libsodium.org/libsodium/releases/libsodium-1.0.20-stable-msvc.zip"
-          7z x /tmp/libsodium-win32.zip -o/tmp/libsodium-win32
+          7z x /tmp/libsodium-win32.zip -o/tmp/libsodium-win32 -y
           find /tmp/libsodium-win32 -name "libsodium.*" | head -20
-          find /tmp/libsodium-win32 -name "sodium.h" -o -name "sodium" -type d | head -10
+          find /tmp/libsodium-win32 -name "sodium.h" | head -5
 
       - name: Build Qt6 from source (i686) — cached
         uses: actions/cache@v4
         id: qt-cache
         with:
           path: ${{ runner.temp }}/qt6-i686
-          key: qt6-i686-${{ runner.os }}-20260827
-          restore-keys: |
-            qt6-i686-${{ runner.os }}-
+          key: qt6-i686-mingw32-v3
 
       - name: Download and build Qt6 (i686)
         if: steps.qt-cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
-          QT_VER=6.6.3
-          QT_SRC="/tmp/qt-everywhere-src-${QT_VER}"
+          QT_VER=6.5.3
           QT_PREFIX="$RUNNER_TEMP/qt6-i686"
           curl -L -o /tmp/qt-src.tar.xz \
-            "https://download.qt.io/official_releases/qt/6.6/${QT_VER}/single/qt-everywhere-src-${QT_VER}.tar.xz"
+            "https://download.qt.io/official_releases/qt/6.5/${QT_VER}/single/qt-everywheresrc-${QT_VER}.tar.xz"
           cd /tmp && tar xf qt-src.tar.xz
-          cd "$QT_SRC"
+          cd "qt-everywhere-src-${QT_VER}"
           ./configure \
             -prefix "$QT_PREFIX" \
             -platform win32-g++ \
@@ -259,6 +229,7 @@ jobs:
           export PATH="$QT_DIR/bin:$MSYS2_PREFIX/bin:$PATH"
           qmake6 sqlitecpp.pro CONFIG+=release
           make -j$(nproc)
+          cp release/libSQLiteCpp.a . 2>/dev/null || true
 
       - name: Build ShelfSight
         working-directory: src/app
@@ -267,7 +238,7 @@ jobs:
           export PATH="$QT_DIR/bin:$MSYS2_PREFIX/bin:$PATH"
           qmake6 app.pro CONFIG+=release \
             "INCLUDEPATH+=$QT_DIR/include" \
-            "LIBS+=-L$QT_DIR/lib"
+            "LIBS+=-L$QT_DIR/lib -L$MSYS2_PREFIX/lib"
           make -j$(nproc)
 
       - name: Verify binary
@@ -281,18 +252,17 @@ jobs:
           mkdir -p "$OUT/bin/platforms"
           cp src/app/release/ShelfSight.exe "$OUT/bin/"
           cp LICENSE "$OUT/" 2>/dev/null || true
-          MINGW_PREFIX="$MSYS2_PREFIX"
-          QT_DIR="$RUNNER_TEMP/qt6-i686"
-          cp "$MINGW_PREFIX/bin/libgcc_s_dw2-1.dll" "$OUT/bin/" 2>/dev/null || true
-          cp "$MINGW_PREFIX/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
-          cp "$MINGW_PREFIX/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
+          MP="$MSYS2_PREFIX"
+          QT="$RUNNER_TEMP/qt6-i686"
+          cp "$MP/bin/libgcc_s_dw2-1.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MP/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MP/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
           for dll in Qt6Core Qt6Gui Qt6Widgets Qt6Sql; do
-            cp "$QT_DIR/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
+            cp "$QT/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
           done
-          cp "$MINGW_PREFIX/bin/libsodium.dll" "$OUT/bin/" 2>/dev/null || true
-          find "$QT_DIR" -name "qwindows.dll" -path "*/platforms/*" -exec cp {} "$OUT/bin/platforms/" \; 2>/dev/null || true
+          cp "$MP/bin/libsodium.dll" "$OUT/bin/" 2>/dev/null || true
+          find "$QT" -name "qwindows.dll" -path "*/platforms/*" -exec cp {} "$OUT/bin/platforms/" \; 2>/dev/null || true
           cd build && 7z a -tzip ShelfSight-windows-x86.zip ShelfSight-windows-x86
-
       - uses: actions/upload-artifact@v4
         with:
           name: ShelfSight-windows-x86
