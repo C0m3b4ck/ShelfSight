@@ -193,7 +193,7 @@ jobs:
         id: qt-cache
         with:
           path: ${{ runner.temp }}/qt6-i686
-          key: qt6-i686-mingw32-v5
+          key: qt6-i686-mingw32-v6
 
       - name: Download and build Qt6 (i686)
         if: steps.qt-cache.outputs.cache-hit != 'true'
@@ -217,7 +217,11 @@ jobs:
             -skip qtdeclarative -skip qtquickcontrols2 -skip qtquicktimeline \
             -skip qtshadertools -skip qt3d -skip qtactiveqt -skip qtcharts \
             -skip qtdatavis3d -skip qtmultimedia -skip qtscxml -skip qtsvg \
-            -skip qtwebengine -skip qtwebview -skip qtlocation -skip qtdoc
+            -skip qtwebengine -skip qtwebview -skip qtlocation -skip qtdoc \
+            -skip qtmqtt -skip qtgrpc -skip qtwebchannel -skip qtnetworkauth \
+            -skip qtcoap -skip qtmqtts -skip qtremoteobjects -skip qtserialbus \
+            -skip qtserialport -skip qtspeech -skip qttest -skip qtvirtualkeyboard \
+            -skip qtwebsockets -skip qtwebview -skip qt3dquick -skip qt3drender
           cmake --build . --parallel $(nproc)
           cmake --install .
 
