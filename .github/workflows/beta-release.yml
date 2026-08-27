@@ -193,7 +193,7 @@ jobs:
         id: qt-cache
         with:
           path: ${{ runner.temp }}/qt6-i686
-          key: qt6-i686-mingw32-v3
+          key: qt6-i686-mingw32-v4
 
       - name: Download and build Qt6 (i686)
         if: steps.qt-cache.outputs.cache-hit != 'true'
