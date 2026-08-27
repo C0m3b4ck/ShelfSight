@@ -176,6 +176,8 @@ jobs:
           update: true
           install: >-
             mingw-w64-i686-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
             make
       - name: Download prebuilt libsodium (i686)
         shell: bash
@@ -209,9 +211,10 @@ jobs:
             -opensource -confirm-license \
             -nomake examples -nomake tests \
             -sql-sqlite -qt-sqlite \
-            -no-openssl -no-strip
-          make -j$(nproc)
-          make install
+            -no-openssl -no-strip \
+            -release
+          cmake --build . --parallel $(nproc)
+          cmake --install .
 
       - name: Build SQLiteCpp
         working-directory: src/sqlitecpp
