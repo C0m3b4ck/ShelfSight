@@ -1,0 +1,325 @@
+name: Beta Release
+
+on:
+  push:
+    tags:
+      - 'v*-beta*'
+      - 'beta-*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0-beta.1)'
+        required: true
+        default: 'v1.0.0-beta.1'
+
+permissions:
+  contents: write
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────
+  # Linux x64
+  # ──────────────────────────────────────────────────────────────────────
+  build-linux-x64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            g++ make \
+            qt6-base-dev libqt6sql6-sqlite \
+            libsqlite3-dev \
+            libsodium-dev
+
+      - name: Build SQLiteCpp
+        working-directory: src/sqlitecpp
+        run: |
+          qmake6 sqlitecpp.pro CONFIG+=release
+          make -j$(nproc)
+
+      - name: Build ShelfSight
+        working-directory: src/app
+        run: |
+          qmake6 app.pro CONFIG+=release
+          make -j$(nproc)
+
+      - name: Verify binary
+        working-directory: src/app
+        run: file ShelfSight | grep -q "ELF 64-bit"
+
+      - name: Package
+        id: package
+        run: |
+          OUT="build/ShelfSight-linux-x64"
+          mkdir -p "$OUT/bin"
+          cp src/app/ShelfSight "$OUT/bin/"
+          cp LICENSE "$OUT/" 2>/dev/null || true
+
+          cat > "$OUT/ShelfSight.sh" << 'LAUNCHER'
+          #!/bin/bash
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          exec "$SCRIPT_DIR/bin/ShelfSight" "$@"
+          LAUNCHER
+          chmod +x "$OUT/ShelfSight.sh"
+
+          cat > "$OUT/install.sh" << 'INSTALL'
+          #!/bin/bash
+          set -e
+          sudo mkdir -p /opt/ShelfSight
+          sudo cp -r "$(dirname "$0")"/* /opt/ShelfSight/
+          sudo chmod +x /opt/ShelfSight/ShelfSight.sh
+          echo "Installed to /opt/ShelfSight"
+          echo "Run: /opt/ShelfSight/ShelfSight.sh"
+          INSTALL
+          chmod +x "$OUT/install.sh"
+
+          cd build && tar czf ShelfSight-linux-x64.tar.gz ShelfSight-linux-x64
+          echo "artifact=$OUT" >> "$GITHUB_OUTPUT"
+          echo "archive=build/ShelfSight-linux-x64.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ShelfSight-linux-x64
+          path: build/ShelfSight-linux-x64.tar.gz
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Linux x86
+  # ──────────────────────────────────────────────────────────────────────
+  build-linux-x86:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            g++ gcc-multilib g++-multilib make \
+            qt6-base-dev \
+            libsqlite3-dev:i386 \
+            libsodium-dev:i386
+
+      - name: Build SQLiteCpp (32-bit)
+        working-directory: src/sqlitecpp
+        run: |
+          qmake6 sqlitecpp.pro CONFIG+=release QMAKE_CC=m32 QMAKE_CXX=m32
+          make -j$(nproc)
+
+      - name: Build ShelfSight (32-bit)
+        working-directory: src/app
+        run: |
+          qmake6 app.pro CONFIG+=release QMAKE_CC=m32 QMAKE_CXX=m32
+          make -j$(nproc)
+
+      - name: Verify binary
+        working-directory: src/app
+        run: file ShelfSight | grep -q "ELF 32-bit"
+
+      - name: Package
+        id: package
+        run: |
+          OUT="build/ShelfSight-linux-x86"
+          mkdir -p "$OUT/bin"
+          cp src/app/ShelfSight "$OUT/bin/"
+          cp LICENSE "$OUT/" 2>/dev/null || true
+
+          cat > "$OUT/ShelfSight.sh" << 'LAUNCHER'
+          #!/bin/bash
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          exec "$SCRIPT_DIR/bin/ShelfSight" "$@"
+          LAUNCHER
+          chmod +x "$OUT/ShelfSight.sh"
+
+          cd build && tar czf ShelfSight-linux-x86.tar.gz ShelfSight-linux-x86
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ShelfSight-linux-x86
+          path: build/ShelfSight-linux-x86.tar.gz
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Windows x64 (Windows XP x64 through 11)
+  # ──────────────────────────────────────────────────────────────────────
+  build-windows-x64:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-sql-sqlite
+            mingw-w64-x86_64-libsodium
+            make
+
+      - name: Build SQLiteCpp
+        working-directory: src/sqlitecpp
+        run: |
+          qmake6 sqlitecpp.pro CONFIG+=release
+          make -j$(nproc)
+
+      - name: Build ShelfSight
+        working-directory: src/app
+        run: |
+          qmake6 app.pro CONFIG+=release
+          make -j$(nproc)
+
+      - name: Verify binary
+        working-directory: src/app
+        run: file ShelfSight.exe | grep -qi "PE32+"
+
+      - name: Package
+        id: package
+        shell: bash
+        run: |
+          OUT="build/ShelfSight-windows-x64"
+          mkdir -p "$OUT/bin/platforms"
+
+          cp src/app/ShelfSight.exe "$OUT/bin/"
+          cp LICENSE "$OUT/" 2>/dev/null || true
+
+          # Copy MinGW runtime DLLs
+          MINGW_PREFIX="$MSYS2_PREFIX"
+          cp "$MINGW_PREFIX/bin/libgcc_s_seh-1.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MINGW_PREFIX/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MINGW_PREFIX/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
+
+          # Copy Qt6 DLLs
+          for dll in Qt6Core Qt6Gui Qt6Widgets Qt6Sql; do
+            cp "$MINGW_PREFIX/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
+          done
+
+          # Copy libsodium
+          cp "$MINGW_PREFIX/bin/libsodium.dll" "$OUT/bin/" 2>/dev/null || true
+
+          # Copy Qt platform plugin
+          cp "$MINGW_PREFIX/share/qt6/plugins/platforms/qwindows.dll" "$OUT/bin/platforms/" 2>/dev/null \
+            || cp "$MINGW_PREFIX/lib/qt6/plugins/platforms/qwindows.dll" "$OUT/bin/platforms/" 2>/dev/null || true
+
+          cd build && 7z a -tzip ShelfSight-windows-x64.zip ShelfSight-windows-x64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ShelfSight-windows-x64
+          path: build/ShelfSight-windows-x64.zip
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Windows x86 (Windows 2000 through 11)
+  # ──────────────────────────────────────────────────────────────────────
+  build-windows-x86:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: true
+          install: >-
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-qt6-base
+            mingw-w64-i686-qt6-sql-sqlite
+            mingw-w64-i686-libsodium
+            make
+
+      - name: Build SQLiteCpp
+        working-directory: src/sqlitecpp
+        run: |
+          qmake6 sqlitecpp.pro CONFIG+=release
+          make -j$(nproc)
+
+      - name: Build ShelfSight
+        working-directory: src/app
+        run: |
+          qmake6 app.pro CONFIG+=release
+          make -j$(nproc)
+
+      - name: Verify binary
+        working-directory: src/app
+        run: file ShelfSight.exe | grep -qi "PE32"
+
+      - name: Package
+        id: package
+        shell: bash
+        run: |
+          OUT="build/ShelfSight-windows-x86"
+          mkdir -p "$OUT/bin/platforms"
+
+          cp src/app/ShelfSight.exe "$OUT/bin/"
+          cp LICENSE "$OUT/" 2>/dev/null || true
+
+          # Copy MinGW runtime DLLs
+          MINGW_PREFIX="$MSYS2_PREFIX"
+          cp "$MINGW_PREFIX/bin/libgcc_s_dw2-1.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MINGW_PREFIX/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
+          cp "$MINGW_PREFIX/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
+
+          # Copy Qt6 DLLs
+          for dll in Qt6Core Qt6Gui Qt6Widgets Qt6Sql; do
+            cp "$MINGW_PREFIX/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
+          done
+
+          # Copy libsodium
+          cp "$MINGW_PREFIX/bin/libsodium.dll" "$OUT/bin/" 2>/dev/null || true
+
+          # Copy Qt platform plugin
+          cp "$MINGW_PREFIX/share/qt6/plugins/platforms/qwindows.dll" "$OUT/bin/platforms/" 2>/dev/null \
+            || cp "$MINGW_PREFIX/lib/qt6/plugins/platforms/qwindows.dll" "$OUT/bin/platforms/" 2>/dev/null || true
+
+          cd build && 7z a -tzip ShelfSight-windows-x86.zip ShelfSight-windows-x86
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ShelfSight-windows-x86
+          path: build/ShelfSight-windows-x86.zip
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Create GitHub Release
+  # ──────────────────────────────────────────────────────────────────────
+  release:
+    needs: [build-linux-x64, build-linux-x86, build-windows-x64, build-windows-x86]
+    runs-on: ubuntu-24.04
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "ShelfSight Beta ${{ github.ref_name }}"
+          body: |
+            ## ShelfSight Beta
+
+            ### Downloads
+            | Platform | File |
+            |----------|------|
+            | Linux x64 | `ShelfSight-linux-x64.tar.gz` |
+            | Linux x86 | `ShelfSight-linux-x86.tar.gz` |
+            | Windows x64 | `ShelfSight-windows-x64.zip` |
+            | Windows x86 | `ShelfSight-windows-x86.zip` |
+
+            **Windows:** Extract the zip and run `ShelfSight.exe` from the `bin/` folder.
+            **Linux:** Extract the tarball, run `./ShelfSight.sh`, or install with `sudo ./install.sh`.
+          files: |
+            artifacts/ShelfSight-linux-x64/*
+            artifacts/ShelfSight-linux-x86/*
+            artifacts/ShelfSight-windows-x64/*
+            artifacts/ShelfSight-windows-x86/*
+          prerelease: true
