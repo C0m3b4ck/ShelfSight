@@ -1,0 +1,31 @@
+app-id: com.github.C0m3b4ck.ShelfSight
+runtime: org.kde.Platform
+runtime-version: '6.7'
+sdk: org.kde.Sdk
+command: ShelfSight
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --filesystem=home
+modules:
+  - name: libsodium
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://github.com/jedisct1/libsodium/releases/download/1.0.20-RELEASE/libsodium-1.0.20.tar.gz
+        sha256: e86be563dde0d0254309470b3df62655c517a558271e0f6ecb6682f71f639a78
+  - name: sqlitecpp
+    buildsystem: qmake
+    config-opts:
+      - CONFIG+=release
+    sources:
+      - type: dir
+        path: src/sqlitecpp
+  - name: shelvesight
+    buildsystem: qmake
+    config-opts:
+      - CONFIG+=release
+    sources:
+      - type: dir
+        path: src/app

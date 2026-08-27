@@ -35,15 +35,31 @@ A successor to BookwormVB, it is intended to be ***more robust, more efficient a
 - **Soft Deletion** - Entities are soft-deleted (marked as deleted) rather than permanently removed, preserving data integrity
 
 ## Installation
-- ***1. Open the "Releases" page on the right-hand side of the page.***
-- ***2. Choose the latest release (the one on top).***
-- ***3. Download the package that matches your system:***
 
-| Type		| Description |
-| ------------- | ----------- |
-| **Portable**  | '.7z' archive file, extract using **7zip** and run the binary file inside the extracted folder (**.exe on Windows**). |
-| **Installer** | A program that moves the program files to a directory specified by the user (**for example, %APPDATA% on Windows**). |
-| **Standalone** | Just the program binary (**.exe on Windows**) - **download and run**. |
+All builds are **fully static** — no DLLs, shared libraries, or runtime dependencies needed. Just extract and run.
+
+### Download
+Go to [Releases](https://github.com/C0m3b4ck/ShelfSight/releases) and grab the archive for your platform:
+
+| Platform | File | Notes |
+| -------- | ---- | ----- |
+| **Windows x64** | `ShelfSight-windows-x64-static.zip` | Windows XP x64 through 11 |
+| **Windows x86** | `ShelfSight-windows-x86-static.zip` | Windows 2000 through 11 |
+| **Linux x64** | `ShellSight-linux-x64-static.tar.gz` | Any x86_64 distro |
+| **Linux x86** | `ShelfSight-linux-x86-static.tar.gz` | Any i686 distro |
+
+### Windows
+Extract the zip and run `bin\ShelfSight.exe`. No installation needed.
+
+### Linux
+```bash
+tar xzf ShelfSight-linux-x64-static.tar.gz
+cd ShelfSight-linux-x64
+./ShelfSight.sh
+```
+
+### Flatpak
+A Flatpak manifest is included at `flatpak/com.github.C0m3b4ck.ShelfSight.yml`.
 ## Supported Operating Systems
 | Platform | Versions | Architecture | Packages |
 | -------- | -------- | ------------ | -------- |
@@ -60,30 +76,27 @@ Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
 ## Build
 ### Prerequisites
-- CMake >= 3.16 and a C++17 compiler
-- [Qt](https://www.qt.io) 6.x (`qt6-base-dev` on Debian/Ubuntu)
+- g++ (or MSYS2 MinGW for Windows)
+- [Qt](https://www.qt.io) 6.x with static libs (`qt6-base-dev` on Debian/Ubuntu)
 - SQLite 3 (`libsqlite3-dev`)
-- OpenSSL (`libssl-dev`)
+- libsodium (`libsodium-dev`)
+- qmake6
 
-### Build
-```bash
-cd ShelfSight/src
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-ctest --test-dir build        # optional: run headless backend tests
-./build/shelfsight [--db <path>]   # --db overrides the database file
-```
+For full build instructions see [BUILD.md](BUILD.md).
 
 ### Project layout
 ```
 src/
-├── backend/     # framework-independent logic (SQLite data layer, crypto, auth, library)
-│   └── test_backend.cpp   # headless backend tests (SQL-injection safe paths covered)
-├── gui/         # Qt UI (main window, panels)
-├── main.cpp     # QApplication entry point
-└── CMakeLists.txt
+├── app/          # Main application (Qt6 widgets, business logic, crypto, SQLite data access)
+│   ├── main.cpp
+│   ├── mainwindow.cpp/h
+│   ├── businesslogic.cpp/h
+│   ├── crypto.cpp/h
+│   └── sqlite_dataaccess.cpp/h
+├── sqlitecpp/    # SQLiteCpp static library
+├── .pro          # qmake project files
+└── build_scripts/
 ```
-The backend has no GUI dependency and can be built and tested on its own.
 ### Architecture
 ShelfSight uses a layered architecture separating concerns:
 - **Domain layer** (`domain.h`) - Data models (Book, Reader, Loan, User) with DTOs for serialization
