@@ -74,23 +74,14 @@ jobs:
       - name: Build in i386 container
         run: |
           docker run --rm -v "$GITHUB_WORKSPACE:/workspace" -w /workspace \
-            i386/ubuntu:jammy bash -c '
+            i386/debian:bookworm bash -c '
               apt-get update -qq &&
-              apt-get install -y -qq g++ make software-properties-common &&
-              add-apt-repository -y ppa:okirby/qt6-backports 2>/dev/null || true &&
-              apt-get update -qq &&
-              apt-get install -y -qq qt6-base-dev libqt6sql6-sqlite libsqlite3-dev libsodium-dev 2>/dev/null ||
-              apt-get install -y -qq g++ make libsqlite3-dev libsodium-dev
-              echo "=== Attempting build ==="
-              cd src
-              if command -v qmake6 &>/dev/null; then
-                qmake6 ShelfSight.pro CONFIG+=release
-                make -j$(nproc)
-              else
-                echo "Qt6 not available, attempting qmake (Qt5)"
-                qmake ShelfSight.pro CONFIG+=release
-                make -j$(nproc)
-              fi
+              apt-get install -y -qq g++ make pkg-config \
+                qt6-base-dev libqt6sql6-sqlite \
+                libsqlite3-dev libsodium-dev &&
+              cd src &&
+              qmake6 ShelfSight.pro CONFIG+=release &&
+              make -j$(nproc)
             '
       - name: Verify binary
         run: file src/app/ShelfSight | grep -q "ELF 32-bit"
@@ -209,7 +200,7 @@ jobs:
           QT_VER=6.5.3
           QT_PREFIX="$RUNNER_TEMP/qt6-i686"
           curl -L -o /tmp/qt-src.tar.xz \
-            "https://download.qt.io/official_releases/qt/6.5/${QT_VER}/single/qt-everywheresrc-${QT_VER}.tar.xz"
+            "https://download.qt.io/official_releases/qt/6.5/${QT_VER}/single/qt-everywhere-src-${QT_VER}.tar.xz"
           cd /tmp && tar xf qt-src.tar.xz
           cd "qt-everywhere-src-${QT_VER}"
           ./configure \
