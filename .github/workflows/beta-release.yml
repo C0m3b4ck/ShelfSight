@@ -76,40 +76,29 @@ jobs:
           path: build/ShelfSight-linux-x64.tar.gz
 
   # ──────────────────────────────────────────────────────────────────────
-  # Linux x86 (cross-compiled on x64 host)
+  # Linux x86 (native i386 build via Docker)
   # ──────────────────────────────────────────────────────────────────────
   build-linux-x86:
     runs-on: ubuntu-24.04
+    container:
+      image: i386/ubuntu:24.04
+      options: --platform linux/386
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq \
-            g++ gcc-multilib g++-multilib make \
-            qt6-base-dev \
-            libqt6sql6-sqlite \
-            libsqlite3-dev:i386 \
-            libsodium-dev:i386
+          apt-get update -qq
+          apt-get install -y -qq \
+            g++ make \
+            qt6-base-dev libqt6sql6-sqlite \
+            libsqlite3-dev \
+            libsodium-dev
 
-      - name: Build SQLiteCpp (32-bit)
-        working-directory: src/sqlitecpp
+      - name: Build ShelfSight
+        working-directory: src
         run: |
-          make clean 2>/dev/null || true
-          rm -f *.o src/*.o
-          qmake6 sqlitecpp.pro CONFIG+=release \
-            "QMAKE_CFLAGS+=-m32" "QMAKE_CXXFLAGS+=-m32" "QMAKE_LFLAGS+=-m32"
-          make -j$(nproc)
-
-      - name: Build ShelfSight (32-bit)
-        working-directory: src/app
-        run: |
-          make clean 2>/dev/null || true
-          rm -f *.o
-          qmake6 app.pro CONFIG+=release \
-            "QMAKE_CFLAGS+=-m32" "QMAKE_CXXFLAGS+=-m32" "QMAKE_LFLAGS+=-m32"
+          qmake6 ShelfSight.pro CONFIG+=release
           make -j$(nproc)
 
       - name: Verify binary
@@ -159,10 +148,18 @@ jobs:
             mingw-w64-x86_64-libsodium
             make
 
-      - name: Build ShelfSight
-        working-directory: src
+      - name: Build SQLiteCpp
+        working-directory: src/sqlitecpp
         run: |
-          qmake6 ShelfSight.pro CONFIG+=release
+          qmake6 sqlitecpp.pro CONFIG+=release
+          make -j$(nproc)
+          ls -la *.a *.lib 2>/dev/null || echo "No .a/.lib found"
+          find . -name "*.a" -o -name "*.lib" 2>/dev/null
+
+      - name: Build ShelfSight
+        working-directory: src/app
+        run: |
+          qmake6 app.pro CONFIG+=release
           make -j$(nproc)
 
       - name: Verify binary
@@ -205,7 +202,7 @@ jobs:
 
   # ──────────────────────────────────────────────────────────────────────
   # Windows x86 (Windows 2000 through 11)
-  # Uses standalone MinGW-w64 i686 + Qt6 built from source
+  # Builds Qt6 + libsodium from source for i686
   # ──────────────────────────────────────────────────────────────────────
   build-windows-x86:
     runs-on: windows-2022
@@ -225,50 +222,68 @@ jobs:
             make
             git
             python
+            autoconf
+            automake
+            libtool
 
       - name: Build libsodium (i686)
         run: |
           git clone --depth 1 https://github.com/jedisct1/libsodium.git /tmp/libsodium
           cd /tmp/libsodium
+          ./autogen.sh
           ./configure --prefix="$MSYS2_PREFIX" --host=i686-w64-mingw32
           make -j$(nproc)
           make install
 
-      - name: Build Qt6 from source (i686) — cached
+      - name: Build Qt6 from source (i686)
         uses: actions/cache@v4
         id: qt-cache
         with:
           path: ${{ runner.temp }}/qt6-i686
-          key: qt6-i686-${{ runner.os }}-${{ hashFiles('.github/workflows/beta-release.yml') }}
+          key: qt6-i686-${{ runner.os }}-20260827
           restore-keys: |
             qt6-i686-${{ runner.os }}-
 
       - name: Download and build Qt6 (i686)
         if: steps.qt-cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
         run: |
           QT_VER=6.6.3
-          QT_URL="https://download.qt.io/official_releases/qt/6.6/${QT_VER}/single/qt-everywhere-src-${QT_VER}.tar.xz"
-          cd /tmp
-          curl -L -o qt-src.tar.xz "$QT_URL"
-          tar xf qt-src.tar.xz
-          cd "qt-everywhere-src-${QT_VER}"
+          QT_SRC="/tmp/qt-everywhere-src-${QT_VER}"
+          QT_PREFIX="$RUNNER_TEMP/qt6-i686"
+
+          curl -L -o /tmp/qt-src.tar.xz \
+            "https://download.qt.io/official_releases/qt/6.6/${QT_VER}/single/qt-everywhere-src-${QT_VER}.tar.xz"
+          cd /tmp && tar xf qt-src.tar.xz
+
+          cd "$QT_SRC"
           ./configure \
-            -prefix "$RUNNER_TEMP/qt6-i686" \
+            -prefix "$QT_PREFIX" \
             -platform win32-g++ \
             -opensource -confirm-license \
             -nomake examples -nomake tests \
             -sql-sqlite -qt-sqlite \
-            -no-openssl
+            -no-openssl \
+            -no-strip
+
           make -j$(nproc)
           make install
 
+      - name: Build SQLiteCpp
+        working-directory: src/sqlitecpp
+        run: |
+          QT_DIR="$RUNNER_TEMP/qt6-i686"
+          export PATH="$QT_DIR/bin:$MSYS2_PREFIX/bin:$PATH"
+          qmake6 sqlitecpp.pro CONFIG+=release
+          make -j$(nproc)
+
       - name: Build ShelfSight
-        working-directory: src
+        working-directory: src/app
         run: |
           QT_DIR="$RUNNER_TEMP/qt6-i686"
           export PATH="$QT_DIR/bin:$MSYS2_PREFIX/bin:$PATH"
           export PKG_CONFIG_PATH="$MSYS2_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
-          qmake6 ShelfSight.pro CONFIG+=release \
+          qmake6 app.pro CONFIG+=release \
             "INCLUDEPATH+=$QT_DIR/include" \
             "LIBS+=-L$QT_DIR/lib"
           make -j$(nproc)
@@ -294,7 +309,7 @@ jobs:
           cp "$MINGW_PREFIX/bin/libstdc++-6.dll" "$OUT/bin/" 2>/dev/null || true
           cp "$MINGW_PREFIX/bin/libwinpthread-1.dll" "$OUT/bin/" 2>/dev/null || true
 
-          # Qt6 DLLs (from custom build)
+          # Qt6 DLLs
           for dll in Qt6Core Qt6Gui Qt6Widgets Qt6Sql; do
             cp "$QT_DIR/bin/lib${dll}.dll" "$OUT/bin/" 2>/dev/null || true
           done
