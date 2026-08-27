@@ -212,7 +212,12 @@ jobs:
             -nomake examples -nomake tests \
             -sql-sqlite -qt-sqlite \
             -no-openssl -no-strip \
-            -release
+            -release \
+            -skip qtopcua -skip qtwayland -skip qtlottie -skip qtquick3d \
+            -skip qtdeclarative -skip qtquickcontrols2 -skip qtquicktimeline \
+            -skip qtshadertools -skip qt3d -skip qtactiveqt -skip qtcharts \
+            -skip qtdatavis3d -skip qtmultimedia -skip qtscxml -skip qtsvg \
+            -skip qtwebengine -skip qtwebview -skip qtlocation
           cmake --build . --parallel $(nproc)
           cmake --install .
 
