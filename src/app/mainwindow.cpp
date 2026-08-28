@@ -193,11 +193,12 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
         database_loans = settings.value(configKey + "/loans").toString();
         qDebug() << "[STARTUP] Loaded default config - books:" << database_books << "readers:" << database_readers << "loans:" << database_loans;
     } else {
-        // No saved config — initialize readers.db at minimum so login works
-        database_books = "";
-        database_readers = "readers.db";
-        database_loans = "";
-        qDebug() << "[STARTUP] No saved config found, using defaults (readers.db)";
+        // No saved config — use binary's directory as default
+        QString appDir = QCoreApplication::applicationDirPath();
+        database_books = appDir + "/books.db";
+        database_readers = appDir + "/readers.db";
+        database_loans = appDir + "/loans.db";
+        qDebug() << "[STARTUP] No saved config found, using app dir:" << appDir;
     }
 
     try {
