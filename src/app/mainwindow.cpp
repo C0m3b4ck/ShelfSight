@@ -12,6 +12,12 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QCloseEvent>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QCheckBox>
+#include <QLabel>
+#include <QPushButton>
 #include <vector>
 #include <random>
 #include <chrono>
@@ -1132,26 +1138,54 @@ void MainWindow::on_btnCreateNewDb_clicked()
 {
     LOG_CLICK("btnCreateNewDb_clicked");
 
-    // Prompt for a name for the new database set
-    bool ok;
-    QString dbName = QInputDialog::getText(this, tr("Create New Database"),
-        tr("Database set name (e.g. 'My Library'):"), QLineEdit::Normal, "", &ok);
-    if (!ok || dbName.isEmpty()) return;
+    QString appDir = QCoreApplication::applicationDirPath();
 
-    // Select directory
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory for New Databases"));
-    if (dir.isEmpty()) return;
+    // Simple dialog: let user pick which databases to create
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Create New Database"));
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
 
-    // Create a subdirectory with the database name
-    QString dbDir = dir + "/" + dbName;
-    QDir().mkpath(dbDir);
+    QLabel *label = new QLabel(tr("Select which databases to create in:\n%1").arg(appDir));
+    layout->addWidget(label);
 
-    QString booksDb = dbDir + "/books.db";
-    QString readersDb = dbDir + "/readers.db";
-    QString loansDb = dbDir + "/loans.db";
-    QString usersDb = dbDir + "/users.db";
+    QCheckBox *chkBooks = new QCheckBox(tr("Books Database (books.db)"));
+    QCheckBox *chkReaders = new QCheckBox(tr("Readers Database (readers.db)"));
+    QCheckBox *chkLoans = new QCheckBox(tr("Loans Database (loans.db)"));
+    chkBooks->setChecked(true);
+    chkReaders->setChecked(true);
+    chkLoans->setChecked(true);
+    layout->addWidget(chkBooks);
+    layout->addWidget(chkReaders);
+    layout->addWidget(chkLoans);
 
-    // Create new databases
+    QPushButton *btnOk = new QPushButton(tr("Create"));
+    QPushButton *btnCancel = new QPushButton(tr("Cancel"));
+    QHBoxLayout *btnLayout = new QHBoxLayout();
+    btnLayout->addWidget(btnOk);
+    btnLayout->addWidget(btnCancel);
+    layout->addLayout(btnLayout);
+
+    connect(btnOk, &QPushButton::clicked, &dialog, &QDialog::accept);
+    connect(btnCancel, &QPushButton::clicked, &dialog, &QDialog::reject);
+
+    if (dialog.exec() != QDialog::Accepted) return;
+
+    if (!chkBooks->isChecked() && !chkReaders->isChecked() && !chkLoans->isChecked()) {
+        QMessageBox::warning(this, tr("NO SELECTION"), tr("Please select at least one database to create"));
+        return;
+    }
+
+    QString booksDb = chkBooks->isChecked() ? appDir + "/books.db" : database_books;
+    QString readersDb = chkReaders->isChecked() ? appDir + "/readers.db" : database_readers;
+    QString loansDb = chkLoans->isChecked() ? appDir + "/loans.db" : database_loans;
+    QString usersDb = appDir + "/users.db";
+
+    // Build list of what was created
+    QStringList created;
+    if (chkBooks->isChecked()) created << "books.db";
+    if (chkReaders->isChecked()) created << "readers.db";
+    if (chkLoans->isChecked()) created << "loans.db";
+
     try {
         m_db.shutdown();
         m_db.initialize(booksDb.toStdString(), readersDb.toStdString(),
@@ -1167,13 +1201,13 @@ void MainWindow::on_btnCreateNewDb_clicked()
 
         // Save as default configuration
         QSettings settings("ShelfSight", "DatabaseConfigs");
-        settings.setValue("config_default/books", booksDb);
-        settings.setValue("config_default/readers", readersDb);
-        settings.setValue("config_default/loans", loansDb);
+        settings.setValue("config_default/books", database_books);
+        settings.setValue("config_default/readers", database_readers);
+        settings.setValue("config_default/loans", database_loans);
         settings.setValue("config_default/users", usersDb);
         settings.setValue("default_is_valid", true);
 
-        // Add to config list
+        // Add "default" to config list
         QStringList configs = settings.value("configs").toStringList();
         if (!configs.contains("default")) {
             configs.append("default");
@@ -1182,7 +1216,8 @@ void MainWindow::on_btnCreateNewDb_clicked()
         loadDbConfigs();
 
         QMessageBox::information(this, tr("SUCCESS"),
-            tr("New database set '%1' created at:\n%2\n\nDefault configuration saved.").arg(dbName, dbDir));
+            tr("Created %1 in:\n%2\n\nDefault configuration saved.")
+                .arg(created.join(", "), appDir));
     } catch (const std::exception& e) {
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to create databases: %1").arg(e.what()));
     }
