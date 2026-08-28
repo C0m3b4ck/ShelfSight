@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "createdatabasedialog.h"
 #include "domain.h"
 #include "businesslogic.h"
 
@@ -1119,49 +1120,37 @@ void MainWindow::on_btnCreateNewDb_clicked()
 {
     LOG_CLICK("btnCreateNewDb_clicked");
 
-    QString appDir = QCoreApplication::applicationDirPath();
+    CreateDatabaseDialog dlg(this);
+    dlg.setDefaultDirectory(QCoreApplication::applicationDirPath());
 
-    // Pick which type of database to create
-    QStringList types;
-    types << tr("Books Database (books.db)")
-          << tr("Readers Database (readers.db)")
-          << tr("Loans Database (loans.db)");
+    if (dlg.exec() != QDialog::Accepted)
+        return;
 
-    bool ok;
-    QString picked = QInputDialog::getItem(this, tr("Create Database"),
-        tr("Select database type to create in:\n%1").arg(appDir), types, 0, false, &ok);
-    if (!ok || picked.isEmpty()) return;
+    QString name = dlg.dbName();
+    QString dir = dlg.directory();
+    QString dbPath = dir + "/" + name;
 
-    QString dbPath;
-    QString dbLabel;
-    if (picked.startsWith("Books")) {
-        dbPath = appDir + "/books.db";
-        dbLabel = "books.db";
-    } else if (picked.startsWith("Readers")) {
-        dbPath = appDir + "/readers.db";
-        dbLabel = "readers.db";
-    } else {
-        dbPath = appDir + "/loans.db";
-        dbLabel = "loans.db";
-    }
-
-    // Check if it already exists
-    if (QFile::exists(dbPath)) {
-        QMessageBox::warning(this, tr("EXISTS"),
-            tr("%1 already exists at:\n%2\n\nCannot overwrite.").arg(dbLabel, dbPath));
+    if (name.isEmpty() || !name.endsWith(".db")) {
+        QMessageBox::warning(this, tr("INVALID NAME"), tr("Database file must end with .db"));
         return;
     }
 
+    if (QFile::exists(dbPath)) {
+        QMessageBox::warning(this, tr("EXISTS"),
+            tr("%1 already exists at:\n%2\n\nCannot overwrite.").arg(name, dbPath));
+        return;
+    }
+
+    QString type = dlg.dbType();
     try {
         m_db.shutdown();
         m_db.initialize(database_books.toStdString(), database_readers.toStdString(),
                         database_loans.toStdString(), "users.db");
 
-        // Update the path for the newly created DB
-        if (picked.startsWith("Books")) {
+        if (type == "books") {
             database_books = dbPath;
             ui->txtBooksDb->setText(dbPath);
-        } else if (picked.startsWith("Readers")) {
+        } else if (type == "readers") {
             database_readers = dbPath;
             ui->txtReadersDb->setText(dbPath);
         } else {
@@ -1170,7 +1159,7 @@ void MainWindow::on_btnCreateNewDb_clicked()
         }
 
         QMessageBox::information(this, tr("SUCCESS"),
-            tr("Created %1 at:\n%2").arg(dbLabel, dbPath));
+            tr("Created %1 at:\n%2").arg(name, dbPath));
     } catch (const std::exception& e) {
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to create database: %1").arg(e.what()));
     }
@@ -1181,19 +1170,35 @@ void MainWindow::on_btnCreateStarterDbs_clicked()
     LOG_CLICK("btnCreateStarterDbs_clicked");
 
     QString appDir = QCoreApplication::applicationDirPath();
-    QString booksPath = appDir + "/books.db";
-    QString readersPath = appDir + "/readers.db";
-    QString loansPath = appDir + "/loans.db";
 
-    // Only create if none exist
-    bool hasAny = QFile::exists(booksPath) || QFile::exists(readersPath) || QFile::exists(loansPath);
-    if (hasAny) {
+    // Check if any starter DBs already exist
+    bool hasBooks = QFile::exists(appDir + "/books.db");
+    bool hasReaders = QFile::exists(appDir + "/readers.db");
+    bool hasLoans = QFile::exists(appDir + "/loans.db");
+
+    if (hasBooks && hasReaders && hasLoans) {
         QMessageBox::information(this, tr("DATABASES EXIST"),
-            tr("At least one database already exists.\nUse 'Create Database' to add individual ones."));
+            tr("All starter databases already exist.\nUse 'Create Database' to add individual ones."));
         return;
     }
 
+    QString missing;
+    if (!hasBooks) missing += tr("- books.db\n");
+    if (!hasReaders) missing += tr("- readers.db\n");
+    if (!hasLoans) missing += tr("- loans.db\n");
+
+    QMessageBox::StandardButton reply = QMessageBox::question(this, tr("CREATE STARTER DATABASES"),
+        tr("The following databases will be created in:\n%1\n\n%2\nContinue?").arg(appDir, missing),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+
+    if (reply != QMessageBox::Yes)
+        return;
+
     try {
+        QString booksPath = appDir + "/books.db";
+        QString readersPath = appDir + "/readers.db";
+        QString loansPath = appDir + "/loans.db";
+
         m_db.shutdown();
         m_db.initialize(booksPath.toStdString(), readersPath.toStdString(),
                         loansPath.toStdString(), "");

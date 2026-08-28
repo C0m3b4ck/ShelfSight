@@ -13,6 +13,7 @@ LIBS += -lsodium
 
 SOURCES += \
     businesslogic.cpp \
+    createdatabasedialog.cpp \
     crypto.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 
 HEADERS += \
     businesslogic.h \
+    createdatabasedialog.h \
     crypto.h \
     dataaccess.h \
     domain.h \
@@ -30,6 +32,7 @@ HEADERS += \
     worklog.h
 
 FORMS += \
+    createdatabasedialog.ui \
     mainwindow.ui
 
 # Default rules for deployment.
