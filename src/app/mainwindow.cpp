@@ -186,11 +186,13 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
     // Load saved default config if available
     QSettings settings("ShelfSight", "DatabaseConfigs");
     bool hasDefault = settings.value("default_is_valid", false).toBool();
+    QString usersDb = "users.db";
     if (hasDefault) {
         QString configKey = "config_default";
         database_books = settings.value(configKey + "/books").toString();
         database_readers = settings.value(configKey + "/readers").toString();
         database_loans = settings.value(configKey + "/loans").toString();
+        usersDb = settings.value(configKey + "/users", "users.db").toString();
         qDebug() << "[STARTUP] Loaded default config - books:" << database_books << "readers:" << database_readers << "loans:" << database_loans;
     } else {
         // No saved config — initialize readers.db at minimum so login works
@@ -201,7 +203,7 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
     }
 
     try {
-        m_db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString(), "users.db");
+        m_db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString(), usersDb.toStdString());
     } catch (const std::exception& e) {
         qDebug() << "[STARTUP] DB init failed:" << e.what();
     }
@@ -961,9 +963,20 @@ void MainWindow::on_btnLoadDbConfig_clicked()
     database_readers = ui->txtReadersDb->text();
     database_loans = ui->txtLoansDb->text();
 
+    // Load users.db from config, falling back to same directory as readers.db
+    QString configName = ui->cboDbConfigs->currentText();
+    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QString configKey = "config_" + configName;
+    QString usersDb = settings.value(configKey + "/users", "").toString();
+    if (usersDb.isEmpty() && !database_readers.isEmpty()) {
+        QFileInfo readerInfo(database_readers);
+        usersDb = readerInfo.absolutePath() + "/users.db";
+    }
+
     // Initialize data access with new databases
     try {
-        m_db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString(), "users.db");
+        m_db.initialize(database_books.toStdString(), database_readers.toStdString(),
+                        database_loans.toStdString(), usersDb.toStdString());
         QMessageBox::information(this, tr("SUCCESS"), tr("Database configuration loaded successfully"));
     } catch (const std::exception& e) {
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to initialize databases: %1").arg(e.what()));
@@ -1018,6 +1031,9 @@ void MainWindow::on_btnSaveAsDefault_clicked()
     settings.setValue(configKey + "/books", booksDb);
     settings.setValue(configKey + "/readers", readersDb);
     settings.setValue(configKey + "/loans", loansDb);
+    // Save users.db in same directory as readers.db
+    QFileInfo readerInfo(readersDb);
+    settings.setValue(configKey + "/users", readerInfo.absolutePath() + "/users.db");
     settings.setValue("default_is_valid", true);
 
     // Add "default" to config list so it appears in the combo box
@@ -1061,6 +1077,9 @@ void MainWindow::on_btnSaveCustomConfig_clicked()
     settings.setValue(configKey + "/books", booksDb);
     settings.setValue(configKey + "/readers", readersDb);
     settings.setValue(configKey + "/loans", loansDb);
+    // Save users.db in same directory as readers.db
+    QFileInfo readerInfo(readersDb);
+    settings.setValue(configKey + "/users", readerInfo.absolutePath() + "/users.db");
 
     // Add to config list
     QStringList configs = settings.value("configs").toStringList();
@@ -1093,8 +1112,12 @@ void MainWindow::on_btnTestConnection_clicked()
         return;
     }
 
+    // Derive users.db path from readers.db directory
+    QFileInfo readerInfo(readersDb);
+    QString usersDb = readerInfo.absolutePath() + "/users.db";
+
     try {
-        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString(), "users.db");
+        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString(), usersDb.toStdString());
         if (m_db.isConnected()) {
             QMessageBox::information(this, tr("SUCCESS"), tr("Connection test successful! All databases are accessible."));
         } else {
