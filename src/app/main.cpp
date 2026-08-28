@@ -27,5 +27,7 @@ int main(int argc, char *argv[])
     auto& db = DataAccess::SQLiteDataAccess::instance();
     MainWindow w(db);
     w.show();
+    w.raise();
+    w.activateWindow();
     return QApplication::exec();
 }
