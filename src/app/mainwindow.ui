@@ -6899,8 +6899,9 @@
      <property name="title">
       <string>Databases</string>
      </property>
-     <addaction name="actionDatabase_Selection"/>
-     <widget class="QMenu" name="menuBackup">
+      <addaction name="actionDatabase_Selection"/>
+      <addaction name="actionCreate_Database"/>
+      <widget class="QMenu" name="menuBackup">
      <property name="title">
       <string>Backup</string>
      </property>
@@ -7015,6 +7016,11 @@
   <action name="actionDatabase_Selection">
    <property name="text">
     <string>Database Selection</string>
+   </property>
+  </action>
+  <action name="actionCreate_Database">
+   <property name="text">
+    <string>Create Database</string>
    </property>
   </action>
   <action name="actionMake_Report">

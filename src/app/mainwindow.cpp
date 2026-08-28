@@ -917,6 +917,13 @@ void MainWindow::on_actionDatabase_Selection_triggered()
     ui->workspaces->setCurrentIndex(16); // page_17 (Database Selection)
 }
 
+void MainWindow::on_actionCreate_Database_triggered()
+{
+    LOG_CLICK("actionCreate_Database_triggered");
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin, false)) return;
+    on_btnCreateNewDb_clicked();
+}
+
 void MainWindow::loadDbConfigs()
 {
     ui->cboDbConfigs->clear();
