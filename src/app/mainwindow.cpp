@@ -12,12 +12,6 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QCloseEvent>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QCheckBox>
-#include <QLabel>
-#include <QPushButton>
 #include <vector>
 #include <random>
 #include <chrono>
@@ -192,13 +186,11 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
     // Load saved default config if available
     QSettings settings("ShelfSight", "DatabaseConfigs");
     bool hasDefault = settings.value("default_is_valid", false).toBool();
-    QString usersDb = "users.db";
     if (hasDefault) {
         QString configKey = "config_default";
         database_books = settings.value(configKey + "/books").toString();
         database_readers = settings.value(configKey + "/readers").toString();
         database_loans = settings.value(configKey + "/loans").toString();
-        usersDb = settings.value(configKey + "/users", "users.db").toString();
         qDebug() << "[STARTUP] Loaded default config - books:" << database_books << "readers:" << database_readers << "loans:" << database_loans;
     } else {
         // No saved config — initialize readers.db at minimum so login works
@@ -209,7 +201,7 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
     }
 
     try {
-        m_db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString(), usersDb.toStdString());
+        m_db.initialize(database_books.toStdString(), database_readers.toStdString(), database_loans.toStdString(), "users.db");
     } catch (const std::exception& e) {
         qDebug() << "[STARTUP] DB init failed:" << e.what();
     }
@@ -969,20 +961,10 @@ void MainWindow::on_btnLoadDbConfig_clicked()
     database_readers = ui->txtReadersDb->text();
     database_loans = ui->txtLoansDb->text();
 
-    // Load users.db from config, falling back to same directory as readers.db
-    QString configName = ui->cboDbConfigs->currentText();
-    QSettings settings("ShelfSight", "DatabaseConfigs");
-    QString configKey = "config_" + configName;
-    QString usersDb = settings.value(configKey + "/users", "").toString();
-    if (usersDb.isEmpty() && !database_readers.isEmpty()) {
-        QFileInfo readerInfo(database_readers);
-        usersDb = readerInfo.absolutePath() + "/users.db";
-    }
-
     // Initialize data access with new databases
     try {
         m_db.initialize(database_books.toStdString(), database_readers.toStdString(),
-                        database_loans.toStdString(), usersDb.toStdString());
+                        database_loans.toStdString(), "users.db");
         QMessageBox::information(this, tr("SUCCESS"), tr("Database configuration loaded successfully"));
     } catch (const std::exception& e) {
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to initialize databases: %1").arg(e.what()));
@@ -1037,9 +1019,6 @@ void MainWindow::on_btnSaveAsDefault_clicked()
     settings.setValue(configKey + "/books", booksDb);
     settings.setValue(configKey + "/readers", readersDb);
     settings.setValue(configKey + "/loans", loansDb);
-    // Save users.db in same directory as readers.db
-    QFileInfo readerInfo(readersDb);
-    settings.setValue(configKey + "/users", readerInfo.absolutePath() + "/users.db");
     settings.setValue("default_is_valid", true);
 
     // Add "default" to config list so it appears in the combo box
@@ -1083,9 +1062,6 @@ void MainWindow::on_btnSaveCustomConfig_clicked()
     settings.setValue(configKey + "/books", booksDb);
     settings.setValue(configKey + "/readers", readersDb);
     settings.setValue(configKey + "/loans", loansDb);
-    // Save users.db in same directory as readers.db
-    QFileInfo readerInfo(readersDb);
-    settings.setValue(configKey + "/users", readerInfo.absolutePath() + "/users.db");
 
     // Add to config list
     QStringList configs = settings.value("configs").toStringList();
@@ -1119,11 +1095,8 @@ void MainWindow::on_btnTestConnection_clicked()
     }
 
     // Derive users.db path from readers.db directory
-    QFileInfo readerInfo(readersDb);
-    QString usersDb = readerInfo.absolutePath() + "/users.db";
-
     try {
-        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString(), usersDb.toStdString());
+        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString(), "users.db");
         if (m_db.isConnected()) {
             QMessageBox::information(this, tr("SUCCESS"), tr("Connection test successful! All databases are accessible."));
         } else {
@@ -1140,74 +1113,98 @@ void MainWindow::on_btnCreateNewDb_clicked()
 
     QString appDir = QCoreApplication::applicationDirPath();
 
-    // Simple dialog: let user pick which databases to create
-    QDialog dialog(this);
-    dialog.setWindowTitle(tr("Create New Database"));
-    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    // Pick which type of database to create
+    QStringList types;
+    types << tr("Books Database (books.db)")
+          << tr("Readers Database (readers.db)")
+          << tr("Loans Database (loans.db)");
 
-    QLabel *label = new QLabel(tr("Select which databases to create in:\n%1").arg(appDir));
-    layout->addWidget(label);
+    bool ok;
+    QString picked = QInputDialog::getItem(this, tr("Create Database"),
+        tr("Select database type to create in:\n%1").arg(appDir), types, 0, false, &ok);
+    if (!ok || picked.isEmpty()) return;
 
-    QCheckBox *chkBooks = new QCheckBox(tr("Books Database (books.db)"));
-    QCheckBox *chkReaders = new QCheckBox(tr("Readers Database (readers.db)"));
-    QCheckBox *chkLoans = new QCheckBox(tr("Loans Database (loans.db)"));
-    chkBooks->setChecked(true);
-    chkReaders->setChecked(true);
-    chkLoans->setChecked(true);
-    layout->addWidget(chkBooks);
-    layout->addWidget(chkReaders);
-    layout->addWidget(chkLoans);
+    QString dbPath;
+    QString dbLabel;
+    if (picked.startsWith("Books")) {
+        dbPath = appDir + "/books.db";
+        dbLabel = "books.db";
+    } else if (picked.startsWith("Readers")) {
+        dbPath = appDir + "/readers.db";
+        dbLabel = "readers.db";
+    } else {
+        dbPath = appDir + "/loans.db";
+        dbLabel = "loans.db";
+    }
 
-    QPushButton *btnOk = new QPushButton(tr("Create"));
-    QPushButton *btnCancel = new QPushButton(tr("Cancel"));
-    QHBoxLayout *btnLayout = new QHBoxLayout();
-    btnLayout->addWidget(btnOk);
-    btnLayout->addWidget(btnCancel);
-    layout->addLayout(btnLayout);
-
-    connect(btnOk, &QPushButton::clicked, &dialog, &QDialog::accept);
-    connect(btnCancel, &QPushButton::clicked, &dialog, &QDialog::reject);
-
-    if (dialog.exec() != QDialog::Accepted) return;
-
-    if (!chkBooks->isChecked() && !chkReaders->isChecked() && !chkLoans->isChecked()) {
-        QMessageBox::warning(this, tr("NO SELECTION"), tr("Please select at least one database to create"));
+    // Check if it already exists
+    if (QFile::exists(dbPath)) {
+        QMessageBox::warning(this, tr("EXISTS"),
+            tr("%1 already exists at:\n%2\n\nCannot overwrite.").arg(dbLabel, dbPath));
         return;
     }
 
-    QString booksDb = chkBooks->isChecked() ? appDir + "/books.db" : database_books;
-    QString readersDb = chkReaders->isChecked() ? appDir + "/readers.db" : database_readers;
-    QString loansDb = chkLoans->isChecked() ? appDir + "/loans.db" : database_loans;
-    QString usersDb = appDir + "/users.db";
+    try {
+        m_db.shutdown();
+        m_db.initialize(database_books.toStdString(), database_readers.toStdString(),
+                        database_loans.toStdString(), "users.db");
 
-    // Build list of what was created
-    QStringList created;
-    if (chkBooks->isChecked()) created << "books.db";
-    if (chkReaders->isChecked()) created << "readers.db";
-    if (chkLoans->isChecked()) created << "loans.db";
+        // Update the path for the newly created DB
+        if (picked.startsWith("Books")) {
+            database_books = dbPath;
+            ui->txtBooksDb->setText(dbPath);
+        } else if (picked.startsWith("Readers")) {
+            database_readers = dbPath;
+            ui->txtReadersDb->setText(dbPath);
+        } else {
+            database_loans = dbPath;
+            ui->txtLoansDb->setText(dbPath);
+        }
+
+        QMessageBox::information(this, tr("SUCCESS"),
+            tr("Created %1 at:\n%2").arg(dbLabel, dbPath));
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to create database: %1").arg(e.what()));
+    }
+}
+
+void MainWindow::on_btnCreateStarterDbs_clicked()
+{
+    LOG_CLICK("btnCreateStarterDbs_clicked");
+
+    QString appDir = QCoreApplication::applicationDirPath();
+    QString booksPath = appDir + "/books.db";
+    QString readersPath = appDir + "/readers.db";
+    QString loansPath = appDir + "/loans.db";
+
+    // Only create if none exist
+    bool hasAny = QFile::exists(booksPath) || QFile::exists(readersPath) || QFile::exists(loansPath);
+    if (hasAny) {
+        QMessageBox::information(this, tr("DATABASES EXIST"),
+            tr("At least one database already exists.\nUse 'Create Database' to add individual ones."));
+        return;
+    }
 
     try {
         m_db.shutdown();
-        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(),
-                        loansDb.toStdString(), usersDb.toStdString());
+        m_db.initialize(booksPath.toStdString(), readersPath.toStdString(),
+                        loansPath.toStdString(), "");
 
-        database_books = booksDb;
-        database_readers = readersDb;
-        database_loans = loansDb;
+        database_books = booksPath;
+        database_readers = readersPath;
+        database_loans = loansPath;
 
-        ui->txtBooksDb->setText(booksDb);
-        ui->txtReadersDb->setText(readersDb);
-        ui->txtLoansDb->setText(loansDb);
+        ui->txtBooksDb->setText(booksPath);
+        ui->txtReadersDb->setText(readersPath);
+        ui->txtLoansDb->setText(loansPath);
 
         // Save as default configuration
         QSettings settings("ShelfSight", "DatabaseConfigs");
-        settings.setValue("config_default/books", database_books);
-        settings.setValue("config_default/readers", database_readers);
-        settings.setValue("config_default/loans", database_loans);
-        settings.setValue("config_default/users", usersDb);
+        settings.setValue("config_default/books", booksPath);
+        settings.setValue("config_default/readers", readersPath);
+        settings.setValue("config_default/loans", loansPath);
         settings.setValue("default_is_valid", true);
 
-        // Add "default" to config list
         QStringList configs = settings.value("configs").toStringList();
         if (!configs.contains("default")) {
             configs.append("default");
@@ -1216,8 +1213,7 @@ void MainWindow::on_btnCreateNewDb_clicked()
         loadDbConfigs();
 
         QMessageBox::information(this, tr("SUCCESS"),
-            tr("Created %1 in:\n%2\n\nDefault configuration saved.")
-                .arg(created.join(", "), appDir));
+            tr("Starter databases created at:\n%1\n\nDefault configuration saved.").arg(appDir));
     } catch (const std::exception& e) {
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to create databases: %1").arg(e.what()));
     }

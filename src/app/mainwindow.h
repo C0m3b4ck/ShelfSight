@@ -182,6 +182,7 @@ private slots:
     void on_btnSaveCustomConfig_clicked();
     void on_btnTestConnection_clicked();
     void on_btnCreateNewDb_clicked();
+    void on_btnCreateStarterDbs_clicked();
     void on_btnDeleteConfig_clicked();
     void on_lstSavedConfigs_itemDoubleClicked(QListWidgetItem *item);
 

@@ -5634,7 +5634,26 @@
        </font>
       </property>
       <property name="text">
-       <string>Create New DB</string>
+       <string>Create DB</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCreateStarterDbs">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>230</y>
+        <width>161</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Create Starter DBs</string>
       </property>
      </widget>
      <widget class="QPushButton" name="btnDeleteConfig">
