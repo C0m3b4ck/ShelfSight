@@ -184,7 +184,7 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
     }
 
     // Load saved default config if available
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     bool hasDefault = settings.value("default_is_valid", false).toBool();
     if (hasDefault) {
         QString configKey = "config_default";
@@ -209,7 +209,7 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
 
     // Initialize telemetry from settings
     {
-        QSettings settings("ShelfSight", "DatabaseConfigs");
+        QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
         bool telemetryEnabled = settings.value("telemetry/enabled", false).toBool();
         ui->chkTelemetry->setChecked(telemetryEnabled);
         AppLogger::instance().setTelemetryEnabled(telemetryEnabled);
@@ -224,7 +224,7 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
 
     // Initialize worklog from settings
     {
-        QSettings settings("ShelfSight", "DatabaseConfigs");
+        QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
         bool worklogEnabled = settings.value("worklog/enabled", false).toBool();
         ui->chkWorklog->setChecked(worklogEnabled);
         m_worklog.setEnabled(worklogEnabled);
@@ -923,7 +923,7 @@ void MainWindow::loadDbConfigs()
     ui->lstSavedConfigs->clear();
 
     // Load from QSettings
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     QStringList configs = settings.value("configs").toStringList();
 
     for (const QString& config : configs) {
@@ -938,7 +938,7 @@ void MainWindow::on_cboDbConfigs_currentIndexChanged(int index)
     if (index < 0) return;
 
     QString configName = ui->cboDbConfigs->itemText(index);
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     QString configKey = "config_" + configName;
 
     ui->txtBooksDb->setText(settings.value(configKey + "/books").toString());
@@ -1015,7 +1015,7 @@ void MainWindow::on_btnSaveAsDefault_clicked()
     }
 
     // Save as default configuration
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     QString configKey = "config_default";
     settings.setValue(configKey + "/books", booksDb);
     settings.setValue(configKey + "/readers", readersDb);
@@ -1057,7 +1057,7 @@ void MainWindow::on_btnSaveCustomConfig_clicked()
     QString configName = QInputDialog::getText(this, tr("Save Configuration"), tr("Configuration name:"), QLineEdit::Normal, "", &ok);
     if (!ok || configName.isEmpty()) return;
 
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     QString configKey = "config_" + configName;
 
     settings.setValue(configKey + "/books", booksDb);
@@ -1200,7 +1200,7 @@ void MainWindow::on_btnCreateStarterDbs_clicked()
         ui->txtLoansDb->setText(loansPath);
 
         // Save as default configuration
-        QSettings settings("ShelfSight", "DatabaseConfigs");
+        QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
         settings.setValue("config_default/books", booksPath);
         settings.setValue("config_default/readers", readersPath);
         settings.setValue("config_default/loans", loansPath);
@@ -1244,7 +1244,7 @@ void MainWindow::on_btnDeleteConfig_clicked()
 
     if (box.exec() == QMessageBox::Yes) {
         QString configKey = "config_" + configName;
-        QSettings settings("ShelfSight", "DatabaseConfigs");
+        QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
 
         settings.remove(configKey + "/books");
         settings.remove(configKey + "/readers");
@@ -1263,7 +1263,7 @@ void MainWindow::on_btnDeleteConfig_clicked()
 void MainWindow::on_chkTelemetry_toggled(bool checked)
 {
     LOG_CLICK("chkTelemetry_toggled");
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     settings.setValue("telemetry/enabled", checked);
     AppLogger::instance().setTelemetryEnabled(checked);
 
@@ -4052,7 +4052,7 @@ void MainWindow::on_actionBackups_triggered()
         return;
     }
 
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     ui->chkAutoBackup->setChecked(settings.value("backup/auto", false).toBool());
     ui->txtBackupDir->setText(settings.value("backup/dir", "").toString());
 
@@ -4155,7 +4155,7 @@ void MainWindow::on_actionPreferences_triggered()
 {
     LOG_CLICK("actionPreferences_triggered");
 
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     ui->chkDarkMode->setChecked(settings.value("prefs/darkMode", false).toBool());
     ui->chkShowWelcome->setChecked(settings.value("prefs/showWelcome", true).toBool());
     ui->chkConfirmActions->setChecked(settings.value("prefs/confirmActions", true).toBool());
@@ -4177,7 +4177,7 @@ void MainWindow::on_actionPreferences_triggered()
 void MainWindow::on_btnSavePreferences_clicked()
 {
     LOG_CLICK("btnSavePreferences_clicked");
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     settings.setValue("prefs/darkMode", ui->chkDarkMode->isChecked());
     settings.setValue("prefs/showWelcome", ui->chkShowWelcome->isChecked());
     settings.setValue("prefs/confirmActions", ui->chkConfirmActions->isChecked());
@@ -4200,7 +4200,7 @@ void MainWindow::on_btnResetPreferences_clicked()
 void MainWindow::on_chkWorklog_toggled(bool checked)
 {
     LOG_CLICK("chkWorklog_toggled");
-    QSettings settings("ShelfSight", "DatabaseConfigs");
+    QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     settings.setValue("worklog/enabled", checked);
     m_worklog.setEnabled(checked);
 
