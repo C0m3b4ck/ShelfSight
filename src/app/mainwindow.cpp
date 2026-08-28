@@ -1108,17 +1108,31 @@ void MainWindow::on_btnTestConnection_clicked()
 void MainWindow::on_btnCreateNewDb_clicked()
 {
     LOG_CLICK("btnCreateNewDb_clicked");
+
+    // Prompt for a name for the new database set
+    bool ok;
+    QString dbName = QInputDialog::getText(this, tr("Create New Database"),
+        tr("Database set name (e.g. 'My Library'):"), QLineEdit::Normal, "", &ok);
+    if (!ok || dbName.isEmpty()) return;
+
+    // Select directory
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory for New Databases"));
     if (dir.isEmpty()) return;
 
-    QString booksDb = dir + "/books.db";
-    QString readersDb = dir + "/readers.db";
-    QString loansDb = dir + "/loans.db";
+    // Create a subdirectory with the database name
+    QString dbDir = dir + "/" + dbName;
+    QDir().mkpath(dbDir);
+
+    QString booksDb = dbDir + "/books.db";
+    QString readersDb = dbDir + "/readers.db";
+    QString loansDb = dbDir + "/loans.db";
+    QString usersDb = dbDir + "/users.db";
 
     // Create new databases
     try {
         m_db.shutdown();
-        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(), loansDb.toStdString(), "users.db");
+        m_db.initialize(booksDb.toStdString(), readersDb.toStdString(),
+                        loansDb.toStdString(), usersDb.toStdString());
 
         database_books = booksDb;
         database_readers = readersDb;
@@ -1128,7 +1142,24 @@ void MainWindow::on_btnCreateNewDb_clicked()
         ui->txtReadersDb->setText(readersDb);
         ui->txtLoansDb->setText(loansDb);
 
-        QMessageBox::information(this, tr("SUCCESS"), tr("New databases created at:\n%1").arg(dir));
+        // Save as default configuration
+        QSettings settings("ShelfSight", "DatabaseConfigs");
+        settings.setValue("config_default/books", booksDb);
+        settings.setValue("config_default/readers", readersDb);
+        settings.setValue("config_default/loans", loansDb);
+        settings.setValue("config_default/users", usersDb);
+        settings.setValue("default_is_valid", true);
+
+        // Add to config list
+        QStringList configs = settings.value("configs").toStringList();
+        if (!configs.contains("default")) {
+            configs.append("default");
+            settings.setValue("configs", configs);
+        }
+        loadDbConfigs();
+
+        QMessageBox::information(this, tr("SUCCESS"),
+            tr("New database set '%1' created at:\n%2\n\nDefault configuration saved.").arg(dbName, dbDir));
     } catch (const std::exception& e) {
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to create databases: %1").arg(e.what()));
     }
