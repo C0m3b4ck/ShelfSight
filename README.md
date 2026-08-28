@@ -71,7 +71,7 @@ A Flatpak manifest is included at `flatpak/com.github.C0m3b4ck.ShelfSight.yml`.
 
 <img src="badges/95.svg" alt="Windows 95" width="64" /><img src="badges/98.webp" alt="Windows 98" width="64" /><img src="badges/me.svg" alt="Windows ME" width="64" /><img src="badges/nt4.svg" alt="Windows NT 4.0" width="64" /><img src="badges/2000professional.svg" alt="Windows 2000 Professional" width="64" /><img src="badges/2000server.svg" alt="Windows 2000 Server" width="64" /><img src="badges/xp.svg" alt="Windows XP" width="64" /><img src="badges/vista.svg" alt="Windows Vista" width="64" /><img src="badges/server2012.svg" alt="Windows Server 2012" width="64" /><img src="badges/7.svg" alt="Windows 7" width="64" /><img src="badges/8.svg" alt="Windows 8" width="64" /><img src="badges/10.svg" alt="Windows 10" width="64" /><img src="badges/11.svg" alt="Windows 11" width="64" /><img src="badges/linux.webp" alt="Linux" width="64" /><img src="badges/macos.png" alt="MacOS" width="64" />
 
-The badges are meant to represent compatibility. Badges with the word "certified" ARE A VISUAL REPRESENTATION ONLY. This project is not endorsed nor certified by Microsoft.
+The badges are meant to represent compatibility. Badges with the word "certified", "developed for" or other ARE A VISUAL REPRESENTATION ONLY. This project is not endorsed nor certified by Microsoft.
 Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
 ## Build
