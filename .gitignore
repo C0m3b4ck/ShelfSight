@@ -62,3 +62,8 @@ GNUmakefile-cross
 Doxyfile
 vs2005.zip
 CMakeUserPresets.json
+
+# Flatpak build
+.flatpak-builder
+build-dir
+repo
