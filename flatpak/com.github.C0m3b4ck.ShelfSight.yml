@@ -14,18 +14,21 @@ modules:
     sources:
       - type: archive
         url: https://github.com/jedisct1/libsodium/releases/download/1.0.20-RELEASE/libsodium-1.0.20.tar.gz
-        sha256: e86be563dde0d0254309470b3df62655c517a558271e0f6ecb6682f71f639a78
+        sha256: ebb65ef6ca439333c2bb41a0c1990587288da07f6c7fd07cb3a18cc18d30ce19
   - name: sqlitecpp
     buildsystem: qmake
     config-opts:
       - CONFIG+=release
     sources:
       - type: dir
-        path: src/sqlitecpp
+        path: ../src/sqlitecpp
   - name: shelvesight
-    buildsystem: qmake
-    config-opts:
-      - CONFIG+=release
+    buildsystem: simple
+    build-commands:
+      - sed -i 's|target.path = /opt/$${TARGET}/bin|target.path = /bin|' app.pro
+      - qmake6 app.pro CONFIG+=release
+      - make -j$FLATPAK_BUILDER_N_JOBS
+      - make INSTALL_ROOT=$FLATPAK_DEST install
     sources:
       - type: dir
-        path: src/app
+        path: ../src/app
