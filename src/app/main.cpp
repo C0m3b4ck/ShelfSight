@@ -3,7 +3,17 @@
 #include "logger.h"
 #include <QApplication>
 #include <QDateTime>
+#include <QtPlugin>
 #include <cstdlib>
+
+#ifdef QT_STATICPLUGIN
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+Q_IMPORT_PLUGIN(QSQLiteDriverPlugin)
+Q_IMPORT_PLUGIN(QGifPlugin)
+Q_IMPORT_PLUGIN(QICOPlugin)
+Q_IMPORT_PLUGIN(QJpegPlugin)
+Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin)
+#endif
 
 static void cleanupLogger() {
     AppLogger::instance().close();
