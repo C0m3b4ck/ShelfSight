@@ -45,6 +45,7 @@ struct Book {
     std::string id;
     std::string title;
     std::string author;
+    std::string isbn;
     std::string location;
     std::string category;
     std::string status;
@@ -56,7 +57,7 @@ struct Book {
     }
 
     std::string toDisplayString() const {
-        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + id;
+        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + id + " | ISBN: " + isbn;
     }
 };
 
@@ -160,6 +161,7 @@ struct BookDTO {
     std::string id;
     std::string title;
     std::string author;
+    std::string isbn;
     std::string location;
     std::string category;
     std::string status;
@@ -171,7 +173,7 @@ struct BookDTO {
     }
 
     std::string toDisplayString() const {
-        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + id;
+        return title + " | " + author + " | " + location + " | " + category + " | " + status + " | ID: " + id + " | ISBN: " + isbn;
     }
 
     Domain::Book toDomain() const {
@@ -179,6 +181,7 @@ struct BookDTO {
         book.id = id;
         book.title = title;
         book.author = author;
+        book.isbn = isbn;
         book.location = location;
         book.category = category;
         book.status = status;
@@ -192,6 +195,7 @@ struct BookDTO {
         dto.id = book.id;
         dto.title = book.title;
         dto.author = book.author;
+        dto.isbn = book.isbn;
         dto.location = book.location;
         dto.category = book.category;
         dto.status = book.status;

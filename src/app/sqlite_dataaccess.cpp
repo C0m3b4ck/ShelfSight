@@ -75,6 +75,7 @@ void SQLiteDataAccess::createTables()
             "id TEXT PRIMARY KEY,"
             "title TEXT NOT NULL,"
             "author TEXT NOT NULL,"
+            "isbn TEXT DEFAULT '',"
             "location TEXT NOT NULL,"
             "category TEXT NOT NULL,"
             "status TEXT NOT NULL DEFAULT 'Available',"
@@ -90,6 +91,7 @@ void SQLiteDataAccess::createTables()
             "id TEXT PRIMARY KEY,"
             "title TEXT NOT NULL,"
             "author TEXT NOT NULL,"
+            "isbn TEXT DEFAULT '',"
             "location TEXT NOT NULL,"
             "category TEXT NOT NULL,"
             "status TEXT NOT NULL,"
@@ -215,11 +217,12 @@ Domain::Book SQLiteDataAccess::rowToBook(const SQLite::Statement& stmt)
     book.id = stmt.getColumn(0).getText();
     book.title = stmt.getColumn(1).getText();
     book.author = stmt.getColumn(2).getText();
-    book.location = stmt.getColumn(3).getText();
-    book.category = stmt.getColumn(4).getText();
-    book.status = stmt.getColumn(5).getText();
-    book.createdAt = stringToDateTime(stmt.getColumn(6).getText());
-    book.updatedAt = stringToDateTime(stmt.getColumn(7).getText());
+    book.isbn = stmt.getColumn(3).getText();
+    book.location = stmt.getColumn(4).getText();
+    book.category = stmt.getColumn(5).getText();
+    book.status = stmt.getColumn(6).getText();
+    book.createdAt = stringToDateTime(stmt.getColumn(7).getText());
+    book.updatedAt = stringToDateTime(stmt.getColumn(8).getText());
     return book;
 }
 
@@ -296,7 +299,7 @@ std::vector<Domain::Book> SQLiteDataAccess::getAllBooks()
     std::vector<Domain::Book> books;
     if (!m_booksDb) return books;
 
-    SQLite::Statement query(*m_booksDb, "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE deleted = 0 ORDER BY title");
+    SQLite::Statement query(*m_booksDb, "SELECT id, title, author, isbn, location, category, status, createdAt, updatedAt FROM books WHERE deleted = 0 ORDER BY title");
     while (query.executeStep()) {
         books.push_back(rowToBook(query));
     }
@@ -307,7 +310,7 @@ std::optional<Domain::Book> SQLiteDataAccess::getBookById(const std::string& id)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (!m_booksDb) return std::nullopt;
-    SQLite::Statement query(*m_booksDb, "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE id = ? AND deleted = 0");
+    SQLite::Statement query(*m_booksDb, "SELECT id, title, author, isbn, location, category, status, createdAt, updatedAt FROM books WHERE id = ? AND deleted = 0");
     query.bind(1, id);
     if (query.executeStep()) {
         return rowToBook(query);
@@ -321,13 +324,15 @@ std::vector<Domain::Book> SQLiteDataAccess::searchBooks(const std::string& term,
     std::vector<Domain::Book> books;
     if (!m_booksDb) return books;
 
-    std::string sql = "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE deleted = 0";
+    std::string sql = "SELECT id, title, author, isbn, location, category, status, createdAt, updatedAt FROM books WHERE deleted = 0";
     if (field == "title") {
         sql += " AND title LIKE ?";
     } else if (field == "author") {
         sql += " AND author LIKE ?";
     } else if (field == "id") {
         sql += " AND CAST(id AS TEXT) LIKE ?";
+    } else if (field == "isbn") {
+        sql += " AND isbn LIKE ?";
     } else if (field == "location") {
         sql += " AND location LIKE ?";
     } else if (field == "category") {
@@ -335,17 +340,17 @@ std::vector<Domain::Book> SQLiteDataAccess::searchBooks(const std::string& term,
     } else if (field == "status") {
         sql += " AND status LIKE ?";
     } else {
-        sql += " AND (title LIKE ? OR author LIKE ? OR location LIKE ? OR category LIKE ? OR status LIKE ? OR CAST(id AS TEXT) LIKE ?)";
+        sql += " AND (title LIKE ? OR author LIKE ? OR isbn LIKE ? OR location LIKE ? OR category LIKE ? OR status LIKE ? OR CAST(id AS TEXT) LIKE ?)";
     }
     sql += " ORDER BY title";
 
     SQLite::Statement query(*m_booksDb, sql);
     std::string pattern = "%" + term + "%";
 
-    if (field == "title" || field == "author" || field == "id" || field == "location" || field == "category" || field == "status") {
+    if (field == "title" || field == "author" || field == "id" || field == "isbn" || field == "location" || field == "category" || field == "status") {
         query.bind(1, pattern);
     } else {
-        for (int i = 1; i <= 6; ++i) {
+        for (int i = 1; i <= 7; ++i) {
             query.bind(i, pattern);
         }
     }
@@ -363,16 +368,17 @@ bool SQLiteDataAccess::addBook(const Domain::Book& book)
     try {
         SQLite::Transaction transaction(*m_booksDb);
         SQLite::Statement query(*m_booksDb,
-            "INSERT INTO books (id, title, author, location, category, status, createdAt, updatedAt, deleted) "
+            "INSERT INTO books (id, title, author, isbn, location, category, status, createdAt, updatedAt, deleted) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)");
         query.bind(1, book.id);
         query.bind(2, book.title);
         query.bind(3, book.author);
-        query.bind(4, book.location);
-        query.bind(5, book.category);
-        query.bind(6, book.status);
-        query.bind(7, dateTimeToString(book.createdAt));
-        query.bind(8, dateTimeToString(book.updatedAt));
+        query.bind(4, book.isbn);
+        query.bind(5, book.location);
+        query.bind(6, book.category);
+        query.bind(7, book.status);
+        query.bind(8, dateTimeToString(book.createdAt));
+        query.bind(9, dateTimeToString(book.updatedAt));
         query.exec();
         transaction.commit();
         return true;
@@ -389,14 +395,15 @@ bool SQLiteDataAccess::updateBook(const Domain::Book& book)
     try {
         SQLite::Transaction transaction(*m_booksDb);
         SQLite::Statement query(*m_booksDb,
-            "UPDATE books SET title = ?, author = ?, location = ?, category = ?, status = ?, updatedAt = ? WHERE id = ? AND deleted = 0");
+            "UPDATE books SET title = ?, author = ?, isbn = ?, location = ?, category = ?, status = ?, updatedAt = ? WHERE id = ? AND deleted = 0");
         query.bind(1, book.title);
         query.bind(2, book.author);
-        query.bind(3, book.location);
-        query.bind(4, book.category);
-        query.bind(5, book.status);
-        query.bind(6, dateTimeToString(book.updatedAt));
-        query.bind(7, book.id);
+        query.bind(3, book.isbn);
+        query.bind(4, book.location);
+        query.bind(5, book.category);
+        query.bind(6, book.status);
+        query.bind(7, dateTimeToString(book.updatedAt));
+        query.bind(8, book.id);
         int rows = query.exec();
         transaction.commit();
         return rows > 0;
@@ -415,7 +422,7 @@ bool SQLiteDataAccess::removeBook(const std::string& id)
 
         // First, get the book data for undo
         SQLite::Statement selectQuery(*m_booksDb,
-            "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM books WHERE id = ? AND deleted = 0");
+            "SELECT id, title, author, isbn, location, category, status, createdAt, updatedAt FROM books WHERE id = ? AND deleted = 0");
         selectQuery.bind(1, id);
         Domain::Book book;
         bool found = false;
@@ -428,17 +435,18 @@ bool SQLiteDataAccess::removeBook(const std::string& id)
 
         // Move to removed_books table
         SQLite::Statement insertQuery(*m_booksDb,
-            "INSERT INTO removed_books (id, title, author, location, category, status, createdAt, updatedAt, deletedAt) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            "INSERT INTO removed_books (id, title, author, isbn, location, category, status, createdAt, updatedAt, deletedAt) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         insertQuery.bind(1, book.id);
         insertQuery.bind(2, book.title);
         insertQuery.bind(3, book.author);
-        insertQuery.bind(4, book.location);
-        insertQuery.bind(5, book.category);
-        insertQuery.bind(6, book.status);
-        insertQuery.bind(7, dateTimeToString(book.createdAt));
-        insertQuery.bind(8, dateTimeToString(book.updatedAt));
-        insertQuery.bind(9, dateTimeToString(Domain::now()));
+        insertQuery.bind(4, book.isbn);
+        insertQuery.bind(5, book.location);
+        insertQuery.bind(6, book.category);
+        insertQuery.bind(7, book.status);
+        insertQuery.bind(8, dateTimeToString(book.createdAt));
+        insertQuery.bind(9, dateTimeToString(book.updatedAt));
+        insertQuery.bind(10, dateTimeToString(Domain::now()));
         insertQuery.exec();
 
         // Mark as deleted in books table
@@ -460,7 +468,7 @@ std::vector<Domain::Book> SQLiteDataAccess::getRemovedBooks()
     std::vector<Domain::Book> books;
     if (!m_booksDb) return books;
 
-    SQLite::Statement query(*m_booksDb, "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM removed_books ORDER BY deletedAt DESC");
+    SQLite::Statement query(*m_booksDb, "SELECT id, title, author, isbn, location, category, status, createdAt, updatedAt FROM removed_books ORDER BY deletedAt DESC");
     while (query.executeStep()) {
         books.push_back(rowToBook(query));
     }
@@ -475,7 +483,7 @@ bool SQLiteDataAccess::restoreBook(const std::string& id)
         SQLite::Transaction transaction(*m_booksDb);
 
         SQLite::Statement selectQuery(*m_booksDb,
-            "SELECT id, title, author, location, category, status, createdAt, updatedAt FROM removed_books WHERE id = ?");
+            "SELECT id, title, author, isbn, location, category, status, createdAt, updatedAt FROM removed_books WHERE id = ?");
         selectQuery.bind(1, id);
         Domain::Book book;
         bool found = false;
@@ -488,16 +496,17 @@ bool SQLiteDataAccess::restoreBook(const std::string& id)
 
         // Insert back into books table
         SQLite::Statement insertQuery(*m_booksDb,
-            "INSERT OR REPLACE INTO books (id, title, author, location, category, status, createdAt, updatedAt, deleted) "
+            "INSERT OR REPLACE INTO books (id, title, author, isbn, location, category, status, createdAt, updatedAt, deleted) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)");
         insertQuery.bind(1, book.id);
         insertQuery.bind(2, book.title);
         insertQuery.bind(3, book.author);
-        insertQuery.bind(4, book.location);
-        insertQuery.bind(5, book.category);
-        insertQuery.bind(6, book.status);
-        insertQuery.bind(7, dateTimeToString(book.createdAt));
-        insertQuery.bind(8, dateTimeToString(Domain::now()));
+        insertQuery.bind(4, book.isbn);
+        insertQuery.bind(5, book.location);
+        insertQuery.bind(6, book.category);
+        insertQuery.bind(7, book.status);
+        insertQuery.bind(8, dateTimeToString(book.createdAt));
+        insertQuery.bind(9, dateTimeToString(Domain::now()));
         insertQuery.exec();
 
         // Remove from removed_books

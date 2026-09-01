@@ -846,26 +846,45 @@
         </font>
        </property>
       </widget>
-      <widget class="QPushButton" name="btnCheckId_book">
-       <property name="geometry">
-        <rect>
-         <x>420</x>
-         <y>80</y>
-         <width>81</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>15</pointsize>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Check</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="chkAutoCheckId_book">
+<widget class="QPushButton" name="btnCheckId_book">
+        <property name="geometry">
+         <rect>
+          <x>420</x>
+          <y>80</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Check</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="btnScanISBN_book">
+        <property name="geometry">
+         <rect>
+          <x>505</x>
+          <y>80</y>
+          <width>81</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Scan ISBN</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="chkAutoCheckId_book">
        <property name="geometry">
         <rect>
          <x>30</x>
@@ -1073,23 +1092,42 @@
        <string>Edit Books</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="txtId_book_edit">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>230</y>
-        <width>381</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="cboCategory_book_edit">
+<widget class="QLineEdit" name="txtId_book_edit">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>230</y>
+         <width>381</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnScanISBN_book_edit">
+       <property name="geometry">
+        <rect>
+         <x>420</x>
+         <y>230</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Scan ISBN</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="cboCategory_book_edit">
       <property name="geometry">
        <rect>
         <x>90</x>
@@ -4148,26 +4186,45 @@
        </font>
       </property>
      </widget>
-     <widget class="QPushButton" name="btnSearch_book">
-      <property name="geometry">
-       <rect>
-        <x>450</x>
-        <y>40</y>
-        <width>51</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>11</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Search</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelSelected_book">
+<widget class="QPushButton" name="btnSearch_book">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>40</y>
+         <width>51</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnScanISBN_loan">
+       <property name="geometry">
+        <rect>
+         <x>505</x>
+         <y>40</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Scan ISBN</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelSelected_book">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -4548,6 +4605,25 @@
        </property>
        <property name="text">
         <string>Search</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnScanISBN_loan_edit">
+       <property name="geometry">
+        <rect>
+         <x>505</x>
+         <y>40</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Scan ISBN</string>
        </property>
       </widget>
       <widget class="QComboBox" name="cboSearchField_loan">

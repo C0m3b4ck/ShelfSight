@@ -18,7 +18,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     sanitize_string.cpp \
-    sqlite_dataaccess.cpp
+    sqlite_dataaccess.cpp \
+    isbnscannerdialog.cpp
 
 HEADERS += \
     businesslogic.h \
@@ -29,7 +30,8 @@ HEADERS += \
     logger.h \
     mainwindow.h \
     sqlite_dataaccess.h \
-    worklog.h
+    worklog.h \
+    isbnscannerdialog.h
 
 FORMS += \
     createdatabasedialog.ui \

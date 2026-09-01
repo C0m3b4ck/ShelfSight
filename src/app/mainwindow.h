@@ -70,6 +70,7 @@ private slots:
     void on_btnCheckId_book_clicked();
     void on_txtId_book_textChanged(const QString &text);
     void on_chkAutogenerateID_book_toggled(bool checked);
+    void on_btnScanISBN_book_clicked();
     // Edit Books page
     void on_btnClear_title_book_edit_clicked();
     void on_btnClear_author_book_edit_clicked();
@@ -77,6 +78,7 @@ private slots:
     void on_btnUndoEdit_book_clicked();
     void on_btnEdit_book_clicked();
     void on_btnSearch_book_edit_clicked();
+    void on_btnScanISBN_book_edit_clicked();
 
     void on_btnSearch_category_clicked();
     void on_lstSearch_category_itemClicked(QListWidgetItem *item);
@@ -161,6 +163,7 @@ private slots:
     void on_lstSearch_reader_itemClicked(QListWidgetItem *item);
     void on_btnAdd_loan_clicked();
     void on_btnClear_loan_clicked();
+    void on_btnScanISBN_loan_clicked();
 
     void on_actionEditLoans_triggered();
     void on_actionSearchLoans_triggered();
@@ -169,6 +172,7 @@ private slots:
     void on_btnUpdate_loan_clicked();
     void on_btnReturn_loan_clicked();
     void on_btnClear_loan_edit_clicked();
+    void on_btnScanISBN_loan_edit_clicked();
 
     void on_actionDatabase_Selection_triggered();
     void on_actionCreate_Database_triggered();
@@ -266,6 +270,9 @@ private slots:
 
     // Accounts - password change
     void on_btnChangePassword_clicked();
+
+    // ISBN Scanner helper
+    void showISBNScanner(QLineEdit* targetField);
 
 private:
     Ui::MainWindow *ui;

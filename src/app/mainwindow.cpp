@@ -19,6 +19,7 @@
 #include <chrono>
 #include "logger.h"
 #include <QTextStream>
+#include "isbnscannerdialog.h"
 
 // ============== MAGIC NUMBERS ================
 ////////////// FORM NUMBERS ////////////////
@@ -4622,6 +4623,54 @@ void MainWindow::on_chkWorklog_toggled(bool checked)
         ui->label_worklog_path->setText("Worklog file: (worklog disabled)");
         ui->label_worklog_path->setStyleSheet("color: gray;");
     }
+}
+
+// ISBN Scanner helper
+void MainWindow::showISBNScanner(QLineEdit* targetField)
+{
+    if (!targetField) return;
+    
+    ISBNScannerDialog scanner(this);
+    connect(&scanner, &ISBNScannerDialog::isbnScanned, this, [targetField](const QString& isbn) {
+        targetField->setText(isbn);
+    });
+    
+    if (scanner.exec() == QDialog::Accepted) {
+        QString isbn = scanner.getScannedISBN();
+        if (!isbn.isEmpty()) {
+            targetField->setText(isbn);
+            m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Book,
+                "scan", "ISBN scanned: " + isbn.toStdString());
+        }
+    }
+}
+
+// Add Books page - ISBN Scan
+void MainWindow::on_btnScanISBN_book_clicked()
+{
+    LOG_CLICK("btnScanISBN_book_clicked");
+    showISBNScanner(ui->txtId_book);
+}
+
+// Edit Books page - ISBN Scan
+void MainWindow::on_btnScanISBN_book_edit_clicked()
+{
+    LOG_CLICK("btnScanISBN_book_edit_clicked");
+    showISBNScanner(ui->txtId_book_edit);
+}
+
+// Add Loans page - ISBN Scan
+void MainWindow::on_btnScanISBN_loan_clicked()
+{
+    LOG_CLICK("btnScanISBN_loan_clicked");
+    showISBNScanner(ui->txtSearch_book);
+}
+
+// Edit Loans page - ISBN Scan
+void MainWindow::on_btnScanISBN_loan_edit_clicked()
+{
+    LOG_CLICK("btnScanISBN_loan_edit_clicked");
+    showISBNScanner(ui->txtSearch_loan);
 }
 
 // --- Accounts ---
