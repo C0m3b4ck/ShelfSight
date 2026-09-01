@@ -13,7 +13,7 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QCloseEvent>
-#include <QProcess>
+#include <QStandardPaths>
 #include <vector>
 #include <random>
 #include <chrono>
@@ -940,66 +940,291 @@ void MainWindow::on_actionConvert_Old_Databases_triggered()
     m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
         "superadmin", "Old database conversion tool accessed");
 
-    // Show info dialog about the conversion tool
-    QMessageBox info(this);
-    info.setIcon(QMessageBox::Information);
-    info.setWindowTitle(tr("Convert Old Databases"));
-    info.setText(tr(
-        "This tool converts old Bookworm CSV databases to ShelfSight format.\n\n"
-        "Source files (read-only):\n"
-        "  /run/media/sb3x/VENTOY/bookworm-main/ksiazki.csv\n"
-        "  /run/media/sb3x/VENTOY/bookworm-main/ksiazki2.csv\n\n"
-        "Output files (ShelfSight format):\n"
-        "  <app_dir>/converted/books_shelfsight.csv\n"
-        "  <app_dir>/converted/categories_shelfsight.csv\n"
-        "  <app_dir>/converted/locations_shelfsight.csv\n\n"
-        "The script reads only the first 10 rows from each file for testing.\n"
-        "Original files remain completely intact."
-    ));
-    info.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    info.setDefaultButton(QMessageBox::Ok);
+    // Select source CSV file
+    QString sourceFile = QFileDialog::getOpenFileName(this,
+        tr("Select Old Database CSV"),
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+        tr("CSV Files (*.csv);;All Files (*)"));
 
-    if (info.exec() != QMessageBox::Ok) return;
+    if (sourceFile.isEmpty()) return;
 
-    // Run the Python conversion script
-    QString scriptPath = QCoreApplication::applicationDirPath() + "/../src/convert_old_dbs.py";
-    if (!QFile::exists(scriptPath)) {
-        scriptPath = QCoreApplication::applicationDirPath() + "/convert_old_dbs.py";
-    }
+    // Select output directory
+    QString outputDir = QFileDialog::getExistingDirectory(this,
+        tr("Select Output Directory"),
+        QCoreApplication::applicationDirPath() + "/converted",
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
-    QProcess process;
-    process.setProgram("python3");
-    process.setArguments({scriptPath});
-    process.setWorkingDirectory(QCoreApplication::applicationDirPath() + "/../src");
+    if (outputDir.isEmpty()) return;
 
-    QString output;
-    process.start();
-    if (!process.waitForStarted(5000)) {
-        QMessageBox::critical(this, tr("ERROR"), tr("Failed to start Python script"));
-        return;
-    }
+    // Confirm dialog
+    QMessageBox confirm(this);
+    confirm.setIcon(QMessageBox::Question);
+    confirm.setWindowTitle(tr("Convert Old Database"));
+    confirm.setText(tr(
+        "Convert old Bookworm CSV to ShelfSight format?\n\n"
+        "Source: %1\n"
+        "Output: %2/\n"
+        "  books_shelfsight.csv\n"
+        "  categories_shelfsight.csv\n"
+        "  locations_shelfsight.csv\n\n"
+        "Note: Only first 1000 rows will be converted for testing."
+    ).arg(sourceFile).arg(outputDir));
+    confirm.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    confirm.setDefaultButton(QMessageBox::Ok);
 
-    if (!process.waitForFinished(30000)) {
-        process.kill();
-        QMessageBox::critical(this, tr("ERROR"), tr("Conversion script timed out"));
-        return;
-    }
+    if (confirm.exec() != QMessageBox::Ok) return;
 
-    output = process.readAllStandardOutput();
-    QString error = process.readAllStandardError();
+    // Perform conversion
+    QString errorMsg;
+    int booksConverted = convertOldDatabaseCSV(sourceFile, outputDir, errorMsg);
 
-    if (process.exitCode() != 0) {
-        QMessageBox::critical(this, tr("CONVERSION FAILED"),
-            tr("Exit code: %1\n\nOutput:\n%2\n\nError:\n%3")
-            .arg(process.exitCode()).arg(output).arg(error));
+    if (booksConverted < 0) {
+        QMessageBox::critical(this, tr("CONVERSION FAILED"), errorMsg);
         return;
     }
 
     QMessageBox::information(this, tr("SUCCESS"),
-        tr("Conversion completed successfully!\n\nOutput:\n%1").arg(output));
+        tr("Conversion completed successfully!\n\n"
+           "Books converted: %1\n"
+           "Output directory: %2")
+        .arg(booksConverted).arg(outputDir));
 
     m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User,
-        "superadmin", "Old database conversion completed");
+        "superadmin", QString("Old database conversion completed: %1 books from %2")
+        .arg(booksConverted).arg(QFileInfo(sourceFile).fileName()).toStdString());
+}
+
+// C++ implementation of old database conversion
+int MainWindow::convertOldDatabaseCSV(const QString& sourceFile, const QString& outputDir, QString& errorMsg)
+{
+    QFile file(sourceFile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        errorMsg = tr("Cannot open source file: %1").arg(file.errorString());
+        return -1;
+    }
+
+    QDir dir(outputDir);
+    if (!dir.exists()) {
+        if (!dir.mkpath(".")) {
+            errorMsg = tr("Cannot create output directory: %1").arg(outputDir);
+            return -1;
+        }
+    }
+
+    // Detect encoding (try UTF-8 first, then fallback to Latin1 for Polish)
+    QByteArray rawData = file.readAll();
+    file.close();
+
+    QString content = QString::fromUtf8(rawData);
+
+    // Check if decoding failed (contains replacement chars)
+    if (content.contains(QChar::ReplacementCharacter)) {
+        // Fallback to Latin1 (covers Windows-1250 and ISO-8859-2 for most Polish chars)
+        content = QString::fromLatin1(rawData);
+    }
+
+    // Normalize line endings
+    content.replace("\r\n", "\n").replace('\r', '\n');
+    QStringList lines = content.split('\n', Qt::SkipEmptyParts);
+
+    if (lines.isEmpty()) {
+        errorMsg = tr("Source file is empty");
+        return -1;
+    }
+
+    // Parse header to detect format
+    QStringList header = parseCSVLine(lines[0]);
+    bool isKsiazkiFormat = header.contains("ID") && header.contains("Title") && header.contains("Author");
+    bool isKsiazki2Format = header.contains("books") || (header.size() >= 5 && header[2] != "Year");
+
+    // For ksiazki2, skip first 2 lines and use line 2 as header
+    int dataStart = 1;
+    if (!isKsiazkiFormat && lines.size() > 2) {
+        // Check if line 1 is "books" or similar
+        if (lines[0].trimmed() == "books" || lines[1].trimmed().startsWith(",")) {
+            dataStart = 3; // Skip "books", ",123,N", and header line
+            if (lines.size() > 2) {
+                header = parseCSVLine(lines[2]);
+            }
+        }
+    }
+
+    // Map column indices
+    int idIdx = -1, titleIdx = -1, authorIdx = -1, categoryIdx = -1, statusIdx = -1, locationIdx = -1;
+
+    if (isKsiazkiFormat) {
+        idIdx = header.indexOf("ID");
+        titleIdx = header.indexOf("Title");
+        authorIdx = header.indexOf("Author");
+        categoryIdx = header.indexOf("Genre");
+        statusIdx = header.indexOf("Status");
+        locationIdx = header.indexOf("BookRow");
+    } else {
+        // ksiazki2 format: Title,Author,ID,Category,Status
+        titleIdx = 0;
+        authorIdx = 1;
+        idIdx = 2;
+        categoryIdx = 3;
+        statusIdx = 4;
+        locationIdx = -1;
+    }
+
+    if (idIdx < 0 || titleIdx < 0 || authorIdx < 0) {
+        errorMsg = tr("Could not identify required columns (ID, Title, Author)");
+        return -1;
+    }
+
+    // Prepare output files
+    QFile booksFile(outputDir + "/books_shelfsight.csv");
+    QFile catsFile(outputDir + "/categories_shelfsight.csv");
+    QFile locsFile(outputDir + "/locations_shelfsight.csv");
+
+    if (!booksFile.open(QIODevice::WriteOnly | QIODevice::Text) ||
+        !catsFile.open(QIODevice::WriteOnly | QIODevice::Text) ||
+        !locsFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        errorMsg = tr("Cannot create output files");
+        return -1;
+    }
+
+    QTextStream booksOut(&booksFile);
+    QTextStream catsOut(&catsFile);
+    QTextStream locsOut(&locsFile);
+
+    // Write headers
+    booksOut << "id,title,author,location,category,status,createdAt,updatedAt\n";
+    catsOut << "id,name\n";
+    locsOut << "id,name\n";
+
+    // Track unique categories and locations
+    QSet<QString> categories;
+    QSet<QString> locations;
+
+    QString now = QDateTime::currentDateTimeUtc().toString("yyyy-MM-ddTHH:mm:ssZ");
+    int count = 0;
+    const int MAX_ROWS = 1000;
+
+    for (int i = dataStart; i < lines.size() && count < MAX_ROWS; ++i) {
+        QStringList fields = parseCSVLine(lines[i]);
+        if (fields.size() <= qMax(idIdx, qMax(titleIdx, authorIdx))) continue;
+
+        QString id = fields.value(idIdx).trimmed();
+        QString title = fields.value(titleIdx).trimmed();
+        QString author = fields.value(authorIdx).trimmed();
+        QString category = fields.value(categoryIdx).trimmed();
+        QString status = fields.value(statusIdx).trimmed();
+        QString location = (locationIdx >= 0 && fields.size() > locationIdx) ? fields.value(locationIdx).trimmed() : "";
+
+        if (id.isEmpty() || title.isEmpty() || author.isEmpty()) continue;
+
+        // Normalize category
+        category = normalizeCategory(category);
+        // Normalize status
+        status = normalizeStatus(status);
+        // Default location
+        if (location.isEmpty()) location = "Main Shelf";
+
+        categories.insert(category);
+        locations.insert(location);
+
+        // Write book row
+        booksOut << escapeCSV(id) << ","
+                 << escapeCSV(title) << ","
+                 << escapeCSV(author) << ","
+                 << escapeCSV(location) << ","
+                 << escapeCSV(category) << ","
+                 << escapeCSV(status) << ","
+                 << escapeCSV(now) << ","
+                 << escapeCSV(now) << "\n";
+
+        count++;
+    }
+
+    // Write categories
+    int catId = 1;
+    for (const QString& cat : categories) {
+        catsOut << "cat_" << catId++ << "," << escapeCSV(cat) << "\n";
+    }
+
+    // Write locations
+    int locId = 1;
+    for (const QString& loc : locations) {
+        locsOut << "loc_" << locId++ << "," << escapeCSV(loc) << "\n";
+    }
+
+    booksFile.close();
+    catsFile.close();
+    locsFile.close();
+
+    return count;
+}
+
+// Helper: Escape CSV field
+QString MainWindow::escapeCSV(const QString& s)
+{
+    QString result = s;
+    if (result.contains('"') || result.contains(',') || result.contains('\n')) {
+        return "\"" + result.replace("\"", "\"\"") + "\"";
+    }
+    return result;
+}
+
+// Helper: Parse a single CSV line handling quoted fields
+QStringList MainWindow::parseCSVLine(const QString& line)
+{
+    QStringList fields;
+    QString field;
+    bool inQuotes = false;
+
+    for (int i = 0; i < line.length(); ++i) {
+        QChar c = line[i];
+        if (c == '"') {
+            if (inQuotes && i + 1 < line.length() && line[i + 1] == '"') {
+                field += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (c == ',' && !inQuotes) {
+            fields << field;
+            field.clear();
+        } else {
+            field += c;
+        }
+    }
+    fields << field;
+    return fields;
+}
+
+// Helper: Normalize category names
+QString MainWindow::normalizeCategory(const QString& cat)
+{
+    static const QMap<QString, QString> map = {
+        {"Dla dzieci", "Children"},
+        {"Dla Dzieci", "Children"},
+        {"Dla dzice", "Children"},
+        {"Lektury", "School Reading"},
+        {"Naukowe", "Science"},
+        {"Totalitaryzm", "Totalitarianism"},
+        {"RELIGIJNE", "Religious"},
+        {"Dla Liceum", "High School"},
+    };
+    return map.value(cat, cat);
+}
+
+// Helper: Normalize status names
+QString MainWindow::normalizeStatus(const QString& status)
+{
+    static const QMap<QString, QString> map = {
+        {"dostępna", "Available"},
+        {"dostepna", "Available"},
+        {"available", "Available"},
+        {"not for lending", "Not for lending"},
+        {"wypożyczona", "Borrowed"},
+        {"damaged", "Damaged"},
+        {"missing", "Missing"},
+    };
+    QString key = status.toLower();
+    return map.value(key, status);
 }
 
 void MainWindow::loadDbConfigs()

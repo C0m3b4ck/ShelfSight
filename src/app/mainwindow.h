@@ -173,6 +173,13 @@ private slots:
     void on_actionDatabase_Selection_triggered();
     void on_actionCreate_Database_triggered();
     void on_actionConvert_Old_Databases_triggered();
+
+    // CSV conversion helpers
+    int convertOldDatabaseCSV(const QString& sourceFile, const QString& outputDir, QString& errorMsg);
+    QStringList parseCSVLine(const QString& line);
+    QString normalizeCategory(const QString& cat);
+    QString normalizeStatus(const QString& status);
+    QString escapeCSV(const QString& s);
     void loadDbConfigs();
     void on_chkTelemetry_toggled(bool checked);
     void on_cboDbConfigs_currentIndexChanged(int index);
