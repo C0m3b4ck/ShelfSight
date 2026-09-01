@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QRegularExpression>
 #include <QCloseEvent>
+#include <QProcess>
 #include <vector>
 #include <random>
 #include <chrono>
@@ -929,6 +930,76 @@ void MainWindow::on_actionCreate_Database_triggered()
     LOG_CLICK("actionCreate_Database_triggered");
     if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin, false)) return;
     on_btnCreateNewDb_clicked();
+}
+
+void MainWindow::on_actionConvert_Old_Databases_triggered()
+{
+    LOG_CLICK("actionConvert_Old_Databases_triggered");
+    if (!checkRoleRequired(BusinessLogic::RequiredRole::SuperAdmin, false)) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "superadmin", "Old database conversion tool accessed");
+
+    // Show info dialog about the conversion tool
+    QMessageBox info(this);
+    info.setIcon(QMessageBox::Information);
+    info.setWindowTitle(tr("Convert Old Databases"));
+    info.setText(tr(
+        "This tool converts old Bookworm CSV databases to ShelfSight format.\n\n"
+        "Source files (read-only):\n"
+        "  /run/media/sb3x/VENTOY/bookworm-main/ksiazki.csv\n"
+        "  /run/media/sb3x/VENTOY/bookworm-main/ksiazki2.csv\n\n"
+        "Output files (ShelfSight format):\n"
+        "  <app_dir>/converted/books_shelfsight.csv\n"
+        "  <app_dir>/converted/categories_shelfsight.csv\n"
+        "  <app_dir>/converted/locations_shelfsight.csv\n\n"
+        "The script reads only the first 10 rows from each file for testing.\n"
+        "Original files remain completely intact."
+    ));
+    info.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    info.setDefaultButton(QMessageBox::Ok);
+
+    if (info.exec() != QMessageBox::Ok) return;
+
+    // Run the Python conversion script
+    QString scriptPath = QCoreApplication::applicationDirPath() + "/../src/convert_old_dbs.py";
+    if (!QFile::exists(scriptPath)) {
+        scriptPath = QCoreApplication::applicationDirPath() + "/convert_old_dbs.py";
+    }
+
+    QProcess process;
+    process.setProgram("python3");
+    process.setArguments({scriptPath});
+    process.setWorkingDirectory(QCoreApplication::applicationDirPath() + "/../src");
+
+    QString output;
+    process.start();
+    if (!process.waitForStarted(5000)) {
+        QMessageBox::critical(this, tr("ERROR"), tr("Failed to start Python script"));
+        return;
+    }
+
+    if (!process.waitForFinished(30000)) {
+        process.kill();
+        QMessageBox::critical(this, tr("ERROR"), tr("Conversion script timed out"));
+        return;
+    }
+
+    output = process.readAllStandardOutput();
+    QString error = process.readAllStandardError();
+
+    if (process.exitCode() != 0) {
+        QMessageBox::critical(this, tr("CONVERSION FAILED"),
+            tr("Exit code: %1\n\nOutput:\n%2\n\nError:\n%3")
+            .arg(process.exitCode()).arg(output).arg(error));
+        return;
+    }
+
+    QMessageBox::information(this, tr("SUCCESS"),
+        tr("Conversion completed successfully!\n\nOutput:\n%1").arg(output));
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User,
+        "superadmin", "Old database conversion completed");
 }
 
 void MainWindow::loadDbConfigs()

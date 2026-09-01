@@ -6896,12 +6896,13 @@
     <addaction name="actionUpdate"/>
    </widget>
 <widget class="QMenu" name="menuDatabases">
-     <property name="title">
-      <string>Databases</string>
-     </property>
-      <addaction name="actionDatabase_Selection"/>
-      <addaction name="actionCreate_Database"/>
-      <widget class="QMenu" name="menuBackup">
+       <property name="title">
+        <string>Databases</string>
+       </property>
+        <addaction name="actionDatabase_Selection"/>
+        <addaction name="actionCreate_Database"/>
+        <addaction name="actionConvert_Old_Databases"/>
+        <widget class="QMenu" name="menuBackup">
      <property name="title">
       <string>Backup</string>
      </property>
@@ -7021,6 +7022,11 @@
   <action name="actionCreate_Database">
    <property name="text">
     <string>Create Database</string>
+   </property>
+  </action>
+  <action name="actionConvert_Old_Databases">
+   <property name="text">
+    <string>Convert Old Databases</string>
    </property>
   </action>
   <action name="actionMake_Report">

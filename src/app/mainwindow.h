@@ -172,6 +172,7 @@ private slots:
 
     void on_actionDatabase_Selection_triggered();
     void on_actionCreate_Database_triggered();
+    void on_actionConvert_Old_Databases_triggered();
     void loadDbConfigs();
     void on_chkTelemetry_toggled(bool checked);
     void on_cboDbConfigs_currentIndexChanged(int index);
