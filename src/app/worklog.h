@@ -11,7 +11,7 @@
 
 struct WorklogEntry {
     enum class ActionType { Add, Edit, Remove };
-    enum class EntityType { Book, Reader, Loan };
+    enum class EntityType { Book, Reader, Loan, Category, Location, User };
 
     ActionType action;
     EntityType entity;
@@ -33,6 +33,9 @@ struct WorklogEntry {
             case EntityType::Book: return "BOOK";
             case EntityType::Reader: return "READER";
             case EntityType::Loan: return "LOAN";
+            case EntityType::Category: return "CATEGORY";
+            case EntityType::Location: return "LOCATION";
+            case EntityType::User: return "USER";
         }
         return "UNKNOWN";
     }
@@ -54,16 +57,20 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
     bool isEnabled() const { return m_enabled; }
 
+    void setSessionStart(const QDateTime& start) { m_sessionStart = start; }
+    QDateTime getSessionStart() const { return m_sessionStart; }
+
     void setLogFile(const QString& path) {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_file && m_file->isOpen()) {
             m_file->close();
         }
         m_file = std::make_unique<QFile>(path);
+        m_sessionStart = QDateTime::currentDateTime();
         if (m_file->open(QIODevice::Append | QIODevice::Text)) {
             m_stream = std::make_unique<QTextStream>(m_file.get());
             *m_stream << "=== Worklog Session Started: "
-                      << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << " ===\n";
+                      << m_sessionStart.toString("yyyy-MM-dd hh:mm:ss") << " ===\n";
             m_stream->flush();
         }
     }
@@ -100,11 +107,45 @@ public:
     int getLoanEditCount() const { return countBy(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Loan); }
     int getLoanRemoveCount() const { return countBy(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Loan); }
 
+    int getCategoryAddCount() const { return countBy(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Category); }
+    int getCategoryEditCount() const { return countBy(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Category); }
+    int getCategoryRemoveCount() const { return countBy(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Category); }
+
+    int getLocationAddCount() const { return countBy(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Location); }
+    int getLocationEditCount() const { return countBy(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Location); }
+    int getLocationRemoveCount() const { return countBy(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Location); }
+
+    int getUserAddCount() const { return countBy(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User); }
+    int getUserEditCount() const { return countBy(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User); }
+    int getUserRemoveCount() const { return countBy(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::User); }
+
     void close() {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_stream) {
             *m_stream << "=== Worklog Session Ended: "
                       << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << " ===\n";
+            *m_stream << "\n";
+            *m_stream << "Time start: " << m_sessionStart.toString("yyyy-MM-dd hh:mm:ss") << "\n";
+            *m_stream << "Time end:   " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n";
+            *m_stream << "Backups made: 0\n";
+            *m_stream << "Books added: " << getBookAddCount() << "\n";
+            *m_stream << "Books edited: " << getBookEditCount() << "\n";
+            *m_stream << "Books removed: " << getBookRemoveCount() << "\n";
+            *m_stream << "Readers added: " << getReaderAddCount() << "\n";
+            *m_stream << "Readers edited: " << getReaderEditCount() << "\n";
+            *m_stream << "Readers removed: " << getReaderRemoveCount() << "\n";
+            *m_stream << "Loans removed: " << getLoanRemoveCount() << "\n";
+            *m_stream << "Loans added: " << getLoanAddCount() << "\n";
+            *m_stream << "Loans edited: " << getLoanEditCount() << "\n";
+            *m_stream << "Categories added: " << getCategoryAddCount() << "\n";
+            *m_stream << "Categories edited: " << getCategoryEditCount() << "\n";
+            *m_stream << "Categories removed: " << getCategoryRemoveCount() << "\n";
+            *m_stream << "Locations added: " << getLocationAddCount() << "\n";
+            *m_stream << "Locations edited: " << getLocationEditCount() << "\n";
+            *m_stream << "Locations removed: " << getLocationRemoveCount() << "\n";
+            *m_stream << "Users added: " << getUserAddCount() << "\n";
+            *m_stream << "Users edited: " << getUserEditCount() << "\n";
+            *m_stream << "Users removed: " << getUserRemoveCount() << "\n";
             m_stream->flush();
             m_stream.reset();
         }
@@ -132,6 +173,7 @@ private:
     std::unique_ptr<QFile> m_file;
     std::unique_ptr<QTextStream> m_stream;
     std::mutex m_mutex;
+    QDateTime m_sessionStart = QDateTime::currentDateTime();
 };
 
 #endif // WORKLOG_H

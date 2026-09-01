@@ -226,7 +226,7 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
     // Initialize worklog from settings
     {
         QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
-        bool worklogEnabled = settings.value("worklog/enabled", false).toBool();
+        bool worklogEnabled = settings.value("worklog/enabled", true).toBool();
         ui->chkWorklog->setChecked(worklogEnabled);
         m_worklog.setEnabled(worklogEnabled);
         if (worklogEnabled) {
@@ -234,6 +234,9 @@ MainWindow::MainWindow(DataAccess::IDataAccess& db, QWidget *parent)
             m_worklog.setLogFile(m_worklogFilePath);
             ui->label_worklog_path->setText("Worklog file: " + m_worklogFilePath);
             ui->label_worklog_path->setStyleSheet("color: black;");
+        } else {
+            ui->label_worklog_path->setText("Worklog file: (worklog disabled)");
+            ui->label_worklog_path->setStyleSheet("color: gray;");
         }
     }
 
@@ -901,6 +904,9 @@ void MainWindow::on_actionDatabase_Selection_triggered()
     LOG_CLICK("actionDatabase_Selection_triggered");
     if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin, false)) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Database selection accessed");
+
     // Load saved configurations
     loadDbConfigs();
 
@@ -1158,6 +1164,9 @@ void MainWindow::on_btnCreateNewDb_clicked()
             ui->txtLoansDb->setText(dbPath);
         }
 
+        m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User,
+            "admin", "Database created: " + type.toStdString() + " at " + dbPath.toStdString());
+
         QMessageBox::information(this, tr("SUCCESS"),
             tr("Created %1 at:\n%2").arg(name, dbPath));
     } catch (const std::exception& e) {
@@ -1224,6 +1233,9 @@ void MainWindow::on_btnCreateStarterDbs_clicked()
             settings.setValue("configs", configs);
         }
         loadDbConfigs();
+
+        m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User,
+            "admin", "Starter databases created at " + appDir.toStdString());
 
         QMessageBox::information(this, tr("SUCCESS"),
             tr("Starter databases created at:\n%1\n\nDefault configuration saved.").arg(appDir));
@@ -1382,6 +1394,15 @@ void MainWindow::on_btnRegister_clicked()
         QMessageBox::critical(this, tr("REGISTRATION FAILED"), QString::fromStdString(result.errorMessage));
         return;
     }
+
+    QString roleStr;
+    switch (role) {
+        case Domain::User::Role::UserRole: roleStr = "User"; break;
+        case Domain::User::Role::Admin: roleStr = "Admin"; break;
+        case Domain::User::Role::SuperAdmin: roleStr = "SuperAdmin"; break;
+    }
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User,
+        userDTO.username, "Role: " + roleStr.toStdString());
 
     // Auto-login after registration
     auto loginResult = BusinessLogic::login(m_db, userDTO.username, userDTO.password);
@@ -2264,6 +2285,9 @@ void MainWindow::on_btnUndoLast_reader_clicked()
 
     if (box.exec() != QMessageBox::Yes) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Reader,
+        last_reader_added.id, "Undo add reader: " + last_reader_added.name + " " + last_reader_added.surname);
+
     m_db.removeReader(last_reader_added.id);
 
     for (int i = 0; i < ui->lstSearch_reader_edit->count(); ++i) {
@@ -2302,6 +2326,9 @@ void MainWindow::on_btnUndoRemoval_reader_clicked()
         QMessageBox::critical(this, tr("ERROR"), tr("Failed to restore reader"));
         return;
     }
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Reader,
+        last_reader_removed.id, "Undo remove reader: " + last_reader_removed.name + " " + last_reader_removed.surname);
 
     auto* listItem = new QListWidgetItem(QString::fromStdString(last_reader_removed.toDisplayString()));
     listItem->setData(Qt::UserRole, QString::fromStdString(last_reader_removed.id));
@@ -2499,6 +2526,9 @@ void MainWindow::on_btnUndoEdit_reader_clicked()
 
     if (box.exec() != QMessageBox::Yes) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Reader,
+        reader_selected.id, "Undo edit reader: " + last_reader_edited.name + " " + last_reader_edited.surname);
+
     auto result = BusinessLogic::updateReader(m_db, last_reader_edited);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("ERROR"), QString::fromStdString(result.errorMessage));
@@ -2580,6 +2610,9 @@ void MainWindow::on_btnUndoAdd_addreaders_clicked()
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() != QMessageBox::Yes) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Reader,
+        last_reader_added.id, "Undo add reader: " + last_reader_added.name + " " + last_reader_added.surname);
 
     m_db.removeReader(last_reader_added.id);
 
@@ -2907,6 +2940,9 @@ void MainWindow::on_btnUndoEdit_location_clicked()
 
     if (box.exec() != QMessageBox::Yes) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Location,
+        location_selected.id, "Undo edit location: " + last_location_edited.name);
+
     auto result = BusinessLogic::updateLocation(m_db, last_location_edited);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("ERROR"), QString::fromStdString(result.errorMessage));
@@ -2943,6 +2979,9 @@ void MainWindow::on_btnUndoAdd_location_clicked()
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() != QMessageBox::Yes) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Location,
+        last_location_added.id, "Undo add location: " + last_location_added.name);
 
     m_db.removeLocation(last_location_added.id);
 
@@ -2983,6 +3022,9 @@ void MainWindow::on_btnUndoRemove_location_clicked()
         return;
     }
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Location,
+        last_location_removed.id, "Undo remove location: " + last_location_removed.name);
+
     auto* listItem = new QListWidgetItem(QString::fromStdString(last_location_removed.name));
     listItem->setData(Qt::UserRole, QString::fromStdString(last_location_removed.id));
     ui->lstSearch_location->addItem(listItem);
@@ -3020,6 +3062,9 @@ void MainWindow::on_btnAdd_location_clicked()
 
     last_location_added = loc;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Location,
+        loc.id, "Location: " + loc.name);
+
     auto* listItem = new QListWidgetItem(name);
     listItem->setData(Qt::UserRole, QString::fromStdString(loc.id));
     ui->lstSearch_location->addItem(listItem);
@@ -3054,6 +3099,9 @@ void MainWindow::on_btnEdit_location_clicked()
 
     last_location_edited = location_selected;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Location,
+        location_selected.id, "Location: " + updatedLoc.name);
+
     // Update list item by ID
     for (int i = 0; i < ui->lstSearch_location->count(); ++i) {
         QListWidgetItem *item = ui->lstSearch_location->item(i);
@@ -3087,6 +3135,9 @@ void MainWindow::on_btnRemove_location_clicked()
 
     m_db.removeLocation(location_selected.id);
     last_location_removed = location_selected;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Location,
+        location_selected.id, "Location: " + location_selected.name);
 
     // Remove from list by ID
     for (int i = 0; i < ui->lstSearch_location->count(); ++i) {
@@ -3257,6 +3308,9 @@ void MainWindow::on_btnRemove_category_clicked()
     m_db.removeCategory(category_selected.id);
     last_category_removed = category_selected;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Category,
+        category_selected.id, "Category: " + category_selected.name);
+
     // Remove from list by ID
     for (int i = 0; i < ui->lstSearch_category->count(); ++i) {
         QListWidgetItem *item = ui->lstSearch_category->item(i);
@@ -3296,6 +3350,9 @@ void MainWindow::on_btnEdit_category_clicked()
     }
 
     last_category_edited = category_selected;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Category,
+        category_selected.id, "Category: " + updatedCat.name);
 
     // Update list item by ID
     for (int i = 0; i < ui->lstSearch_category->count(); ++i) {
@@ -3338,6 +3395,9 @@ void MainWindow::on_btnAdd_category_clicked()
     ui->lstSearch_category->addItem(listItem);
     ui->txtName_category->clear();
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Category,
+        cat.id, "Category: " + cat.name);
+
     QMessageBox::information(this, tr("SUCCESS"), tr("Category added"));
 }
 
@@ -3358,6 +3418,9 @@ void MainWindow::on_btnUndoAdd_category_clicked()
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() != QMessageBox::Yes) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Category,
+        last_category_added.id, "Undo add category: " + last_category_added.name);
 
     m_db.removeCategory(last_category_added.id);
 
@@ -3391,6 +3454,9 @@ void MainWindow::on_btnUndoEdit_category_clicked()
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() != QMessageBox::Yes) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Category,
+        category_selected.id, "Undo edit category: " + last_category_edited.name);
 
     auto result = BusinessLogic::updateCategory(m_db, last_category_edited);
     if (!result.isValid) {
@@ -3438,6 +3504,10 @@ void MainWindow::on_btnUndoRemove_category_clicked()
     auto* listItem = new QListWidgetItem(QString::fromStdString(last_category_removed.name));
     listItem->setData(Qt::UserRole, QString::fromStdString(last_category_removed.id));
     ui->lstSearch_category->addItem(listItem);
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::Category,
+        last_category_removed.id, "Undo remove category: " + last_category_removed.name);
+
     last_category_removed = DTO::CategoryDTO{};
     QMessageBox::information(this, tr("UNDO REMOVE"), tr("Category remove undone"));
 }
@@ -3460,6 +3530,9 @@ void MainWindow::on_btnUndoAdd_book_clicked()
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() != QMessageBox::Yes) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Remove, WorklogEntry::EntityType::Book,
+        last_book_added.id, "Undo add book: " + last_book_added.title + " by " + last_book_added.author);
 
     m_db.removeBook(last_book_added.id);
 
@@ -3601,6 +3674,9 @@ void MainWindow::on_btnUndoEdit_book_clicked()
     box.setDefaultButton(QMessageBox::No);
 
     if (box.exec() != QMessageBox::Yes) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::Book,
+        book_selected.id, "Undo edit book: " + last_book_edited.title + " by " + last_book_edited.author);
 
     auto result = BusinessLogic::updateBook(m_db, last_book_edited);
     if (!result.isValid) {
@@ -3763,6 +3839,9 @@ void MainWindow::on_actionMake_Report_triggered()
     LOG_CLICK("actionMake_Report_triggered");
     if (!checkLoginRequired()) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Make Report page accessed");
+
     auto result = BusinessLogic::validateDatabases(m_db);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
@@ -3860,6 +3939,9 @@ void MainWindow::on_actionManage_Fines_triggered()
 {
     LOG_CLICK("actionManage_Fines_triggered");
     if (!checkLoginRequired()) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Manage Fines page accessed");
 
     auto result = BusinessLogic::validateDatabases(m_db);
     if (!result.isValid) {
@@ -3960,6 +4042,9 @@ void MainWindow::on_actionMake_Card_triggered()
     LOG_CLICK("actionMake_Card_triggered");
     if (!checkLoginRequired()) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Make Card page accessed");
+
     auto result = BusinessLogic::validateDatabases(m_db);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
@@ -4058,6 +4143,9 @@ void MainWindow::on_actionBackups_triggered()
     LOG_CLICK("actionBackups_triggered");
     if (!checkLoginRequired()) return;
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Backups page accessed");
+
     auto result = BusinessLogic::validateDatabases(m_db);
     if (!result.isValid) {
         QMessageBox::critical(this, tr("NO DATABASE SELECTED"), QString::fromStdString(result.errorMessage));
@@ -4112,6 +4200,9 @@ void MainWindow::on_btnBackupNow_clicked()
         if (QFile::copy(dbs[i], dest)) success++;
     }
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Add, WorklogEntry::EntityType::User,
+        "admin", "Backup created: " + QString::number(success).toStdString() + " databases backed up to " + backupDir.toStdString());
+
     QMessageBox::information(this, tr("BACKUP"), tr("Backed up %1 of %2 databases to %3").arg(success).arg(dbs.size()).arg(backupDir));
 }
 
@@ -4150,6 +4241,9 @@ void MainWindow::on_btnRestoreBackup_clicked()
         }
     }
 
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Backup restored: " + QString::number(restored).toStdString() + " databases restored");
+
     QMessageBox::information(this, tr("RESTORE"), tr("Restored %1 of %2 databases").arg(restored).arg(dbs.size()));
 }
 
@@ -4166,6 +4260,9 @@ void MainWindow::on_btnBrowseBackupDir_clicked()
 void MainWindow::on_actionPreferences_triggered()
 {
     LOG_CLICK("actionPreferences_triggered");
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        m_currentUser ? m_currentUser->username : "unknown", "Preferences page accessed");
 
     QSettings settings(QCoreApplication::applicationDirPath() + "/DatabaseConfigs.ini", QSettings::IniFormat);
     ui->chkDarkMode->setChecked(settings.value("prefs/darkMode", false).toBool());
@@ -4207,6 +4304,7 @@ void MainWindow::on_btnResetPreferences_clicked()
     ui->cboLanguage->setCurrentIndex(0);
     ui->spnFontSize->setValue(10);
     ui->chkWorklog->setChecked(false);
+    on_chkWorklog_toggled(false);
 }
 
 void MainWindow::on_chkWorklog_toggled(bool checked)
@@ -4235,6 +4333,9 @@ void MainWindow::on_actionAccounts_triggered()
 {
     LOG_CLICK("actionAccounts_triggered");
     if (!checkRoleRequired(BusinessLogic::RequiredRole::Admin)) return;
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Accounts management page accessed");
 
     ui->txtAccountSearch->clear();
     ui->lstAccounts->clear();
@@ -4316,6 +4417,8 @@ void MainWindow::on_btnChangeRole_clicked()
 
     user->role = newRole;
     if (m_db.updateUser(*user)) {
+        m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+            username.toStdString(), "Role changed to: " + roleStr.toStdString());
         QMessageBox::information(this, tr("SUCCESS"), tr("Role updated for %1").arg(username));
         on_actionAccounts_triggered();
     } else {
@@ -4354,6 +4457,9 @@ void MainWindow::on_btnDeleteAccount_clicked()
 void MainWindow::on_actionTroubleshoot_triggered()
 {
     LOG_CLICK("actionTroubleshoot_triggered");
+
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Troubleshoot page accessed");
 
     ui->txtTroubleshootOutput->clear();
     ui->workspaces->setCurrentIndex(23);
@@ -4674,6 +4780,8 @@ void MainWindow::on_actionUpdate_triggered()
 void MainWindow::on_actionManage_triggered()
 {
     LOG_CLICK("actionManage_triggered");
+    m_worklog.logEntry(WorklogEntry::ActionType::Edit, WorklogEntry::EntityType::User,
+        "admin", "Manage (Database Selection) page accessed");
     on_actionDatabase_Selection_triggered();
 }
 
