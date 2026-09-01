@@ -84,6 +84,40 @@ Downloaded from https://logos.fandom.com/wiki/Microsoft_Windows/Compatible
 
 For full build instructions see [BUILD.md](BUILD.md).
 
+### Linux Build
+```bash
+cd src
+qmake6 ShelfSight.pro
+make -j$(nproc)
+```
+
+### Windows Cross-Compilation (from Linux)
+```bash
+cd src
+./build-windows.sh
+./package-windows.sh
+```
+Output: `ShelfSight-Windows-YYYYMMDD.zip`
+
+Requires:
+- `mingw-w64` (`apt install mingw-w64`)
+- Qt6 for MinGW (install to `/usr/x86_64-w64-mingw32/qt6`)
+- libsodium for MinGW (cross-compile or install via vcpkg)
+
+See [BUILD.md](BUILD.md) for detailed Windows build instructions.
+
+### Native Windows Build (MSYS2)
+```bash
+pacman -S mingw-w64-x86_64-qt6 mingw-w64-x86_64-sqlite3 mingw-w64-x86_64-libsodium
+cd src
+qmake ShelfSight.pro
+make -j$(nproc)
+```
+
+### CI/CD (GitHub Actions)
+Automated Windows and Linux builds are configured in `.github/workflows/windows-build.yml`.
+Push a tag (e.g., `v1.0.0`) to trigger a release build with artifacts.
+
 ### Project layout
 ```
 src/
@@ -95,7 +129,10 @@ src/
 │   └── sqlite_dataaccess.cpp/h
 ├── sqlitecpp/    # SQLiteCpp static library
 ├── .pro          # qmake project files
-└── build_scripts/
+├── CMakeLists.txt # CMake build configuration
+├── mingw64.cmake  # MinGW cross-compilation toolchain
+├── build_scripts/
+└── build-windows.sh # Linux->Windows cross-compile script
 ```
 ### Architecture
 ShelfSight uses a layered architecture separating concerns:
