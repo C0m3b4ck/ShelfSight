@@ -186,7 +186,7 @@ jobs:
           curl -L -o /tmp/libsodium.tar.gz \
             "https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz"
           cd /tmp && tar xzf libsodium.tar.gz
-          cd libsodium-stable
+          cd libsodium-*
           ./configure --prefix=/mingw32 --host=i686-w64-mingw32 --enable-minimal
           make -j$(nproc)
           make install
