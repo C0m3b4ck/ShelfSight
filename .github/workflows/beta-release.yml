@@ -214,7 +214,7 @@ jobs:
             -no-openssl -no-strip \
             -release \
             -skip qtopcua -skip qtwayland -skip qtlottie -skip qtquick3d \
-            -skip qtquick3dphysics \
+            -skip qtquick3dphysics -skip qtquickeffectmaker \
             -skip qtdeclarative -skip qtquickcontrols2 -skip qtquicktimeline \
             -skip qtshadertools -skip qt3d -skip qtactiveqt -skip qtcharts \
             -skip qtdatavis3d -skip qtmultimedia -skip qtscxml -skip qtsvg \
