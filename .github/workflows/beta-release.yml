@@ -178,16 +178,8 @@ jobs:
             mingw-w64-i686-toolchain
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
+            mingw-w64-i686-libsodium
             make
-      - name: Download prebuilt libsodium (i686)
-        shell: bash
-        run: |
-          curl -L -o /tmp/libsodium-win32.zip \
-            "https://download.libsodium.org/libsodium/releases/libsodium-1.0.20-stable-msvc.zip"
-          7z x /tmp/libsodium-win32.zip -o/tmp/libsodium-win32 -y
-          find /tmp/libsodium-win32 -name "libsodium.*" | head -20
-          find /tmp/libsodium-win32 -name "sodium.h" | head -5
-
       - name: Build Qt6 from source (i686) — cached
         uses: actions/cache@v4
         id: qt-cache
@@ -243,6 +235,7 @@ jobs:
           export PATH="$QT_DIR/bin:$MSYS2_PREFIX/bin:$PATH"
           qmake6 app.pro CONFIG+=release \
             "INCLUDEPATH+=$QT_DIR/include" \
+            "INCLUDEPATH+=$MSYS2_PREFIX/include" \
             "LIBS+=-L$QT_DIR/lib -L$MSYS2_PREFIX/lib"
           make -j$(nproc)
 
