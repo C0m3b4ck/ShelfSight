@@ -178,8 +178,18 @@ jobs:
             mingw-w64-i686-toolchain
             mingw-w64-i686-cmake
             mingw-w64-i686-ninja
-            mingw-w64-i686-libsodium
             make
+
+      - name: Build libsodium for i686
+        shell: msys2 {0}
+        run: |
+          curl -L -o /tmp/libsodium.tar.gz \
+            "https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz"
+          cd /tmp && tar xzf libsodium.tar.gz
+          cd libsodium-stable
+          ./configure --prefix=/mingw32 --host=i686-w64-mingw32 --enable-minimal
+          make -j$(nproc)
+          make install
       - name: Build Qt6 from source (i686) — cached
         uses: actions/cache@v4
         id: qt-cache
