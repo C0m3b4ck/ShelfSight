@@ -211,6 +211,7 @@ jobs:
             -opensource -confirm-license \
             -nomake examples -nomake tests \
             -sql-sqlite -qt-sqlite \
+            -no-sql-psql \
             -no-openssl -no-strip \
             -release \
             -skip qtopcua -skip qtwayland -skip qtlottie -skip qtquick3d \
